@@ -32,7 +32,7 @@ fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
             navigateBack()
         }
     }
-    Scaffold(topBar = { CustomTopAppBar("Entry") }){ innerPadding ->
+    Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = navigateBack) }){ innerPadding ->
         Column (Modifier.padding(innerPadding)){
             var text by remember { mutableStateOf("") }
             TextField(text, { text = it})

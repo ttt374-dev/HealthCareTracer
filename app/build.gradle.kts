@@ -85,5 +85,8 @@ dependencies {
     //implementation(libs.charts)
     implementation(libs.mpandroidchart)
 
+    // icons
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
 
 }

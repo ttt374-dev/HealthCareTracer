@@ -16,12 +16,4 @@ data class Item (
     val pulse: Int = 0,
     val measuredAt: Instant = Instant.now(),
 
-){
-    fun date(): LocalDate {
-        return measuredAt.toLocalDate()
-    }
-}
-
-fun Instant.toLocalDate(zoneId: ZoneId = ZoneId.systemDefault()): LocalDate {
-    return this.atZone(zoneId).toLocalDate()
-}
+)

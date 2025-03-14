@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,8 +18,8 @@ class EntryViewModel @Inject constructor (private val itemRepository: ItemReposi
     private val _uiState = MutableStateFlow(EntryUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun addNewEntryByText(text: String) {
-        val item = parseHealthData(text)
+    fun addNewEntryByText(text: String, measuredAt: Instant) {
+        val item = parseHealthData(text)?.copy(measuredAt = measuredAt)
         if (item == null){
             Log.e("text parse error", "input error: $text")
             _uiState.update { EntryUiState(isSuccess = false, errorMessage = "Invalid text: $text") }

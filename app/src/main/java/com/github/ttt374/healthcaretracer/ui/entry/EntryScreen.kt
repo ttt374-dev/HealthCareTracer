@@ -1,5 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import android.text.format.DateFormat
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,12 +22,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
+import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
                 navigateBack: () -> Unit = {}
                 ) {
     val uiState by entryViewModel.uiState.collectAsState()
+    var text by remember { mutableStateOf("") }
+    val dateTimeDialogState = rememberDialogState(false)
+    var measuredAt by remember { mutableStateOf(Instant.now())}
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -33,18 +44,33 @@ fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
         }
     }
     Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = navigateBack) }){ innerPadding ->
+        if (dateTimeDialogState.isOpen)
+            DateTimeDialog(measuredAt, dateTimeFormatter.zone,
+                onConfirm = { measuredAt = it },
+                closeDialog = { dateTimeDialogState.close() })
+
         Column (Modifier.padding(innerPadding)){
-            var text by remember { mutableStateOf("") }
-            TextField(text, { text = it})
+
             Row {
+                Text("Measured At", modifier = Modifier.weight(1f))
+                Button(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
+                    Text(dateTimeFormatter.format(measuredAt))
+                }
+            }
+            Row {
+                Text("High BP / Low BP / Pulse", modifier = Modifier.weight(1f))
+                TextField(text, { text = it}, modifier = Modifier.weight(2f))
+            }
+            Row {
+                Text("", modifier = Modifier.weight(1f))
+
                 Button(onClick = {
-                    entryViewModel.addNewEntryByText(text)
-                } ){
+                    entryViewModel.addNewEntryByText(text, measuredAt)
+                }, modifier = Modifier.weight(2f) ){
                     Text("Add")
                 }
-                Button(onClick = { text = ""}){
-                    Text("Clear")
-                }
+
+
             }
         }
     }

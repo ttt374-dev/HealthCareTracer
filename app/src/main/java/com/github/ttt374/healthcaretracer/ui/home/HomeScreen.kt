@@ -1,37 +1,21 @@
 package com.github.ttt374.healthcaretracer.ui.home
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ShowChart
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarState
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.ttt374.healthcaretracer.data.Item
@@ -43,7 +27,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
-               navigateToEntry: () -> Unit = {},
+               //navigateToEntry: () -> Unit = {},
                navController: NavController,
                ){
 //    val items = listOf(
@@ -56,7 +40,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         bottomBar = {
             CustomBottomAppBar(navController,
                 floatingActionButton = {
-                FloatingActionButton(onClick = { navigateToEntry() }){
+                FloatingActionButton(onClick = { navController.navigate(Screen.Entry.route) }){
                     Icon(Icons.Filled.Add, "add")
                 }
             })

@@ -1,5 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,18 +58,19 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                     }
                 }
                 items(items){ item ->
-                    ItemRow(item)
+                    ItemRow(item, onLongClick = { navController.navigate("${Screen.Edit.route}/${item.id}")})
                 }
             }
         }
 
     }
 }
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ItemRow(item: Item){
+fun ItemRow(item: Item, onLongClick: () -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
-    Row {
+    Row(Modifier.combinedClickable(onLongClick = onLongClick, onClick = {}) ) {
         Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
         Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
         Text(item.bpLow.toString(), modifier = Modifier.weight(1f))

@@ -10,8 +10,12 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     suspend fun insertItem(item: Item){
         itemDao.insertItem(item)
     }
+    suspend fun updateItem(item: Item){
+        itemDao.updateItem(item)
+    }
 
     // query
     fun retrieveItemsFlow(): Flow<List<Item>> =
         itemDao.getAllItemsFlow()
+    fun getItemFlow(itemId: Long) = itemDao.getItemFlow(itemId)
 }

@@ -34,7 +34,7 @@ fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
                 ) {
     val uiState by entryViewModel.uiState.collectAsState()
     var text by remember { mutableStateOf("") }
-    val dateTimeDialogState = rememberDialogState(false)
+    //val dateTimeDialogState = rememberDialogState(false)
     var measuredAt by remember { mutableStateOf(Instant.now())}
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
@@ -44,19 +44,19 @@ fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
         }
     }
     Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = navigateBack) }){ innerPadding ->
-        if (dateTimeDialogState.isOpen)
-            DateTimeDialog(measuredAt, dateTimeFormatter.zone,
-                onConfirm = { measuredAt = it },
-                closeDialog = { dateTimeDialogState.close() })
+//        if (dateTimeDialogState.isOpen)
+//            DateTimeDialog(measuredAt, dateTimeFormatter.zone,
+//                onConfirm = { measuredAt = it },
+//                closeDialog = { dateTimeDialogState.close() })
 
         Column (Modifier.padding(innerPadding)){
 
-            Row {
-                Text("Measured At", modifier = Modifier.weight(1f))
-                Button(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
-                    Text(dateTimeFormatter.format(measuredAt))
-                }
-            }
+//            Row {
+//                Text("Measured At", modifier = Modifier.weight(1f))
+//                Button(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
+//                    Text(dateTimeFormatter.format(measuredAt))
+//                }
+//            }
             Row {
                 Text("High BP / Low BP / Pulse", modifier = Modifier.weight(1f))
                 TextField(text, { text = it}, modifier = Modifier.weight(2f))

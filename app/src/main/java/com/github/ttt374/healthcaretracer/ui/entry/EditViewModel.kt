@@ -31,7 +31,9 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     }
     fun updateUiState(uiState: ItemUiState) {
         itemUiState =
-            ItemUiState(bpHigh = uiState.bpHigh, bpLow = uiState.bpLow, pulse = uiState.pulse,
+            ItemUiState(id = uiState.id,
+                bpHigh = uiState.bpHigh, bpLow = uiState.bpLow, pulse = uiState.pulse,
+                measuredAt = uiState.measuredAt,
                 isValid = validateInput(uiState))
     }
     fun updateItem(){

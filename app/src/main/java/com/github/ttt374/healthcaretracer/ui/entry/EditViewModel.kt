@@ -44,9 +44,16 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
             }
         }
     }
+    fun deleteItem(){
+        viewModelScope.launch {
+            itemRepository.deleteItem(itemUiState.toItem())
+            itemUiState = itemUiState.copy(isSuccess = true)
+        }
+    }
     private fun validateInput(uiState: ItemUiState): Boolean {
         return with(uiState) {
-            true
+            bpHigh != "" && bpLow != "" && pulse != ""
+            //true
             //name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
         }
     }

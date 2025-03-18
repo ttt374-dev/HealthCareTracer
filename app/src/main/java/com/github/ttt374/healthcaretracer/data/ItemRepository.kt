@@ -13,7 +13,9 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     suspend fun updateItem(item: Item){
         itemDao.updateItem(item)
     }
-
+    suspend fun deleteItem(item: Item){
+        itemDao.deleteItem(item)
+    }
     // query
     fun retrieveItemsFlow(): Flow<List<Item>> =
         itemDao.getAllItemsFlow()

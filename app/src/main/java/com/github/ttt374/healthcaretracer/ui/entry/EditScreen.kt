@@ -3,7 +3,11 @@ package com.github.ttt374.healthcaretracer.ui.entry
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -47,6 +51,9 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
         Column (Modifier.padding(innerPadding)){
             Row {
                 Text("Id; ${uiState.id}")
+                IconButton(onClick = { editViewModel.deleteItem()}){
+                    Icon(Icons.Filled.Delete, "delete")
+                }
             }
 
             Row {
@@ -70,7 +77,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
             Row {
                 Text("", modifier = Modifier.weight(1f))
 
-                Button(onClick = {
+                Button(enabled = uiState.isValid, onClick = {
                     editViewModel.updateItem()
                 }, modifier = Modifier.weight(2f) ){
                     Text("Add")

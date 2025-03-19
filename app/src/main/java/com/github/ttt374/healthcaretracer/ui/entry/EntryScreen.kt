@@ -1,10 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
-import android.text.format.DateFormat
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
@@ -17,13 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
-import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -35,8 +28,8 @@ fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
     val uiState by entryViewModel.uiState.collectAsState()
     var text by remember { mutableStateOf("") }
     //val dateTimeDialogState = rememberDialogState(false)
-    var measuredAt by remember { mutableStateOf(Instant.now())}
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+    //var measuredAt by remember { mutableStateOf(Instant.now())}
+    //val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -58,16 +51,16 @@ fun EntryScreen(entryViewModel: EntryViewModel = hiltViewModel(),
 //                }
 //            }
             Row {
-                Text("High BP / Low BP / Pulse", modifier = Modifier.weight(1f))
+                Text("High Low Pulse", modifier = Modifier.weight(1f))
                 TextField(text, { text = it}, modifier = Modifier.weight(2f))
             }
             Row {
                 Text("", modifier = Modifier.weight(1f))
 
                 Button(onClick = {
-                    entryViewModel.addNewEntryByText(text, measuredAt)
+                    entryViewModel.addNewEntryByText(text, Instant.now())
                 }, modifier = Modifier.weight(2f) ){
-                    Text("Add")
+                    Text("OK")
                 }
 
 

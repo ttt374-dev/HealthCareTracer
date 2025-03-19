@@ -8,12 +8,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,9 +23,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -49,16 +46,15 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
                 onConfirm = { editViewModel.updateUiState(uiState.copy(measuredAt = it)) },
                 closeDialog = { dateTimeDialogState.close() })
         Column (Modifier.padding(innerPadding)){
-            Row {
-                Text("Id; ${uiState.id}")
-                IconButton(onClick = { editViewModel.deleteItem()}){
-                    Icon(Icons.Filled.Delete, "delete")
-                }
-            }
-
+//            Row {
+//                Text("Id; ${uiState.id}")
+//                IconButton(onClick = { editViewModel.deleteItem()}){
+//                    Icon(Icons.Filled.Delete, "delete")
+//                }
+//            }
             Row {
                 Text("Measured At", modifier = Modifier.weight(1f))
-                Button(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
+                OutlinedButton(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
                     Text(dateTimeFormatter.format(uiState.measuredAt))
                 }
             }
@@ -80,7 +76,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
                 Button(enabled = uiState.isValid, onClick = {
                     editViewModel.updateItem()
                 }, modifier = Modifier.weight(2f) ){
-                    Text("Add")
+                    Text("OK")
                 }
             }
         }

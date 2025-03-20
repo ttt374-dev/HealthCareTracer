@@ -21,4 +21,11 @@ class HomeViewModel @Inject constructor (private val itemRepository: ItemReposit
             itemRepository.deleteItem(item)
         }
     }
+
+    fun exportData(){
+
+    }
+    fun importData(){
+
+    }
 }

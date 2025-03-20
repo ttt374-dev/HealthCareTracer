@@ -35,7 +35,6 @@ import com.github.ttt374.healthcaretracer.navigation.Screen
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberExpandState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId

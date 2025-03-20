@@ -38,9 +38,10 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
 }
 @Composable
 fun ItemEntryContent(entryUiState: EntryUiState,
+                     modifier: Modifier = Modifier,
                      onPost: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
-                     modifier: Modifier = Modifier){
+                     ){
     val itemUiState = entryUiState.itemUiState
     val dateTimeDialogState = rememberDialogState(false)
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
@@ -49,34 +50,34 @@ fun ItemEntryContent(entryUiState: EntryUiState,
         DateTimeDialog(itemUiState.measuredAt, dateTimeFormatter.zone,
                 onConfirm = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
                 closeDialog = { dateTimeDialogState.close() })
-        Column (modifier=modifier){
-            Row {
-                Text("Measured At", modifier = Modifier.weight(1f))
-                OutlinedButton(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
-                    Text(dateTimeFormatter.format(entryUiState.itemUiState.measuredAt))
-                }
-            }
-            Row {
-                Text("High BP", modifier = Modifier.weight(1f))
-                TextField(itemUiState.bpHigh, { updateItemUiState(itemUiState.copy(bpHigh = it))}, modifier = Modifier.weight(2f))
-            }
-            Row {
-                Text("High Low", modifier = Modifier.weight(1f))
-                TextField(itemUiState.bpLow, { updateItemUiState(itemUiState.copy(bpLow = it))}, modifier = Modifier.weight(2f))
-            }
-            Row {
-                Text("Pulse", modifier = Modifier.weight(1f))
-                TextField(itemUiState.pulse, { updateItemUiState(itemUiState.copy(pulse = it)) }, modifier = Modifier.weight(2f))
-            }
-            Row {
-                Text("", modifier = Modifier.weight(1f))
-
-                Button(enabled = entryUiState.isValid, onClick = {
-                    onPost()
-                    //editViewModel.updateItem()
-                }, modifier = Modifier.weight(2f) ){
-                    Text("OK")
-                }
+    Column (modifier=modifier){
+        Row {
+            Text("Measured At", modifier = Modifier.weight(1f))
+            OutlinedButton(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
+                Text(dateTimeFormatter.format(entryUiState.itemUiState.measuredAt))
             }
         }
+        Row {
+            Text("High BP", modifier = Modifier.weight(1f))
+            TextField(itemUiState.bpHigh, { updateItemUiState(itemUiState.copy(bpHigh = it))}, modifier = Modifier.weight(2f))
+        }
+        Row {
+            Text("High Low", modifier = Modifier.weight(1f))
+            TextField(itemUiState.bpLow, { updateItemUiState(itemUiState.copy(bpLow = it))}, modifier = Modifier.weight(2f))
+        }
+        Row {
+            Text("Pulse", modifier = Modifier.weight(1f))
+            TextField(itemUiState.pulse, { updateItemUiState(itemUiState.copy(pulse = it)) }, modifier = Modifier.weight(2f))
+        }
+        Row {
+            Text("", modifier = Modifier.weight(1f))
+
+            Button(enabled = entryUiState.isValid, onClick = {
+                onPost()
+                //editViewModel.updateItem()
+            }, modifier = Modifier.weight(2f) ){
+                Text("OK")
+            }
+        }
+    }
 }

@@ -19,7 +19,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -32,7 +31,6 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController:
         bottomBar = {
             CustomBottomAppBar(navController)
         }){ innerPadding ->
-            //val modifier = Modifier
             AndroidView(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 factory = { context ->

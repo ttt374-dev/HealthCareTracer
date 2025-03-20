@@ -16,5 +16,9 @@ class HomeViewModel @Inject constructor (private val itemRepository: ItemReposit
     val items = itemRepository.retrieveItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-
+    fun deleteItem(item: Item){
+        viewModelScope.launch {
+            itemRepository.deleteItem(item)
+        }
+    }
 }

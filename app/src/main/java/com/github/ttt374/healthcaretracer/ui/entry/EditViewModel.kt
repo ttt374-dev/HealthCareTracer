@@ -17,37 +17,31 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
-    var itemUiState by mutableStateOf(ItemUiState())
+    var uiState by mutableStateOf(EntryUiState())
         private set
 
-    private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
+    //private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
+    private val itemId: Long? = savedStateHandle["itemId"]
     init {
-        viewModelScope.launch {
-            itemUiState = itemRepository.getItemFlow(itemId)
-                .filterNotNull()
-                .first()
-                .toItemUiState(true)
-        }
-    }
-    fun updateUiState(uiState: ItemUiState) {
-        itemUiState =
-            ItemUiState(id = uiState.id,
-                bpHigh = uiState.bpHigh, bpLow = uiState.bpLow, pulse = uiState.pulse,
-                measuredAt = uiState.measuredAt,
-                isValid = validateInput(uiState))
-    }
-    fun updateItem(){
-        if (itemUiState.isValid){
+        itemId?.let { id ->
             viewModelScope.launch {
-                itemRepository.updateItem(itemUiState.toItem())
-                itemUiState = itemUiState.copy(isSuccess = true)
+                uiState = EntryUiState(itemUiState = itemRepository.getItemFlow(id)
+                    .filterNotNull()
+                    .first()
+                    .toItemUiState(), isValid = true)
             }
         }
     }
-    fun deleteItem(){
-        viewModelScope.launch {
-            itemRepository.deleteItem(itemUiState.toItem())
-            itemUiState = itemUiState.copy(isSuccess = true)
+    fun updateItemUiState(itemUiState: ItemUiState) {
+        uiState = EntryUiState(itemUiState=itemUiState,
+                isValid = validateInput(itemUiState))
+    }
+    fun upsertItem(){
+        if (uiState.isValid){
+            viewModelScope.launch {
+                itemRepository.upsertItem(uiState.itemUiState.toItem())
+                uiState = uiState.copy(isSuccess = true)
+            }
         }
     }
     private fun validateInput(uiState: ItemUiState): Boolean {
@@ -64,14 +58,20 @@ data class ItemUiState (
     val bpLow: String = "",
     val pulse: String = "",
     val measuredAt: Instant = Instant.now(),
-
-    val isValid: Boolean = false,
-    val isSuccess: Boolean = false
+//
+//    val isValid: Boolean = false,
+//    val isSuccess: Boolean = false
 ){
     fun toItem(): Item{
         return Item(id = id ?: 0, bpHigh = bpHigh.toInt(), bpLow = bpLow.toInt(), pulse = pulse.toInt(), measuredAt = measuredAt)
     }
 }
-fun Item.toItemUiState(isValid: Boolean = false): ItemUiState {
-    return ItemUiState(this.id, this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(), this.measuredAt, isValid)
+fun Item.toItemUiState(): ItemUiState {
+    return ItemUiState(this.id, this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(), this.measuredAt)
 }
+data class EntryUiState (
+    val itemUiState: ItemUiState = ItemUiState(),
+
+    val isValid: Boolean = false,
+    val isSuccess: Boolean = false
+)

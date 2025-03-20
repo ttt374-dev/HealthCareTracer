@@ -7,11 +7,11 @@ import javax.inject.Singleton
 @Singleton
 class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     // crud
-    suspend fun insertItem(item: Item){
-        itemDao.insertItem(item)
-    }
-    suspend fun updateItem(item: Item){
-        itemDao.updateItem(item)
+//    suspend fun insertItem(item: Item){
+//        itemDao.insertItem(item)
+//    }
+    suspend fun upsertItem(item: Item){
+        itemDao.upsertItem(item)
     }
     suspend fun deleteItem(item: Item){
         itemDao.deleteItem(item)

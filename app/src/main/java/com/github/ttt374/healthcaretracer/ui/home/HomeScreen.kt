@@ -43,13 +43,8 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
-               //navigateToEntry: () -> Unit = {},
                navController: NavController,
                ){
-//    val items = listOf(
-//        Item(0, 120, 80, 78),
-//            Item(1, 132, 102, 82)
-//    )
     val items by homeViewModel.items.collectAsState()
 
     // dialog
@@ -57,7 +52,8 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
     if (deleteDialogState.isOpen){
         ConfirmDialog(title = { Text("Are you sure to delete ?") },
             text = { Text("") },
-            onConfirm = {})
+            onConfirm = { homeViewModel.deleteItem(deleteDialogState.item) },
+            closeDialog = { deleteDialogState.close()})
     }
     Scaffold(topBar = { CustomTopAppBar("Home") },
         bottomBar = {
@@ -69,9 +65,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
             })
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
-            LazyColumn(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()) {
+            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), reverseLayout = false) {
                 item {
                     Row {  // headers
                         Text("Measured at", modifier = Modifier.weight(2f))
@@ -86,7 +80,8 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                     ItemRow(item,
                         navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
                         onDeleteItem = { deleteDialogState.open(it) },
-                        onLongClick = { navController.navigate("${Screen.Edit.route}/${item.id}")})
+                    //    onLongClick = { navController.navigate("${Screen.Edit.route}/${item.id}")}
+                    )
                 }
             }
         }

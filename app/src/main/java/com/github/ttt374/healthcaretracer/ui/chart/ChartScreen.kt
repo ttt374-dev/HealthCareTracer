@@ -45,10 +45,11 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController:
                         xAxis.setDrawGridLines(false)
                         axisLeft.textColor = Color.BLACK
                         axisLeft.setDrawGridLines(true)
+                        axisLeft.axisMinimum = 50f
                         axisRight.isEnabled = false
-                        axisLeft.axisMinimum = 0f
+//                        axisRight.axisMinimum = 30f
                         xAxis.valueFormatter = object : ValueFormatter() {
-                            private val formatter = DateTimeFormatter.ofPattern("MM/dd")
+                            private val formatter = DateTimeFormatter.ofPattern("M/dd")
                             override fun getFormattedValue(value: Float): String {
                                 return Instant.ofEpochMilli(value.toLong())
                                     .atZone(ZoneId.systemDefault())
@@ -61,13 +62,28 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController:
                 update = { chart ->
                     val bpHighList = mutableListOf<Entry>()
                     val bpLowList = mutableListOf<Entry>()
+                    val pulseList = mutableListOf<Entry>()
                     items.sortedBy { it.measuredAt }.forEach { item ->
                         bpHighList.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpHigh.toFloat()))
                         bpLowList.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpLow.toFloat()))
+                        pulseList.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.pulse.toFloat()))
                     }
-                    val lineDataSetBpHigh = LineDataSet(bpHighList, "High BP chart")
-                    val lineDataSetBpLow = LineDataSet(bpLowList, "Low BP chart")
-                    chart.data = LineData(lineDataSetBpHigh, lineDataSetBpLow)
+                    val lineDataSetBpHigh = LineDataSet(bpHighList, "High BP chart").apply {
+                        axisDependency = chart.axisLeft.axisDependency
+                        color = Color.BLUE // 濃い青
+                        setCircleColor(Color.BLUE)
+                    }
+                    val lineDataSetBpLow = LineDataSet(bpLowList, "Low BP chart").apply {
+                        axisDependency = chart.axisLeft.axisDependency
+                        color = Color.parseColor("#87CEFA") // 薄い青（LightSkyBlue）
+                        setCircleColor(Color.parseColor("#87CEFA"))
+                    }
+                    val lineDataSetPulse = LineDataSet(pulseList, "Pulse").apply {
+                        axisDependency = chart.axisLeft.axisDependency
+                        color = Color.RED // 赤色
+                        setCircleColor(Color.RED)
+                    }
+                    chart.data = LineData(lineDataSetBpHigh, lineDataSetBpLow, lineDataSetPulse)
 //                    // 📌 X軸の初期表示範囲を最近1か月に設定
 //                    val now = Instant.now().toEpochMilli().toFloat()
 //                    val oneMonthAgo = now - Duration.ofDays(30).toMillis()

@@ -1,5 +1,10 @@
 package com.github.ttt374.healthcaretracer.ui.home
 
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -25,6 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -35,6 +43,8 @@ import com.github.ttt374.healthcaretracer.navigation.Screen
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.MenuItem
+import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberExpandState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
@@ -46,6 +56,23 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                ){
     val items by homeViewModel.items.collectAsState()
 
+    val filePickerDialogState = rememberDialogState()
+    var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri: Uri? ->
+            selectedFileUri = uri
+            Log.d("ImportScreen", "Selected file: $uri")
+            if (selectedFileUri != null)
+                homeViewModel.importData(selectedFileUri!!)
+            filePickerDialogState.close()
+            //homeViewModel.onFilePickerHandled() // フラグをリセット
+        }
+    )
+    if (filePickerDialogState.isOpen)
+        filePickerLauncher.launch(arrayOf("*/*"))
+
     // dialog
     val deleteDialogState = rememberItemDialogState()
     if (deleteDialogState.isOpen){
@@ -54,7 +81,12 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
             onConfirm = { homeViewModel.deleteItem(deleteDialogState.item) },
             closeDialog = { deleteDialogState.close()})
     }
-    Scaffold(topBar = { CustomTopAppBar("Home") },
+    Scaffold(topBar = { CustomTopAppBar("Home",
+        menuItems = listOf(
+            MenuItem("export", onClick = { homeViewModel.exportData()}),
+            MenuItem("import", onClick = { filePickerDialogState.open()}))
+
+        ) },
         bottomBar = {
             CustomBottomAppBar(navController,
                 floatingActionButton = {
@@ -117,3 +149,4 @@ fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
     }
     HorizontalDivider(thickness = 1.dp, color = Color.Gray)
 }
+///

@@ -14,6 +14,7 @@ mpandroidchart = "v3.1.0"
 room="2.6.1"
 hiltAndroid = "2.52"
 hiltNavigationCompose = "1.2.0"
+opencsv = "5.9"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -52,3 +53,6 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 # charts
 charts = { module = "com.github.tehras:charts", version.ref = "charts" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+
+# tools
+opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }

@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.data
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
@@ -20,6 +21,13 @@ interface ItemDao {
 
     @Delete
     suspend fun deleteItem(item: Item)
+
+    // bulk
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertItems(items: List<Item>)
+
+    @Query("DELETE FROM items")
+    suspend fun clearAll()
 
     // query
     @Query("SELECT * FROM items ORDER by measuredAt DESC")

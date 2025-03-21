@@ -1,7 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.home
 
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts

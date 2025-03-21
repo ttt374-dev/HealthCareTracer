@@ -1,10 +1,8 @@
 package com.github.ttt374.healthcaretracer.ui.home
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase

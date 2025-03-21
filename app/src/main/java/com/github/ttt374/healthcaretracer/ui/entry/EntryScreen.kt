@@ -1,9 +1,12 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -11,17 +14,18 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 @Composable
 fun EntryScreen(viewModel: EditViewModel = hiltViewModel(),
                 navigateBack: () -> Unit = {}){
-    val uiState = viewModel.itemUiState
+    val uiState by viewModel.itemUiState.collectAsState()
+
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             navigateBack()
         }
     }
     Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = navigateBack) }){ innerPadding ->
-        ItemEntryContent(itemUiState = uiState,
-            updateItemUiState = { itemUiState -> viewModel.updateItemUiState(itemUiState)},
-            onPost = viewModel::upsertItem,
-            editMode = EditMode.Entry,
-            modifier = Modifier.padding(innerPadding))
+        Column (modifier = Modifier.padding(innerPadding)) {
+            ItemEntryContent(itemUiState = uiState,
+                updateItemUiState = viewModel::updateItemUiState,
+                onPost = viewModel::upsertItem)
+        }
     }
 }

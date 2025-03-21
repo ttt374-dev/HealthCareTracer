@@ -10,6 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -20,27 +22,24 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () -> Unit = {}) {
-    val itemUiState = editViewModel.itemUiState
+    val itemUiState by editViewModel.itemUiState.collectAsState()
 
     LaunchedEffect(itemUiState.isSuccess) {
         if (itemUiState.isSuccess) {
             navigateBack()
         }
     }
-
     Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
-        ItemEntryContent(itemUiState = itemUiState,
-            updateItemUiState = { itemUiState -> editViewModel.updateItemUiState(itemUiState)},
-            editMode = EditMode.Edit,
-            onPost = editViewModel::upsertItem,
-            modifier=Modifier.padding(innerPadding))
-
+        Column (modifier = Modifier.padding(innerPadding)) {
+            ItemEntryContent(itemUiState = itemUiState,
+                updateItemUiState = editViewModel::updateItemUiState,
+                onPost = editViewModel::upsertItem)
+        }
     }
 }
 @Composable
 fun ItemEntryContent(itemUiState: ItemUiState,
                      modifier: Modifier = Modifier,
-                     editMode: EditMode = EditMode.Entry,
                      onPost: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {}){
     //val itemUiState = entryUiState.itemUiState
@@ -58,13 +57,13 @@ fun ItemEntryContent(itemUiState: ItemUiState,
                 Text(dateTimeFormatter.format(itemUiState.measuredAt))
             }
         }
-        if (editMode is EditMode.Edit){
+        if (itemUiState.editMode is EditMode.Edit){
             Row {
                 Text("High BP", modifier = Modifier.weight(1f))
                 TextField(itemUiState.bpHigh, { updateItemUiState(itemUiState.copy(bpHigh = it))}, modifier = Modifier.weight(2f))
             }
             Row {
-                Text("High Low", modifier = Modifier.weight(1f))
+                Text("Low BP", modifier = Modifier.weight(1f))
                 TextField(itemUiState.bpLow, { updateItemUiState(itemUiState.copy(bpLow = it))}, modifier = Modifier.weight(2f))
             }
             Row {

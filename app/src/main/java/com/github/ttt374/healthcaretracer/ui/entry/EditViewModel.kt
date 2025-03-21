@@ -1,55 +1,66 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
 class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
-    var itemUiState by mutableStateOf(ItemUiState())
-        private set
     //private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
-    private val itemId: Long? = savedStateHandle["itemId"]
+    private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
+
+    private var _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
+    val itemUiState: StateFlow<ItemUiState> = _itemUiState // StateFlow として公開
+
     init {
         itemId?.let { id ->
             viewModelScope.launch {
-                itemUiState = itemRepository.getItemFlow(id).filterNotNull().first().toItemUiState(editMode=EditMode.Edit)
+                itemRepository.getItemFlow(id)
+                    .filterNotNull()
+                    .map { it.toItemUiState(editMode = EditMode.Edit(id)) }
+                    .collect { _itemUiState.value = it } // `_itemUiState` を更新
             }
         }
     }
     fun updateItemUiState(uiState: ItemUiState) {
-        itemUiState = uiState
+        _itemUiState.update { uiState }
     }
     fun upsertItem(){
-        if (itemUiState.isValid){
+        if (itemUiState.value.isValid){
             viewModelScope.launch {
-                itemRepository.upsertItem(itemUiState.toItem())
-                itemUiState = itemUiState.copy(isSuccess = true)
+                itemRepository.upsertItem(itemUiState.value.toItem())
+                _itemUiState.update { itemUiState.value.copy(isSuccess = true) }
             }
         }
+    }
+    override fun onCleared() {
+        super.onCleared()
+        _itemUiState.update { itemUiState.value.copy(isSuccess = false)  }
     }
 }
 data class ItemUiState (
     val editMode: EditMode = EditMode.Entry,
-    val id: Long? = null,
     val rawInput: String = "",
     val bpHigh: String = "",
     val bpLow: String = "",
     val pulse: String = "",
     val measuredAt: Instant = Instant.now(),
 
-    //val isEditing: Boolean = false,
     val isSuccess: Boolean = false,
 
 ){
@@ -57,14 +68,14 @@ data class ItemUiState (
         get() = when(editMode){
             is EditMode.Edit ->
                 bpHigh.isNotBlank() && bpLow.isNotBlank() && pulse.isNotBlank()
-            else ->
+            EditMode.Entry ->
                 rawInput.split(" ").mapNotNull { it.toIntOrNull() }.size == 3
         }
 
     fun toItem(): Item {
         return when(this.editMode){
             is EditMode.Edit ->
-                Item(id = id ?: 0, bpHigh = bpHigh.toInt(), bpLow = bpLow.toInt(), pulse = pulse.toInt(), measuredAt = measuredAt)
+                Item(id = this.editMode.itemId , bpHigh = bpHigh.toInt(), bpLow = bpLow.toInt(), pulse = pulse.toInt(), measuredAt = measuredAt)
             else ->
                 parseRawInput(rawInput)
         }
@@ -76,22 +87,16 @@ data class ItemUiState (
                 bpHigh = values[0],
                 bpLow = values[1],
                 pulse = values[2],
-                measuredAt = measuredAt
+                measuredAt = this.measuredAt
             )
-        } else Item()
+        } else Item(measuredAt = this.measuredAt)
     }
 }
 fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
-    return ItemUiState(editMode, this.id, "", this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(), this.measuredAt, false)
+    return ItemUiState(editMode,  "", this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(), this.measuredAt, false)
 }
-//data class EntryUiState (
-//    val itemUiState: ItemUiState = ItemUiState(),
-//
-//    //val isValid: Boolean = false,
-//    val isSuccess: Boolean = false
-//)
+
 sealed class EditMode {
     data object Entry : EditMode()
-    data object Edit: EditMode()
-    //data class Edit(val itemId: Long) : EditMode()
+    data class Edit(val itemId: Long) : EditMode()
 }

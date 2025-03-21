@@ -20,31 +20,30 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () -> Unit = {}) {
-    val uiState = editViewModel.uiState
+    val itemUiState = editViewModel.itemUiState
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
+    LaunchedEffect(itemUiState.isSuccess) {
+        if (itemUiState.isSuccess) {
             navigateBack()
         }
     }
 
     Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
-        ItemEntryContent(entryUiState = uiState,
+        ItemEntryContent(itemUiState = itemUiState,
             updateItemUiState = { itemUiState -> editViewModel.updateItemUiState(itemUiState)},
-            isEditing = true,
+            editMode = EditMode.Edit,
             onPost = editViewModel::upsertItem,
             modifier=Modifier.padding(innerPadding))
 
     }
 }
 @Composable
-fun ItemEntryContent(entryUiState: EntryUiState,
+fun ItemEntryContent(itemUiState: ItemUiState,
                      modifier: Modifier = Modifier,
-                     isEditing: Boolean = false,
+                     editMode: EditMode = EditMode.Entry,
                      onPost: () -> Unit = {},
-                     updateItemUiState: (ItemUiState) -> Unit = {},
-                     ){
-    val itemUiState = entryUiState.itemUiState
+                     updateItemUiState: (ItemUiState) -> Unit = {}){
+    //val itemUiState = entryUiState.itemUiState
     val dateTimeDialogState = rememberDialogState(false)
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
@@ -56,10 +55,10 @@ fun ItemEntryContent(entryUiState: EntryUiState,
         Row {
             Text("Measured At", modifier = Modifier.weight(1f))
             OutlinedButton(onClick = { dateTimeDialogState.open() }, modifier = Modifier.weight(2f)){
-                Text(dateTimeFormatter.format(entryUiState.itemUiState.measuredAt))
+                Text(dateTimeFormatter.format(itemUiState.measuredAt))
             }
         }
-        if (isEditing){
+        if (editMode is EditMode.Edit){
             Row {
                 Text("High BP", modifier = Modifier.weight(1f))
                 TextField(itemUiState.bpHigh, { updateItemUiState(itemUiState.copy(bpHigh = it))}, modifier = Modifier.weight(2f))
@@ -81,7 +80,7 @@ fun ItemEntryContent(entryUiState: EntryUiState,
         Row {
             Text("", modifier = Modifier.weight(1f))
 
-            Button(enabled = entryUiState.itemUiState.isValid, onClick = {
+            Button(enabled = itemUiState.isValid, onClick = {
                 onPost()
                 //editViewModel.updateItem()
             }, modifier = Modifier.weight(2f) ){

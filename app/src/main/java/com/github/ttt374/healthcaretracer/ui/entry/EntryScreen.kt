@@ -11,17 +11,17 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 @Composable
 fun EntryScreen(viewModel: EditViewModel = hiltViewModel(),
                 navigateBack: () -> Unit = {}){
-    val uiState = viewModel.uiState
+    val uiState = viewModel.itemUiState
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             navigateBack()
         }
     }
     Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = navigateBack) }){ innerPadding ->
-        ItemEntryContent(entryUiState = uiState,
+        ItemEntryContent(itemUiState = uiState,
             updateItemUiState = { itemUiState -> viewModel.updateItemUiState(itemUiState)},
             onPost = viewModel::upsertItem,
-            isEditing = false,
+            editMode = EditMode.Entry,
             modifier = Modifier.padding(innerPadding))
     }
 }

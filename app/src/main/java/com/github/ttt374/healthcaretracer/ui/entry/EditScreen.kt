@@ -31,6 +31,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
     Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
         ItemEntryContent(entryUiState = uiState,
             updateItemUiState = { itemUiState -> editViewModel.updateItemUiState(itemUiState)},
+            isEditing = true,
             onPost = editViewModel::upsertItem,
             modifier=Modifier.padding(innerPadding))
 
@@ -39,6 +40,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
 @Composable
 fun ItemEntryContent(entryUiState: EntryUiState,
                      modifier: Modifier = Modifier,
+                     isEditing: Boolean = false,
                      onPost: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      ){
@@ -57,22 +59,29 @@ fun ItemEntryContent(entryUiState: EntryUiState,
                 Text(dateTimeFormatter.format(entryUiState.itemUiState.measuredAt))
             }
         }
-        Row {
-            Text("High BP", modifier = Modifier.weight(1f))
-            TextField(itemUiState.bpHigh, { updateItemUiState(itemUiState.copy(bpHigh = it))}, modifier = Modifier.weight(2f))
-        }
-        Row {
-            Text("High Low", modifier = Modifier.weight(1f))
-            TextField(itemUiState.bpLow, { updateItemUiState(itemUiState.copy(bpLow = it))}, modifier = Modifier.weight(2f))
-        }
-        Row {
-            Text("Pulse", modifier = Modifier.weight(1f))
-            TextField(itemUiState.pulse, { updateItemUiState(itemUiState.copy(pulse = it)) }, modifier = Modifier.weight(2f))
+        if (isEditing){
+            Row {
+                Text("High BP", modifier = Modifier.weight(1f))
+                TextField(itemUiState.bpHigh, { updateItemUiState(itemUiState.copy(bpHigh = it))}, modifier = Modifier.weight(2f))
+            }
+            Row {
+                Text("High Low", modifier = Modifier.weight(1f))
+                TextField(itemUiState.bpLow, { updateItemUiState(itemUiState.copy(bpLow = it))}, modifier = Modifier.weight(2f))
+            }
+            Row {
+                Text("Pulse", modifier = Modifier.weight(1f))
+                TextField(itemUiState.pulse, { updateItemUiState(itemUiState.copy(pulse = it)) }, modifier = Modifier.weight(2f))
+            }
+        } else {
+            Row {
+                Text("h/l/p", modifier = Modifier.weight(1f))
+                TextField(itemUiState.rawInput, { updateItemUiState(itemUiState.copy(rawInput = it))}, modifier = Modifier.weight(2f))
+            }
         }
         Row {
             Text("", modifier = Modifier.weight(1f))
 
-            Button(enabled = entryUiState.isValid, onClick = {
+            Button(enabled = entryUiState.itemUiState.isValid, onClick = {
                 onPost()
                 //editViewModel.updateItem()
             }, modifier = Modifier.weight(2f) ){

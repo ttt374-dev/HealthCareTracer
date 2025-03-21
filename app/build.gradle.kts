@@ -86,7 +86,7 @@ dependencies {
     implementation(libs.mpandroidchart)
 
     // icons
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation(libs.androidx.material.icons.extended)
 
         // opencsv
     implementation(libs.opencsv)

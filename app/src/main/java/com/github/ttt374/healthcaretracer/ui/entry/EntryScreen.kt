@@ -21,6 +21,7 @@ fun EntryScreen(viewModel: EditViewModel = hiltViewModel(),
         ItemEntryContent(entryUiState = uiState,
             updateItemUiState = { itemUiState -> viewModel.updateItemUiState(itemUiState)},
             onPost = viewModel::upsertItem,
+            isEditing = false,
             modifier = Modifier.padding(innerPadding))
     }
 }

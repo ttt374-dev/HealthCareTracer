@@ -28,50 +28,76 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
                 uiState = EntryUiState(itemUiState = itemRepository.getItemFlow(id)
                     .filterNotNull()
                     .first()
-                    .toItemUiState(), isValid = true)
+                    .toItemUiState())
             }
         }
     }
     fun updateItemUiState(itemUiState: ItemUiState) {
-        uiState = EntryUiState(itemUiState=itemUiState,
-                isValid = validateInput(itemUiState))
+        uiState = EntryUiState(itemUiState=itemUiState)
     }
     fun upsertItem(){
-        if (uiState.isValid){
+        if (uiState.itemUiState.isValid){
             viewModelScope.launch {
                 itemRepository.upsertItem(uiState.itemUiState.toItem())
                 uiState = uiState.copy(isSuccess = true)
             }
         }
     }
-    private fun validateInput(uiState: ItemUiState): Boolean {
-        return with(uiState) {
-            bpHigh != "" && bpLow != "" && pulse != ""
-            //true
-            //name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
-        }
-    }
+//    private fun validateInput(uiState: ItemUiState): Boolean {
+//        return with(uiState) {
+//            if (isEditing)
+//                bpHigh != "" && bpLow != "" && pulse != ""
+//            else
+//                true
+//            //true
+//            //name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
+//        }
+//    }
 }
 data class ItemUiState (
     val id: Long? = null,
+    val rawInput: String = "",
     val bpHigh: String = "",
     val bpLow: String = "",
     val pulse: String = "",
     val measuredAt: Instant = Instant.now(),
+
+    val isEditing: Boolean = false,
 //
 //    val isValid: Boolean = false,
 //    val isSuccess: Boolean = false
 ){
-    fun toItem(): Item{
-        return Item(id = id ?: 0, bpHigh = bpHigh.toInt(), bpLow = bpLow.toInt(), pulse = pulse.toInt(), measuredAt = measuredAt)
+    val isValid: Boolean
+        get() = if (isEditing) {
+            bpHigh.isNotBlank() && bpLow.isNotBlank() && pulse.isNotBlank()
+        } else {
+            rawInput.split(" ").mapNotNull { it.toIntOrNull() }.size == 3
+        }
+    fun toItem(): Item {
+        return if (isEditing){
+                Item(id = id ?: 0, bpHigh = bpHigh.toInt(), bpLow = bpLow.toInt(), pulse = pulse.toInt(), measuredAt = measuredAt)
+        } else {
+            parseRawInput(rawInput)
+        }
+    }
+    private fun parseRawInput(rawInput: String): Item {
+        val values = rawInput.split(" ").mapNotNull { it.toIntOrNull() }
+        return if (values.size == 3) {
+            Item(
+                bpHigh = values[0],
+                bpLow = values[1],
+                pulse = values[2],
+                measuredAt = measuredAt
+            )
+        } else Item()
     }
 }
 fun Item.toItemUiState(): ItemUiState {
-    return ItemUiState(this.id, this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(), this.measuredAt)
+    return ItemUiState(this.id, "", this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(), this.measuredAt, true)
 }
 data class EntryUiState (
     val itemUiState: ItemUiState = ItemUiState(),
 
-    val isValid: Boolean = false,
+    //val isValid: Boolean = false,
     val isSuccess: Boolean = false
 )

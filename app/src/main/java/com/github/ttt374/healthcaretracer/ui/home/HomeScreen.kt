@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,12 +65,15 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         onResult = { uri: Uri? ->
             selectedFileUri = uri
             Log.d("ImportScreen", "Selected file: $uri")
-            if (selectedFileUri != null)
-                homeViewModel.importData(selectedFileUri!!)
+            selectedFileUri?.let { homeViewModel.importData(it) }
             filePickerDialogState.close()
-            //homeViewModel.onFilePickerHandled() // フラグをリセット
         }
     )
+//    LaunchedEffect(filePickerDialogState.isOpen) {
+//        if (filePickerDialogState.isOpen) {
+//            filePickerLauncher.launch(arrayOf("*/*"))
+//        }
+//    }
     if (filePickerDialogState.isOpen)
         filePickerLauncher.launch(arrayOf("*/*"))
 
@@ -95,57 +100,56 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
             })
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
-            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), reverseLayout = false) {
+            LazyColumn {
                 item {
-                    Row {  // headers
-                        Text("Measured at", modifier = Modifier.weight(2f))
-                        Text("High BP", modifier = Modifier.weight(1f))
-                        Text("Low BP", modifier = Modifier.weight(1f))
-                        Text("Pulse", modifier = Modifier.weight(1f))
-                        Text("", modifier = Modifier.weight(1f))
-                    }
-                    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
+                    ItemHeaderRow()
                 }
                 items(items){ item ->
                     ItemRow(item,
                         navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
                         onDeleteItem = { deleteDialogState.open(it) },
-                    //    onLongClick = { navController.navigate("${Screen.Edit.route}/${item.id}")}
                     )
                 }
             }
         }
     }
-
 }
-@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ItemHeaderRow() {
+    Row {
+        Text("Measured at", modifier = Modifier.weight(2f))
+        Text("High BP", modifier = Modifier.weight(1f))
+        Text("Low BP", modifier = Modifier.weight(1f))
+        Text("Pulse", modifier = Modifier.weight(1f))
+        Text("", modifier = Modifier.weight(1f))
+    }
+    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
+}
 @Composable
 fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
-            onDeleteItem: (Item) -> Unit = {},
-            onLongClick: () -> Unit = {}){
+            onDeleteItem: (Item) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
     val menuState = rememberExpandState()
 
-    Row(Modifier.combinedClickable(onLongClick = onLongClick, onClick = {}) ) {
+    Row {
         Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
         Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
         Text(item.bpLow.toString(), modifier = Modifier.weight(1f))
         Text(item.pulse.toString(), modifier = Modifier.weight(1f))
-//        IconButton(onClick = navigateToEdit, modifier = Modifier.weight(0.5f)){
-//            Icon(Icons.Filled.Delete, "delete")
-//        }
-        IconButton(onClick = { menuState.toggle() }, modifier = Modifier.weight(0.5f)){
-            Icon(Icons.Filled.MoreVert, "menu")
-        }
+
         Box {
+            IconButton(onClick = { menuState.toggle() }, modifier = Modifier.wrapContentSize()){Icon(Icons.Filled.MoreVert, "menu")
+            }
             DropdownMenu(menuState.visible, onDismissRequest = { menuState.fold()}){
-                DropdownMenuItem(text = { Icon(Icons.Filled.Edit, "edit")},
+                DropdownMenuItem(text = { Text("Edit")},
+                    leadingIcon = { Icon(Icons.Filled.Edit, "edit") },
                     onClick = { navigateToEdit()})
-                DropdownMenuItem(text = { Icon(Icons.Filled.Delete, "delete")},
+                DropdownMenuItem(text = { Text("Delete")},
+                    leadingIcon = { Icon(Icons.Filled.Delete, "delete")},
                     onClick = { onDeleteItem(item)})
             }
         }
+
     }
     HorizontalDivider(thickness = 1.dp, color = Color.Gray)
 }
-///

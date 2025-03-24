@@ -12,27 +12,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
+import com.github.ttt374.healthcaretracer.ui.common.SelectableTextField
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import kotlinx.coroutines.flow.filter
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () -> Unit = {}) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
+    val locationList by editViewModel.locationList.collectAsState()
 
-    LaunchedEffect(itemUiState.isSuccess) {
-        if (itemUiState.isSuccess) {
-            navigateBack()
-        }
+    LaunchedEffect(Unit) {
+        snapshotFlow { itemUiState.isSuccess }
+            .filter { it }
+            .collect {
+                navigateBack()
+            }
     }
+
     Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
         Column (modifier = Modifier.padding(innerPadding)) {
             ItemEntryContent(itemUiState = itemUiState,
                 updateItemUiState = editViewModel::updateItemUiState,
+                locationList = locationList,
                 onPost = editViewModel::upsertItem)
         }
     }
@@ -41,7 +49,9 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
 fun ItemEntryContent(itemUiState: ItemUiState,
                      modifier: Modifier = Modifier,
                      onPost: () -> Unit = {},
-                     updateItemUiState: (ItemUiState) -> Unit = {}){
+                     updateItemUiState: (ItemUiState) -> Unit = {},
+                     locationList: List<String> = emptyList(),
+){
     //val itemUiState = entryUiState.itemUiState
     val dateTimeDialogState = rememberDialogState(false)
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
@@ -78,7 +88,13 @@ fun ItemEntryContent(itemUiState: ItemUiState,
         }
         Row {
             Text("Location", modifier = Modifier.weight(1f))
-            TextField(itemUiState.location, { updateItemUiState(itemUiState.copy(location = it)) }, modifier = Modifier.weight(2f))
+            //TextField(itemUiState.location, { updateItemUiState(itemUiState.copy(location = it)) }, modifier = Modifier.weight(2f))
+            SelectableTextField(itemUiState.location, locationList,
+                onValueChange = {
+                    updateItemUiState(itemUiState.copy(location = it))
+                },
+                modifier = Modifier.weight(2f)
+            )
         }
 
         Row {

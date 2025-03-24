@@ -15,6 +15,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 fun EntryScreen(viewModel: EditViewModel = hiltViewModel(),
                 navigateBack: () -> Unit = {}){
     val uiState by viewModel.itemUiState.collectAsState()
+    val locationList by viewModel.locationList.collectAsState()
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -25,6 +26,7 @@ fun EntryScreen(viewModel: EditViewModel = hiltViewModel(),
         Column (modifier = Modifier.padding(innerPadding)) {
             ItemEntryContent(itemUiState = uiState,
                 updateItemUiState = viewModel::updateItemUiState,
+                locationList = locationList,
                 onPost = viewModel::upsertItem)
         }
     }

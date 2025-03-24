@@ -35,4 +35,7 @@ interface ItemDao {
 
     @Query("SELECT * FROM items WHERE id = :id")
     fun getItemFlow(id: Long): Flow<Item?>
+
+    @Query("SELECT DISTINCT location FROM items ORDER by location")
+    fun getAllLocationsFlow(): Flow<List<String>>
 }

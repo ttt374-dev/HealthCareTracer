@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,6 +24,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
 
     private var _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
     val itemUiState: StateFlow<ItemUiState> = _itemUiState // StateFlow として公開
+    val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         itemId?.let { id ->
@@ -48,10 +47,10 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
             }
         }
     }
-    override fun onCleared() {
-        super.onCleared()
-        _itemUiState.update { itemUiState.value.copy(isSuccess = false)  }
-    }
+//    override fun onCleared() {
+//        super.onCleared()
+//        _itemUiState.update { itemUiState.value.copy(isSuccess = false)  }
+//    }
 }
 data class ItemUiState (
     val editMode: EditMode = EditMode.Entry,
@@ -63,14 +62,11 @@ data class ItemUiState (
     val measuredAt: Instant = Instant.now(),
 
     val isSuccess: Boolean = false,
-
 ){
     val isValid: Boolean
-        get() = when(editMode){
-            is EditMode.Edit ->
-                bpHigh.isNotBlank() && bpLow.isNotBlank() && pulse.isNotBlank()
-            EditMode.Entry ->
-                rawInput.split(" ").mapNotNull { it.toIntOrNull() }.size == 3
+        get(){
+            val item = toItem()
+            return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
         }
 
     fun toItem(): Item {

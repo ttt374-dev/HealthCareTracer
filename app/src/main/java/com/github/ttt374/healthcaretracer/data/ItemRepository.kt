@@ -23,7 +23,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
         itemDao.insertItems(items)
     }
     // query
-    fun retrieveItemsFlow(): Flow<List<Item>> =
-        itemDao.getAllItemsFlow()
+    fun retrieveItemsFlow() = itemDao.getAllItemsFlow()
     fun getItemFlow(itemId: Long) = itemDao.getItemFlow(itemId)
+    fun getAllLocationsFlow() = itemDao.getAllLocationsFlow()
 }

@@ -25,9 +25,9 @@ abstract class ItemDatabase : RoomDatabase() {
                     .also { instant = it }
             }
         }
-        fun getDatabaseInMemory(context: Context): ItemDatabase {
-            return Room.inMemoryDatabaseBuilder(context, ItemDatabase::class.java).build()
-        }
+//        fun getDatabaseInMemory(context: Context): ItemDatabase {
+//            return Room.inMemoryDatabaseBuilder(context, ItemDatabase::class.java).build()
+//        }
     }
 }
 

@@ -11,9 +11,9 @@ import java.time.ZoneId
 data class Item (
     @PrimaryKey(autoGenerate=true)
     val id: Long = 0,
+    val measuredAt: Instant = Instant.now(),
     val bpHigh: Int = 0,
     val bpLow: Int = 0,
     val pulse: Int = 0,
-    val measuredAt: Instant = Instant.now(),
-
+    val location: String = "",
 )

@@ -121,7 +121,8 @@ fun ItemHeaderRow() {
         Text("High BP", modifier = Modifier.weight(1f))
         Text("Low BP", modifier = Modifier.weight(1f))
         Text("Pulse", modifier = Modifier.weight(1f))
-        Text("", modifier = Modifier.weight(1f))
+        Text("Location", modifier = Modifier.weight(1f))
+        Text("", modifier = Modifier.weight(.5f))
     }
     HorizontalDivider(thickness = 1.dp, color = Color.Gray)
 }
@@ -136,10 +137,10 @@ fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
         Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
         Text(item.bpLow.toString(), modifier = Modifier.weight(1f))
         Text(item.pulse.toString(), modifier = Modifier.weight(1f))
+        Text(item.location, modifier=Modifier.weight(1f))
 
         Box {
-            IconButton(onClick = { menuState.toggle() }, modifier = Modifier.wrapContentSize()){Icon(Icons.Filled.MoreVert, "menu")
-            }
+            IconButton(onClick = { menuState.toggle() }, modifier = Modifier.wrapContentSize()){Icon(Icons.Filled.MoreVert, "menu")}
             DropdownMenu(menuState.visible, onDismissRequest = { menuState.fold()}){
                 DropdownMenuItem(text = { Text("Edit")},
                     leadingIcon = { Icon(Icons.Filled.Edit, "edit") },

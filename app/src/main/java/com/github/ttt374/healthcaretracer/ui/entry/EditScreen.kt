@@ -77,6 +77,11 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             }
         }
         Row {
+            Text("Location", modifier = Modifier.weight(1f))
+            TextField(itemUiState.location, { updateItemUiState(itemUiState.copy(location = it)) }, modifier = Modifier.weight(2f))
+        }
+
+        Row {
             Text("", modifier = Modifier.weight(1f))
 
             Button(enabled = itemUiState.isValid, onClick = {

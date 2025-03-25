@@ -65,14 +65,20 @@ data class ItemUiState (
 ){
     val isValid: Boolean
         get(){
-            val item = toItem()
-            return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
+
+                val item = toItem()
+                return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
+
+
         }
 
     fun toItem(): Item {
         return when(this.editMode){
             is EditMode.Edit ->
-                Item(id = this.editMode.itemId , bpHigh = bpHigh.toInt(), bpLow = bpLow.toInt(), pulse = pulse.toInt(),
+                Item(id = this.editMode.itemId ,
+                    bpHigh = bpHigh.toIntOrNull() ?: 0,
+                    bpLow = bpLow.toIntOrNull() ?:0,
+                    pulse = pulse.toIntOrNull() ?: 0,
                     location = location, measuredAt = measuredAt)
             else ->
                 parseRawInput(rawInput)

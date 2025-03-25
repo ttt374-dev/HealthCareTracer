@@ -51,28 +51,39 @@ private fun LineDataSet.setStyle(color: Int) {
     this.circleRadius = 4f
 }
 fun List<Item>.groupByDateAndAverage(valueSelector: (Item) -> Int): List<Entry> {
-    return this
+    return this.sortedBy { it.measuredAt }
         .groupBy { it.measuredAt.truncatedTo(ChronoUnit.DAYS) }
         .map { (date, items) ->
             val avgValue = items.map(valueSelector).average().toFloat()
             Entry(date.toEpochMilli().toFloat(), avgValue)
         }
 }
+fun List<Item>.toEntryList(valueSelector: (Item) -> Int): List<Entry>{
+    return this.sortedBy { it.measuredAt }.map { Entry(it.measuredAt.toEpochMilli().toFloat(), valueSelector(it).toFloat())}
+}
 @Composable
 fun BpPulseChart(items: List<Item>){
-    val bpHighEntries = mutableListOf<Entry>()
-    val bpLowEntries = mutableListOf<Entry>()
-    val pulseEntries = mutableListOf<Entry>()
+//    val bpHighEntries = mutableListOf<Entry>()
+//    val bpLowEntries = mutableListOf<Entry>()
+//    val pulseEntries = mutableListOf<Entry>()
+//
+//    items.sortedBy { it.measuredAt }.forEach { item ->
+//        bpHighEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpHigh.toFloat()))
+//        bpLowEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpLow.toFloat()))
+//        pulseEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.pulse.toFloat()))
+//    }
+    val pulseEntries = items.groupByDateAndAverage { it.pulse }
+    val bpHighEntries = items.groupByDateAndAverage { it.bpHigh }
+    val bpLowEntries = items.groupByDateAndAverage { it.bpLow }
 
-    items.sortedBy { it.measuredAt }.forEach { item ->
-                bpHighEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpHigh.toFloat()))
-                bpLowEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpLow.toFloat()))
-                pulseEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.pulse.toFloat()))
-    }
+//    val bpHighEntries = items.toEntryList { it.bpHigh }
+//    val bpLowEntries = items.toEntryList { it.bpLow }
+//    val pulseEntries = items.toEntryList { it.pulse }
     AndroidView(
         factory = { context -> LineChart(context).apply { setupChart() } },
         modifier = Modifier.fillMaxSize(),
-        update = { chart ->val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
+        update = { chart ->
+            val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
             val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
             val bpLowDataSet = LineDataSet(bpLowEntries, "BP Low").apply { setStyle(Color.GREEN) }
 

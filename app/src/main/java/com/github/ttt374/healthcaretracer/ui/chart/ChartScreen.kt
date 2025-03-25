@@ -1,6 +1,8 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
 import android.graphics.Color
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -17,12 +19,68 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
+private fun LineChart.setupChart() {
+    description.isEnabled = false
+    xAxis.apply {
+        position = XAxis.XAxisPosition.BOTTOM
+        valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return Instant.ofEpochMilli(value.toLong())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                    .toString()
+            }
+        }
+    }
+    axisRight.isEnabled = false
+}
+
+private fun LineDataSet.setStyle(color: Int) {
+    this.color = color
+    this.setCircleColor(color)
+    this.valueTextColor = color
+    this.lineWidth = 2f
+    this.circleRadius = 4f
+}
+fun List<Item>.groupByDateAndAverage(valueSelector: (Item) -> Int): List<Entry> {
+    return this
+        .groupBy { it.measuredAt.truncatedTo(ChronoUnit.DAYS) }
+        .map { (date, items) ->
+            val avgValue = items.map(valueSelector).average().toFloat()
+            Entry(date.toEpochMilli().toFloat(), avgValue)
+        }
+}
+@Composable
+fun BpPulseChart(items: List<Item>){
+    val bpHighEntries = mutableListOf<Entry>()
+    val bpLowEntries = mutableListOf<Entry>()
+    val pulseEntries = mutableListOf<Entry>()
+
+    items.sortedBy { it.measuredAt }.forEach { item ->
+                bpHighEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpHigh.toFloat()))
+                bpLowEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpLow.toFloat()))
+                pulseEntries.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.pulse.toFloat()))
+    }
+    AndroidView(
+        factory = { context -> LineChart(context).apply { setupChart() } },
+        modifier = Modifier.fillMaxSize(),
+        update = { chart ->val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
+            val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
+            val bpLowDataSet = LineDataSet(bpLowEntries, "BP Low").apply { setStyle(Color.GREEN) }
+
+            chart.data = LineData(pulseDataSet, bpHighDataSet, bpLowDataSet)
+            chart.invalidate()
+        }
+    )
+}
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController){
     val items by chartViewModel.items.collectAsState()
@@ -31,69 +89,9 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController:
         bottomBar = {
             CustomBottomAppBar(navController)
         }){ innerPadding ->
-            AndroidView(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                factory = { context ->
-                    LineChart(context).apply {
-                        description.isEnabled = false
-                        setTouchEnabled(true)
-                        setPinchZoom(true)
-                        xAxis.position = XAxis.XAxisPosition.BOTTOM
-                        xAxis.textColor = Color.BLACK
-                        xAxis.setDrawGridLines(false)
-                        axisLeft.textColor = Color.BLACK
-                        axisLeft.setDrawGridLines(true)
-                        axisLeft.axisMinimum = 50f
-                        axisRight.isEnabled = false
-//                        axisRight.axisMinimum = 30f
-                        xAxis.valueFormatter = object : ValueFormatter() {
-                            private val formatter = DateTimeFormatter.ofPattern("M/dd")
-                            override fun getFormattedValue(value: Float): String {
-                                return Instant.ofEpochMilli(value.toLong())
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDate()
-                                    .format(formatter)
-                            }
-                        }
-                    }
-                },
-                update = { chart ->
-                    val bpHighList = mutableListOf<Entry>()
-                    val bpLowList = mutableListOf<Entry>()
-                    val pulseList = mutableListOf<Entry>()
-                    items.sortedBy { it.measuredAt }.forEach { item ->
-                        bpHighList.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpHigh.toFloat()))
-                        bpLowList.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.bpLow.toFloat()))
-                        pulseList.add(Entry(item.measuredAt.toEpochMilli().toFloat(), item.pulse.toFloat()))
-                    }
-                    val lineDataSetBpHigh = LineDataSet(bpHighList, "High BP chart").apply {
-                        axisDependency = chart.axisLeft.axisDependency
-                        color = Color.BLUE // 濃い青
-                        setCircleColor(Color.BLUE)
-                    }
-                    val lineDataSetBpLow = LineDataSet(bpLowList, "Low BP chart").apply {
-                        axisDependency = chart.axisLeft.axisDependency
-                        color = Color.parseColor("#87CEFA") // 薄い青（LightSkyBlue）
-                        setCircleColor(Color.parseColor("#87CEFA"))
-                    }
-                    val lineDataSetPulse = LineDataSet(pulseList, "Pulse").apply {
-                        axisDependency = chart.axisLeft.axisDependency
-                        color = Color.RED // 赤色
-                        setCircleColor(Color.RED)
-                    }
-                    chart.data = LineData(lineDataSetBpHigh, lineDataSetBpLow, lineDataSetPulse)
-//                    // 📌 X軸の初期表示範囲を最近1か月に設定
-//                    val now = Instant.now().toEpochMilli().toFloat()
-//                    val oneMonthAgo = now - Duration.ofDays(30).toMillis()
-//
-//                    chart.xAxis.axisMinimum = items.minOf { it.measuredAt.toEpochMilli().toFloat() }
-//                    chart.xAxis.axisMaximum = now
-//
-//                    chart.setVisibleXRangeMinimum(Duration.ofDays(30).toMillis().toFloat()) // 1か月分を表示
-//                    chart.moveViewToX(oneMonthAgo) // 1か月前のデータを表示開始位置にする
-                    chart.invalidate()
-                }
-            )
+            Column(modifier=Modifier.padding(innerPadding)){
+                BpPulseChart(items)
+            }
     }
 }
 

@@ -24,7 +24,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     //private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
     private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
 
-    private var _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
+    private val _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
     val itemUiState: StateFlow<ItemUiState> get() = _itemUiState // StateFlow として公開
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -40,20 +40,20 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     }
     fun updateItemUiState(uiState: ItemUiState) {
         Log.d("itemuistate update", uiState.toString())
-        _itemUiState.update { uiState }
+        _itemUiState.value = uiState
     }
     fun upsertItem(){
         if (itemUiState.value.isValid){
             viewModelScope.launch {
                 itemRepository.upsertItem(itemUiState.value.toItem())
-                _itemUiState.update { itemUiState.value.copy(isSuccess = true) }
+                _itemUiState.value = itemUiState.value.copy(isSuccess = true)
             }
         }
     }
     fun deleteItem(){
         viewModelScope.launch {
             itemRepository.deleteItem(itemUiState.value.toItem())
-            _itemUiState.update { itemUiState.value.copy(isSuccess = true) }
+            _itemUiState.value = itemUiState.value.copy(isSuccess = true)
         }
     }
 
@@ -95,7 +95,8 @@ data class ItemUiState (
 fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
     return ItemUiState(editMode,  "",
         this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(),
-        if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
+        //if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
+        this.bodyWeight.takeIf { it != 0.0F }?.toString().orEmpty(),
         this.location, this.memo, this.measuredAt, false)
 }
 
@@ -105,5 +106,6 @@ sealed class EditMode {
 }
 
 fun <T : Comparable<T>> Pair<T, T>.contains(value: T): Boolean {
-    return value in first..second
+     val (min, max) = if (first <= second) this else second to first
+    return value in min..max
 }

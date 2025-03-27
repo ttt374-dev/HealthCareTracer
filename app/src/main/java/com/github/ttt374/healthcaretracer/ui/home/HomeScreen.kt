@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +58,6 @@ import kotlin.math.withSign
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                navController: NavController,
                ){
-    //val items by homeViewModel.items.collectAsState()
     val dailyItems by homeViewModel.dailyItems.collectAsState()
 
     val filePickerDialogState = rememberDialogState()
@@ -72,14 +72,13 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
             filePickerDialogState.close()
         }
     )
-//    LaunchedEffect(filePickerDialogState.isOpen) {
-//        if (filePickerDialogState.isOpen) {
-//            filePickerLauncher.launch(arrayOf("*/*"))
-//        }
-//    }
-    if (filePickerDialogState.isOpen)
-        filePickerLauncher.launch(arrayOf("*/*"))
-
+    LaunchedEffect(filePickerDialogState.isOpen) {
+        if (filePickerDialogState.isOpen) {
+            filePickerLauncher.launch(arrayOf("*/*"))
+        }
+    }
+//    if (filePickerDialogState.isOpen)
+//        filePickerLauncher.launch(arrayOf("*/*"))
 
     Scaffold(topBar = { CustomTopAppBar("Home",
         menuItems = listOf(
@@ -97,15 +96,13 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
             LazyColumn() {
-                dailyItems.reversed().forEach { dailyItem ->
+                dailyItems.asReversed().forEach { dailyItem ->
                     item {
                         Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
                             verticalAlignment = Alignment.CenterVertically){
                             Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
                                 modifier = Modifier.weight(1f))
                             BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
-//                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow}".withSubscript("mmHg"),
-//                                textAlign = TextAlign.End )
                             Text("${dailyItem.avgPulse}".withSubscript("bpm"),
                                 textAlign = TextAlign.End )
                         }
@@ -113,47 +110,24 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                     items(dailyItem.items){ item ->
                         ItemRow(item,
                             navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
-                            //onDeleteItem = { deleteDialogState.open(it) },
                         )
                     }
                 }
-//                items(items){ item ->
-//                    ItemRow(item,
-//                        navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
-//                        onDeleteItem = { deleteDialogState.open(it) },
-//                    )
-//                }
             }
         }
     }
 }
-//@Composable
-//fun ItemHeaderRow() {
-//    Row {
-//        Text("Measured at", modifier = Modifier.weight(2f))
-//        Text("High BP", modifier = Modifier.weight(1f))
-//        Text("Low BP", modifier = Modifier.weight(1f))
-//        Text("Pulse", modifier = Modifier.weight(1f))
-//        Text("Location", modifier = Modifier.weight(1f))
-//        Text("", modifier = Modifier.weight(.5f))
-//    }
-//    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-//}
+
 @Composable
-fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
-            onDeleteItem: (Item) -> Unit = {}){
+fun ItemRow(item: Item, navigateToEdit: () -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
-    //val menuState = rememberExpandState()
 
     Column  (modifier=Modifier.padding(horizontal = 8.dp, vertical = 4.dp).clickable { navigateToEdit() }) {
         Row {
-            Text(dateTimeFormatter.format(item.measuredAt))
-            //Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
+            Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
-            //Text("${item.bpHigh}/${item.bpLow}".withSubscript("mmHg"))
             BloodPressureText(item.bpHigh, item.bpLow)
             Text(item.pulse.toString().withSubscript("bpm"))
-            //Text(item.bodyWeight.toString().withSubscript("kg"), textAlign = TextAlign.Right)
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             if (item.bodyWeight > 0){
                 Text(item.bodyWeight.toString().withSubscript("Kg"))
@@ -190,45 +164,23 @@ fun Float.asBodyWeightString() =
 
 @Composable
 fun BloodPressureText(bpHigh: Int, bpLow: Int) {
-    // AnnotatedStringを使って血圧の表示を構築
     val annotatedString = buildAnnotatedString {
-        // BP High と BP Low の値をスラッシュ区切りで追加
-        val bpHighText = bpHigh.toString()
-        val bpLowText = bpLow.toString()
+        pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+        if (bpHigh > 140) pushStyle(SpanStyle(color = Color.Red))
+        append(bpHigh.toString())
+        if (bpHigh > 140) pop()
 
-        // BP High に対する赤色処理
-        append(bpHighText)
-        if (bpHigh > 140) {
-            addStyle(
-                style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold),
-                start = 0,
-                end = bpHighText.length
-            )
-        }
+        append("/")
 
-        append("/")  // スラッシュを追加
+        if (bpLow > 90) pushStyle(SpanStyle(color = Color.Red))
+        append(bpLow.toString())
+        if (bpLow > 90) pop()
 
-        // BP Low に対する赤色処理
-        append(bpLowText)
-        if (bpLow > 90) {
-            addStyle(
-                style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold),
-                start = bpHighText.length + 1, // スラッシュの後ろから
-                end = bpHighText.length + 1 + bpLowText.length
-            )
-        }
+        pop() // FontWeightの解除
 
-        // "mmHg" をサブスクリプトとして追加
+        pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
         append(" mmHg")
-        addStyle(
-            style = SpanStyle(
-                baselineShift = BaselineShift.Subscript,
-                fontSize = 8.sp // フォントサイズを小さく設定
-            ),
-            start = this.length - 5,  // "mmHg" の開始位置
-            end = this.length         // "mmHg" の終了位置
-        )
+        pop()
     }
-    // AnnotatedStringを表示
     Text(text = annotatedString)
 }

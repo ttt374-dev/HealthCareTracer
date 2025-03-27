@@ -36,7 +36,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
                 val avgBpHigh = dailyItems.map { it.bpHigh }.average().toInt()
                 val avgBpLow = dailyItems.map { it.bpLow }.average().toInt()
                 val avgPulse = dailyItems.map { it.pulse }.average().toInt()
-                val avgBodyWeight = dailyItems.map { it.bodyWeight }.average().toFloat()
+                val avgBodyWeight = dailyItems.map { it.bodyWeight }.filter { it != 0F }.average().toFloat()
 
                 DailyItem(
                     date = date,

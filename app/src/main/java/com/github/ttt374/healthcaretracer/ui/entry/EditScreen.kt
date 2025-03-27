@@ -35,12 +35,10 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
     val itemUiState by editViewModel.itemUiState.collectAsState()
     val locationList by editViewModel.locationList.collectAsState()
 
-    LaunchedEffect(Unit) {
-        snapshotFlow { itemUiState.isSuccess }
-            .filter { it }
-            .collect {
-                navigateBack()
-            }
+    LaunchedEffect(itemUiState.isSuccess) {
+        if (itemUiState.isSuccess) {
+            navigateBack()
+        }
     }
 
     Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
@@ -86,9 +84,11 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             onConfirm = onDelete,
             closeDialog = { deleteDialogState.close()})
     }
-    // 画面を開いたときに bpHigh にフォーカスを移動
-    LaunchedEffect(Unit) {
-        bpHighFocusRequester.requestFocus()
+    // 画面を開いたときに bpHigh にフォーカスを移動（新規エントリ時のみ）
+    LaunchedEffect(itemUiState.editMode) {
+        if (itemUiState.editMode is EditMode.Entry) {
+            bpHighFocusRequester.requestFocus()
+        }
     }
     Column (modifier=modifier){
         Row {

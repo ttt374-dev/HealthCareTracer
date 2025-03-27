@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -95,19 +96,20 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
             LazyColumn() {
-                dailyItems.reversed().forEach { groupedItem ->
+                dailyItems.reversed().forEach { dailyItem ->
                     item {
                         Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
                             verticalAlignment = Alignment.CenterVertically){
-                            Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(groupedItem.date),
+                            Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
                                 modifier = Modifier.weight(1f))
-                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow}".withSubscript("mmHg"),
-                                textAlign = TextAlign.End )
-                            Text("${groupedItem.avgPulse}".withSubscript("bpm"),
+                            BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
+//                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow}".withSubscript("mmHg"),
+//                                textAlign = TextAlign.End )
+                            Text("${dailyItem.avgPulse}".withSubscript("bpm"),
                                 textAlign = TextAlign.End )
                         }
                     }
-                    items(groupedItem.items){ item ->
+                    items(dailyItem.items){ item ->
                         ItemRow(item,
                             navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
                             //onDeleteItem = { deleteDialogState.open(it) },
@@ -147,7 +149,8 @@ fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
             Text(dateTimeFormatter.format(item.measuredAt))
             //Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
             Spacer(modifier = Modifier.width(16.dp))
-            Text("${item.bpHigh}/${item.bpLow}".withSubscript("mmHg"))
+            //Text("${item.bpHigh}/${item.bpLow}".withSubscript("mmHg"))
+            BloodPressureText(item.bpHigh, item.bpLow)
             Text(item.pulse.toString().withSubscript("bpm"))
             //Text(item.bodyWeight.toString().withSubscript("kg"), textAlign = TextAlign.Right)
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
@@ -184,3 +187,47 @@ fun Float.asBodyWeightString() =
 
 
 
+@Composable
+fun BloodPressureText(bpHigh: Int, bpLow: Int) {
+    // AnnotatedStringを使って血圧の表示を構築
+    val annotatedString = buildAnnotatedString {
+        // BP High と BP Low の値をスラッシュ区切りで追加
+        val bpHighText = bpHigh.toString()
+        val bpLowText = bpLow.toString()
+
+        // BP High に対する赤色処理
+        append(bpHighText)
+        if (bpHigh > 140) {
+            addStyle(
+                style = SpanStyle(color = Color.Red),
+                start = 0,
+                end = bpHighText.length
+            )
+        }
+
+        append("/")  // スラッシュを追加
+
+        // BP Low に対する赤色処理
+        append(bpLowText)
+        if (bpLow > 90) {
+            addStyle(
+                style = SpanStyle(color = Color.Red),
+                start = bpHighText.length + 1, // スラッシュの後ろから
+                end = bpHighText.length + 1 + bpLowText.length
+            )
+        }
+
+        // "mmHg" をサブスクリプトとして追加
+        append(" mmHg")
+        addStyle(
+            style = SpanStyle(
+                baselineShift = BaselineShift.Subscript,
+                fontSize = 8.sp // フォントサイズを小さく設定
+            ),
+            start = this.length - 5,  // "mmHg" の開始位置
+            end = this.length         // "mmHg" の終了位置
+        )
+    }
+    // AnnotatedStringを表示
+    Text(text = annotatedString)
+}

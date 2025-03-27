@@ -24,14 +24,11 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController){
@@ -60,8 +57,6 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController:
                 1 -> PulseChart(dailyItems)
                 2 -> BodyWeightChart(dailyItems)
             }
-            //BpPulseChart(dailyItems)
-            //BodyWeightChart(dailyItems)
         }
     }
 }
@@ -73,14 +68,11 @@ private fun LineChart.setupChart() {
         valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return Instant.ofEpochMilli(value.toLong())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                    .toString()
+                    .atZone(ZoneId.systemDefault()).toLocalDate().toString()
             }
         }
     }
     axisRight.isEnabled = false
-    //axisLeft.axisMinimum = 50.0F
 }
 
 private fun LineDataSet.setStyle(color: Int) {
@@ -96,50 +88,46 @@ fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Float ) = this.map {
 }
 
 @Composable
-fun BloodPressureChart(dailyItems: List<DailyItem>){
-    val bpHighEntries = dailyItems.toEntries {it.avgBpHigh.toFloat() }
-    val bpLowEntries = dailyItems.toEntries {it.avgBpLow.toFloat() }
-
+fun HealthChart(dailyItems: List<DailyItem>, update: (LineChart) -> Unit){
     AndroidView(
         factory = { context -> LineChart(context).apply { setupChart() } },
         modifier = Modifier.fillMaxSize(),
-        update = { chart ->
-                val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
-            val bpLowDataSet = LineDataSet(bpLowEntries, "BP Low").apply { setStyle(Color.GREEN) }
-
-            chart.data = LineData(bpHighDataSet, bpLowDataSet)
-            chart.invalidate()
-        }
+        update = { chart -> update(chart) }
     )
+
+}
+@Composable
+fun BloodPressureChart(dailyItems: List<DailyItem>){
+    HealthChart(dailyItems){ chart ->
+        val bpHighEntries = dailyItems.toEntries {it.avgBpHigh.toFloat() }
+        val bpLowEntries = dailyItems.toEntries {it.avgBpLow.toFloat() }
+
+        val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
+        val bpLowDataSet = LineDataSet(bpLowEntries, "BP Low").apply { setStyle(Color.GREEN) }
+
+        chart.data = LineData(bpHighDataSet, bpLowDataSet)
+        chart.invalidate()
+    }
 }
 
 @Composable
 fun PulseChart(dailyItems: List<DailyItem>){
-    val pulseEntries = dailyItems.toEntries {it.avgPulse.toFloat() }
+    HealthChart(dailyItems){ chart ->
+        val pulseEntries = dailyItems.toEntries {it.avgPulse.toFloat() }
 
-    AndroidView(
-        factory = { context -> LineChart(context).apply { setupChart() } },
-        modifier = Modifier.fillMaxSize(),
-        update = { chart ->
-            val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
-            chart.data = LineData(pulseDataSet)
-            chart.invalidate()
-        }
-    )
+        val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
+        chart.data = LineData(pulseDataSet)
+        chart.invalidate()
+    }
+
 }
 @Composable
 fun BodyWeightChart(dailyItems: List<DailyItem>){
+    HealthChart(dailyItems){ chart ->
+        val bodyWightEntries = dailyItems.sortedBy { it.date }.filter { it.avgBodyWeight > 0 }.toEntries { it.avgBodyWeight }
+        val bodyWeightDataSet = LineDataSet(bodyWightEntries, "Body Weight").apply { setStyle(Color.GREEN) }
 
-    val bodyWightEntries = dailyItems.sortedBy { it.date }.filter { it.avgBodyWeight > 0 }.toEntries { it.avgBodyWeight }
-
-        AndroidView(
-        factory = { context -> LineChart(context).apply { setupChart() } },
-        modifier = Modifier.fillMaxSize(),
-        update = { chart ->
-            val bodyWeightDataSet = LineDataSet(bodyWightEntries, "Body Weight").apply { setStyle(Color.GREEN) }
-
-            chart.data = LineData(bodyWeightDataSet)
-            chart.invalidate()
-        }
-    )
+        chart.data = LineData(bodyWeightDataSet)
+        chart.invalidate()
+    }
 }

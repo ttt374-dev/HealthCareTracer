@@ -2,13 +2,11 @@ package com.github.ttt374.healthcaretracer.ui.entry
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBarDefaults.InputField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -20,7 +18,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
@@ -29,7 +26,6 @@ import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
 import com.github.ttt374.healthcaretracer.ui.common.SelectableTextField
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
-import com.github.ttt374.healthcaretracer.ui.home.withSubscript
 import kotlinx.coroutines.flow.filter
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

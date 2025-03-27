@@ -10,10 +10,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChartViewModel @Inject constructor (private val itemRepository: ItemRepository) : ViewModel(){
-//    val items = itemRepository.retrieveItemsFlow()
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     val dailyItems = itemRepository.dailyItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
 }

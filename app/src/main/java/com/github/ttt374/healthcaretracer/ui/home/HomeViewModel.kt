@@ -22,27 +22,27 @@ class HomeViewModel @Inject constructor (
     private val exportDataUseCase: ExportDataUseCase,
     private val importDataUseCase: ImportDataUseCase,
     ) : ViewModel(){
-    val items = itemRepository.retrieveItemsFlow()
+    val dailyItems = itemRepository.dailyItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val groupedItems = itemRepository.retrieveItemsFlow()
-        .map { items ->
-            items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-                .map { (date, dailyItems) ->
-                    val avgBpHigh = dailyItems.map { it.bpHigh }.average().toInt()
-                    val avgBpLow = dailyItems.map { it.bpLow }.average().toInt()
-                    val avgPulse = dailyItems.map { it.pulse }.average().toInt()
-
-                    DailyItem(
-                        date = date,
-                        avgBpHigh = avgBpHigh,
-                        avgBpLow = avgBpLow,
-                        avgPulse = avgPulse,
-                        items = dailyItems
-                    )
-                }
-        }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+//    val groupedItems = itemRepository.retrieveItemsFlow()
+//        .map { items ->
+//            items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+//                .map { (date, dailyItems) ->
+//                    val avgBpHigh = dailyItems.map { it.bpHigh }.average().toInt()
+//                    val avgBpLow = dailyItems.map { it.bpLow }.average().toInt()
+//                    val avgPulse = dailyItems.map { it.pulse }.average().toInt()
+//
+//                    DailyItem(
+//                        date = date,
+//                        avgBpHigh = avgBpHigh,
+//                        avgBpLow = avgBpLow,
+//                        avgPulse = avgPulse,
+//                        items = dailyItems
+//                    )
+//                }
+//        }
+//        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 
     fun exportData(){

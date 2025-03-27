@@ -47,8 +47,8 @@ import java.time.format.DateTimeFormatter
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                navController: NavController,
                ){
-    val items by homeViewModel.items.collectAsState()
-    val groupedItems by homeViewModel.groupedItems.collectAsState()
+    //val items by homeViewModel.items.collectAsState()
+    val dailyItems by homeViewModel.dailyItems.collectAsState()
 
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
@@ -90,7 +90,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
 //                item {
 //                    ItemHeaderRow()
 //                }
-                groupedItems.forEach { groupedItem ->
+                dailyItems.forEach { groupedItem ->
                     item {
                         Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
                             verticalAlignment = Alignment.CenterVertically){

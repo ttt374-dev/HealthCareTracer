@@ -39,7 +39,7 @@ private fun LineChart.setupChart() {
         }
     }
     axisRight.isEnabled = false
-    axisLeft.axisMinimum = 50.0F
+    //axisLeft.axisMinimum = 50.0F
 }
 
 private fun LineDataSet.setStyle(color: Int) {

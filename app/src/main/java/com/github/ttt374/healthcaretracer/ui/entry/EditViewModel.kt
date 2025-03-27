@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,6 +38,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
         }
     }
     fun updateItemUiState(uiState: ItemUiState) {
+        Log.d("itemuistate update", uiState.toString())
         _itemUiState.update { uiState }
     }
     fun upsertItem(){
@@ -65,25 +67,18 @@ data class ItemUiState (
 ){
     val isValid: Boolean
         get(){
-
-                val item = toItem()
-                return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
-
-
+            val item = toItem()
+            Log.d("is valid", item.toString())
+            return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
         }
 
-    fun toItem(): Item {
-        return when(this.editMode){
-            is EditMode.Edit ->
-                Item(id = this.editMode.itemId ,
-                    bpHigh = bpHigh.toIntOrNull() ?: 0,
-                    bpLow = bpLow.toIntOrNull() ?:0,
-                    pulse = pulse.toIntOrNull() ?: 0,
-                    location = location, measuredAt = measuredAt)
-            else ->
-                parseRawInput(rawInput)
-        }
-    }
+    fun toItem() = Item(
+            id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
+            bpHigh = bpHigh.toIntOrNull() ?: 0,
+            bpLow = bpLow.toIntOrNull() ?:0,
+            pulse = pulse.toIntOrNull() ?: 0,
+            location = location, measuredAt = measuredAt)
+
     private fun parseRawInput(rawInput: String): Item {
         val values = rawInput.split(" ").mapNotNull { it.toIntOrNull() }
         val item = if (values.size == 3) {

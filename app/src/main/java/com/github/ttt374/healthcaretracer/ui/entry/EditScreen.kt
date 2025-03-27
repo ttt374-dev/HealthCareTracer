@@ -79,6 +79,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
     val bpLowFocusRequester = remember { FocusRequester() }
     val pulseFocusRequester = remember { FocusRequester() }
     val submitFocusRequester = remember { FocusRequester() }
+    val bodyWeightFocusRequester = remember { FocusRequester() }
     val locationFocusRequester = remember { FocusRequester() }
 
     // dialog
@@ -133,13 +134,14 @@ fun ItemEntryContent(itemUiState: ItemUiState,
                     handleBpInput(newValue, { updateItemUiState(itemUiState.copy(pulse = it))}, { it.isValidPulse }, locationFocusRequester)
                 },
                 label = "Pulse",
-                focusRequester = pulseFocusRequester,
+                focusRequester = bodyWeightFocusRequester,
                 //modifier = Modifier.weight(2f)
             )
         }
         Row {
             Text("Body Weight", modifier = Modifier.weight(1f))
             TextField(itemUiState.bodyWeight, onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                 label = { Text("Body Weight (optional)")})
         }
 

@@ -5,9 +5,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,13 +36,32 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController){
     val dailyItems by chartViewModel.dailyItems.collectAsState()
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("Blood Pressure", "Pulse", "Body Weight")
 
     Scaffold(topBar = { CustomTopAppBar("Chart") },
         bottomBar = {
             CustomBottomAppBar(navController)
-    }){ innerPadding ->
-        Column(modifier=Modifier.padding(innerPadding)){
-            BpPulseChart(dailyItems)
+        }) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title) }
+                    )
+                }
+            }
+
+            // 選択されたタブに応じて異なるグラフを表示
+            when (selectedTabIndex) {
+                0 -> BloodPressureChart(dailyItems)
+                1 -> PulseChart(dailyItems)
+                2 -> BodyWeightChart(dailyItems)
+            }
+            //BpPulseChart(dailyItems)
+            //BodyWeightChart(dailyItems)
         }
     }
 }
@@ -65,44 +90,56 @@ private fun LineDataSet.setStyle(color: Int) {
     this.lineWidth = 2f
     this.circleRadius = 4f
 }
-//fun List<Item>.groupByDateAndAverage(valueSelector: (Item) -> Int): List<Entry> {
-//    return this.sortedBy { it.measuredAt }
-//        .groupBy { it.measuredAt.truncatedTo(ChronoUnit.DAYS) }
-//        .map { (date, items) ->
-//            val avgValue = items.map(valueSelector).average().toFloat()
-//            Entry(date.toEpochMilli().toFloat(), avgValue)
-//        }
-//}
-//fun List<Item>.toEntryList(valueSelector: (Item) -> Int): List<Entry>{
-//    return this.sortedBy { it.measuredAt }.map { Entry(it.measuredAt.toEpochMilli().toFloat(), valueSelector(it).toFloat())}
-//}
 
-fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Int ) = this.map {
-    Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), takeValue(it).toFloat())
+fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Float ) = this.map {
+    Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), takeValue(it))
 }
 
 @Composable
-fun BpPulseChart(dailyItems: List<DailyItem>){
-    val bpHighEntries = dailyItems.toEntries {it.avgBpHigh }
-    val bpLowEntries = dailyItems.toEntries {it.avgBpLow }
-    val pulseEntries = dailyItems.toEntries {it.avgPulse }
+fun BloodPressureChart(dailyItems: List<DailyItem>){
+    val bpHighEntries = dailyItems.toEntries {it.avgBpHigh.toFloat() }
+    val bpLowEntries = dailyItems.toEntries {it.avgBpLow.toFloat() }
 
-    //val bpHighEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpHigh.toFloat())}
-//    val bpLowEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpLow.toFloat())}
-//    val pulseEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgPulse.toFloat())}
-//    val bpHighEntries = dailyItems.groupByDateAndAverage { it.bpHigh }
-//    val bpLowEntries = dailyItems.groupByDateAndAverage { it.bpLow }
     AndroidView(
         factory = { context -> LineChart(context).apply { setupChart() } },
         modifier = Modifier.fillMaxSize(),
         update = { chart ->
-            val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
-            val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
+                val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
             val bpLowDataSet = LineDataSet(bpLowEntries, "BP Low").apply { setStyle(Color.GREEN) }
 
-            chart.data = LineData(pulseDataSet, bpHighDataSet, bpLowDataSet)
+            chart.data = LineData(bpHighDataSet, bpLowDataSet)
             chart.invalidate()
         }
     )
 }
 
+@Composable
+fun PulseChart(dailyItems: List<DailyItem>){
+    val pulseEntries = dailyItems.toEntries {it.avgPulse.toFloat() }
+
+    AndroidView(
+        factory = { context -> LineChart(context).apply { setupChart() } },
+        modifier = Modifier.fillMaxSize(),
+        update = { chart ->
+            val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
+            chart.data = LineData(pulseDataSet)
+            chart.invalidate()
+        }
+    )
+}
+@Composable
+fun BodyWeightChart(dailyItems: List<DailyItem>){
+
+    val bodyWightEntries = dailyItems.sortedBy { it.date }.filter { it.avgBodyWeight > 0 }.toEntries { it.avgBodyWeight }
+
+        AndroidView(
+        factory = { context -> LineChart(context).apply { setupChart() } },
+        modifier = Modifier.fillMaxSize(),
+        update = { chart ->
+            val bodyWeightDataSet = LineDataSet(bodyWightEntries, "Body Weight").apply { setStyle(Color.GREEN) }
+
+            chart.data = LineData(bodyWeightDataSet)
+            chart.invalidate()
+        }
+    )
+}

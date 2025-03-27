@@ -61,5 +61,6 @@ data class DailyItem (
     val avgBpHigh: Int,
     val avgBpLow: Int,
     val avgPulse: Int,
+    val avgBodyWeight: Float,
     val items: List<Item>
 )

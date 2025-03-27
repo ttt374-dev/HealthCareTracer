@@ -77,8 +77,17 @@ data class ItemUiState (
 ){
     val isValid: Boolean
         get(){
+            val minBp = 40
+            val maxBp = 250
+            val minPulse = 30
+            val maxPulse = 200
+
             val item = toItem()
-            return item.bpHigh.isValidBp && item.bpLow.isValidBp && item.pulse.isValidPulse
+            return item.bpHigh.isValidBp && item.bpLow.isValidBp && item.pulse.isValidPulse &&
+                    item.bpHigh > item.bpLow &&
+                    item.bpHigh  in minBp .. maxBp &&
+                    item.bpLow in minBp .. maxBp &&
+                    item.pulse in minPulse .. maxPulse
             //Log.d("is valid", item.toString())
             //return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
         }
@@ -90,18 +99,6 @@ data class ItemUiState (
         pulse = pulse.toIntOrNull() ?: 0,
         bodyWeight = bodyWeight.toFloatOrNull() ?: 0F,
         memo = memo, location = location, measuredAt = measuredAt)
-
-//    private fun parseRawInput(rawInput: String): Item {
-//        val values = rawInput.split(" ").mapNotNull { it.toIntOrNull() }
-//        val item = if (values.size == 3) {
-//            Item(
-//                bpHigh = values[0],
-//                bpLow = values[1],
-//                pulse = values[2],
-//            )
-//        } else Item()
-//        return item.copy(location = this.location, measuredAt = this.measuredAt)
-//    }
 }
 fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
     return ItemUiState(editMode,  "",

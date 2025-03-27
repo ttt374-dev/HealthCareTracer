@@ -135,6 +135,23 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             )
         }
         Row {
+            Text("", modifier = Modifier.weight(1f))
+
+            if (itemUiState.editMode is EditMode.Edit){
+                Button(enabled = itemUiState.isValid, onClick = {
+                    deleteDialogState.open(itemUiState.toItem())
+                }){
+                    Text("Delete")
+                }
+            }
+            Button(enabled = itemUiState.isValid, onClick = {
+                onPost()
+                //editViewModel.updateItem()
+            }, modifier = Modifier.focusRequester(submitFocusRequester) ){
+                Text("OK")
+            }
+        }
+        Row {
             Text("Body Weight", modifier = Modifier.weight(1f))
             TextField(itemUiState.bodyWeight, onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
@@ -158,23 +175,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
                 label = { Text("Memo (optional)")})
         }
 
-        Row {
-            Text("", modifier = Modifier.weight(1f))
 
-            if (itemUiState.editMode is EditMode.Edit){
-                Button(enabled = itemUiState.isValid, onClick = {
-                    deleteDialogState.open(itemUiState.toItem())
-                }){
-                    Text("Delete")
-                }
-            }
-            Button(enabled = itemUiState.isValid, onClick = {
-                onPost()
-                //editViewModel.updateItem()
-            }, modifier = Modifier.focusRequester(submitFocusRequester) ){
-                Text("OK")
-            }
-        }
     }
 }
 

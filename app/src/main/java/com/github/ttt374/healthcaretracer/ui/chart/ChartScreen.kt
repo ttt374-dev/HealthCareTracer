@@ -65,22 +65,31 @@ private fun LineDataSet.setStyle(color: Int) {
     this.lineWidth = 2f
     this.circleRadius = 4f
 }
-fun List<Item>.groupByDateAndAverage(valueSelector: (Item) -> Int): List<Entry> {
-    return this.sortedBy { it.measuredAt }
-        .groupBy { it.measuredAt.truncatedTo(ChronoUnit.DAYS) }
-        .map { (date, items) ->
-            val avgValue = items.map(valueSelector).average().toFloat()
-            Entry(date.toEpochMilli().toFloat(), avgValue)
-        }
-}
+//fun List<Item>.groupByDateAndAverage(valueSelector: (Item) -> Int): List<Entry> {
+//    return this.sortedBy { it.measuredAt }
+//        .groupBy { it.measuredAt.truncatedTo(ChronoUnit.DAYS) }
+//        .map { (date, items) ->
+//            val avgValue = items.map(valueSelector).average().toFloat()
+//            Entry(date.toEpochMilli().toFloat(), avgValue)
+//        }
+//}
 //fun List<Item>.toEntryList(valueSelector: (Item) -> Int): List<Entry>{
 //    return this.sortedBy { it.measuredAt }.map { Entry(it.measuredAt.toEpochMilli().toFloat(), valueSelector(it).toFloat())}
 //}
+
+fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Int ) = this.map {
+    Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), takeValue(it).toFloat())
+}
+
 @Composable
 fun BpPulseChart(dailyItems: List<DailyItem>){
-    val bpHighEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpHigh.toFloat())}
-    val bpLowEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpLow.toFloat())}
-    val pulseEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgPulse.toFloat())}
+    val bpHighEntries = dailyItems.toEntries {it.avgBpHigh }
+    val bpLowEntries = dailyItems.toEntries {it.avgBpLow }
+    val pulseEntries = dailyItems.toEntries {it.avgPulse }
+
+    //val bpHighEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpHigh.toFloat())}
+//    val bpLowEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpLow.toFloat())}
+//    val pulseEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgPulse.toFloat())}
 //    val bpHighEntries = dailyItems.groupByDateAndAverage { it.bpHigh }
 //    val bpLowEntries = dailyItems.groupByDateAndAverage { it.bpLow }
     AndroidView(

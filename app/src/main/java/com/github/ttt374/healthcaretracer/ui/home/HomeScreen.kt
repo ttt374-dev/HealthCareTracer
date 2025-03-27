@@ -8,8 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -28,8 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.ttt374.healthcaretracer.data.Item
@@ -94,10 +101,11 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                     item {
                         Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
                             verticalAlignment = Alignment.CenterVertically){
-                            Text(DateTimeFormatter.ofPattern("yyyy/M/d ").format(groupedItem.date),
-                                modifier = Modifier.weight(1f), textAlign = TextAlign.Start)
-                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow}_${groupedItem.avgPulse}",
-                                modifier = Modifier.weight(1f),
+                            Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(groupedItem.date),
+                                modifier = Modifier.weight(1f))
+                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow}".withSubscript("mmHg"),
+                                textAlign = TextAlign.End )
+                            Text("${groupedItem.avgPulse}".withSubscript("bpm"),
                                 textAlign = TextAlign.End )
                         }
                     }
@@ -118,27 +126,30 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         }
     }
 }
-@Composable
-fun ItemHeaderRow() {
-    Row {
-        Text("Measured at", modifier = Modifier.weight(2f))
-        Text("High BP", modifier = Modifier.weight(1f))
-        Text("Low BP", modifier = Modifier.weight(1f))
-        Text("Pulse", modifier = Modifier.weight(1f))
-        Text("Location", modifier = Modifier.weight(1f))
-        Text("", modifier = Modifier.weight(.5f))
-    }
-    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-}
+//@Composable
+//fun ItemHeaderRow() {
+//    Row {
+//        Text("Measured at", modifier = Modifier.weight(2f))
+//        Text("High BP", modifier = Modifier.weight(1f))
+//        Text("Low BP", modifier = Modifier.weight(1f))
+//        Text("Pulse", modifier = Modifier.weight(1f))
+//        Text("Location", modifier = Modifier.weight(1f))
+//        Text("", modifier = Modifier.weight(.5f))
+//    }
+//    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
+//}
 @Composable
 fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
             onDeleteItem: (Item) -> Unit = {}){
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm a").withZone(ZoneId.systemDefault())
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     //val menuState = rememberExpandState()
 
     Row (modifier=Modifier.padding(horizontal = 8.dp).clickable { navigateToEdit() }) {
         Text(dateTimeFormatter.format(item.measuredAt))
-        Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
+        //Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(16.dp))
+        Text("${item.bpHigh}/${item.bpLow}".withSubscript("mmHg"))
+        Text(item.pulse.toString().withSubscript("bpm"))
         Text(item.location, textAlign = TextAlign.Right, modifier=Modifier.weight(1f))
 //        Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
 //        Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
@@ -161,3 +172,41 @@ fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
     }
     HorizontalDivider(thickness = 1.dp, color = Color.Gray)
 }
+//@Composable
+//fun BloodPressure(bpHigh: Int, bpLow: Int){
+//    TextWithSubscript("${bpHigh}/${bpLow}","mmHg")
+//}
+//@Composable
+//fun BodyWeight(weight: Int){
+//    TextWithSubscript(weight.toString(), "kg")
+//}
+//@Composable
+//fun TextWithSubscript(text: String, subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp){
+//    val annotatedText= AnnotatedString.Builder().apply {
+//        // 大きな数字部分
+//        pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
+//        append(text)
+//
+//        // 小さな単位部分
+//        pop() // 数字部分のスタイルを終了
+//        pushStyle(SpanStyle(fontSize = subscriptFontSize, baselineShift = BaselineShift.Subscript))
+//        append(subscript)
+//    }.toAnnotatedString()
+//    Text(annotatedText)
+//}
+fun String.withSubscript(subscript: String, textFontSize: TextUnit = 18.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
+    val text = this
+    return AnnotatedString.Builder().apply {
+        pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
+        append(text)
+
+        // 小さな単位部分
+        pop()
+        pushStyle(SpanStyle(fontSize = subscriptFontSize, baselineShift = BaselineShift.Subscript))
+        append(subscript)
+    }.toAnnotatedString()
+}
+
+
+
+

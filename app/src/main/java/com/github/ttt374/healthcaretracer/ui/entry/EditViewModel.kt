@@ -76,8 +76,9 @@ data class ItemUiState (
     val isValid: Boolean
         get(){
             val item = toItem()
-            Log.d("is valid", item.toString())
-            return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
+            return item.bpHigh.isValidBp && item.bpLow.isValidBp && item.pulse.isValidPulse
+            //Log.d("is valid", item.toString())
+            //return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
         }
 
     fun toItem() = Item(

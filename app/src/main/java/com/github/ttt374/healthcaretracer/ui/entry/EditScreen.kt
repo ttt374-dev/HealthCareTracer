@@ -104,7 +104,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             BloodPressureInputField(
                 value = itemUiState.bpHigh,
                 onValueChange = { newValue ->
-                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(bpHigh = it))}, { it.isValidBp() }, bpLowFocusRequester)
+                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(bpHigh = it))}, { it.isValidBp }, bpLowFocusRequester)
                 },
                 label = "BP High",
                 focusRequester = bpHighFocusRequester,
@@ -116,7 +116,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             BloodPressureInputField(
                 value = itemUiState.bpLow,
                 onValueChange = { newValue ->
-                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(bpLow = it))}, { it.isValidBp() }, pulseFocusRequester)
+                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(bpLow = it))}, { it.isValidBp }, pulseFocusRequester)
                 },
                 label = "BP Low",
                 focusRequester = bpLowFocusRequester,
@@ -128,7 +128,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             BloodPressureInputField(
                 value = itemUiState.pulse,
                 onValueChange = { newValue ->
-                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(pulse = it))}, { it.isValidPulse() }, locationFocusRequester)
+                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(pulse = it))}, { it.isValidPulse }, locationFocusRequester)
                 },
                 label = "Pulse",
                 focusRequester = pulseFocusRequester,
@@ -188,11 +188,17 @@ fun BloodPressureInputField(
 fun String.isDigit(length: Int = 3) =
     this.all { it.isDigit() } && this.length <= length
 
-fun Int.isValidBp() =
-    this in 60..250
+val Int.isValidBp: Boolean
+    get() = this in 60..250
 
-fun Int.isValidPulse() =
-    this in 30..200
+val Int.isValidPulse: Boolean
+    get() = this in 30..200
+
+//fun Int.isValidBp() =
+//    this in 60..250
+
+//fun Int.isValidPulse() =
+//    this in 30..200
 
 fun handleBpInput(
     newValue: String,
@@ -202,7 +208,7 @@ fun handleBpInput(
 ) {
     if (newValue.isDigit(3)) {
         onValueChange(newValue)
-        if (validate(newValue.toInt())) nextFocusRequester.requestFocus()
+        if (validate(newValue.toIntOrNull() ?: 0)) nextFocusRequester.requestFocus()
         //if (newValue.length >= 2 && (newValue.toIntOrNull() ?: 0) >= 60){
         //    nextFocusRequester.requestFocus()
         //}

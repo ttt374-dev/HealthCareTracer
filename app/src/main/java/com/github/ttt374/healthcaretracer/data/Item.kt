@@ -12,5 +12,8 @@ data class Item (
     val bpHigh: Int = 0,
     val bpLow: Int = 0,
     val pulse: Int = 0,
+    //val weight: Int = 0,
     val location: String = "",
+
+    //val memo: String = "",
 )

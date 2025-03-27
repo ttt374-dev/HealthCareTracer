@@ -72,7 +72,13 @@ private fun LineChart.setupChart() {
             }
         }
     }
+    axisLeft.apply {
+        spaceTop = 40f
+        spaceBottom = 40f
+    }
     axisRight.isEnabled = false
+
+
 }
 
 private fun LineDataSet.setStyle(color: Int) {

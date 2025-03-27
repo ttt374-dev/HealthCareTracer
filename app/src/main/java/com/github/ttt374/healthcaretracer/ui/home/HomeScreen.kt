@@ -94,8 +94,8 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
             })
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
-            LazyColumn {
-                dailyItems.forEach { groupedItem ->
+            LazyColumn() {
+                dailyItems.reversed().forEach { groupedItem ->
                     item {
                         Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
                             verticalAlignment = Alignment.CenterVertically){

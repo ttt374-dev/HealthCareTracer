@@ -127,10 +127,10 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             BloodPressureInputField(
                 value = itemUiState.pulse,
                 onValueChange = { newValue ->
-                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(pulse = it))}, { it.isValidPulse }, locationFocusRequester)
+                    handleBpInput(newValue, { updateItemUiState(itemUiState.copy(pulse = it))}, { it.isValidPulse }, bodyWeightFocusRequester)
                 },
                 label = "Pulse",
-                focusRequester = bodyWeightFocusRequester,
+                focusRequester = pulseFocusRequester,
                 //modifier = Modifier.weight(2f)
             )
         }
@@ -138,6 +138,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             Text("Body Weight", modifier = Modifier.weight(1f))
             TextField(itemUiState.bodyWeight, onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.focusRequester(bodyWeightFocusRequester),
                 label = { Text("Body Weight (optional)")})
         }
 

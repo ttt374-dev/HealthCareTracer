@@ -31,17 +31,20 @@ class ExportDataUseCase(private val itemRepository: ItemRepository) {
         val items = itemRepository.retrieveItemsFlow().firstOrNull()
         withContext(Dispatchers.IO) {
             CSVWriter(FileWriter(file)).use { writer ->
-                writer.writeNext(arrayOf("id", "measuredAt", "high BP", "low BP", "pulse"))
+                writer.writeNext(arrayOf("id", "measuredAt", "high BP", "low BP", "pulse", "body weight", "location", "memo"))
                 val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
 
                 items?.forEach { item ->
                     val data = arrayOf(
-                            item.id.toString(),
-                            formatter.format(item.measuredAt),
-                            item.bpHigh.toString(),
-                            item.bpLow.toString(),
-                            item.pulse.toString(),
-                        )
+                        item.id.toString(),
+                        formatter.format(item.measuredAt),
+                        item.bpHigh.toString(),
+                        item.bpLow.toString(),
+                        item.pulse.toString(),
+                        item.bodyWeight.toString(),
+                        item.location,
+                        item.memo,
+                    )
                     writer.writeNext(data)
                 }
             }
@@ -55,7 +58,6 @@ class ImportDataUseCase(
     private val itemRepository: ItemRepository) {
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         Log.d("import data", uri.toString())
-
 
         withContext(Dispatchers.IO) {
             val importedItems = mutableListOf<Item>()
@@ -71,7 +73,10 @@ class ImportDataUseCase(
                                         .toInstant(),
                                     bpHigh = columns[2].toInt(),
                                     bpLow = columns[3].toInt(),
-                                    pulse = columns[4].toInt()
+                                    pulse = columns[4].toInt(),
+                                    bodyWeight = columns[5].toFloat(),
+                                    location = columns[6],
+                                    memo = columns[7]
                                 )
                                 importedItems.add(item)
                                 Log.d("parsed item", item.toString())

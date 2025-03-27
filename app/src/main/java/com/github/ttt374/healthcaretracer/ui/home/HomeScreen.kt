@@ -96,7 +96,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                             verticalAlignment = Alignment.CenterVertically){
                             Text(DateTimeFormatter.ofPattern("yyyy/M/d ").format(groupedItem.date),
                                 modifier = Modifier.weight(1f), textAlign = TextAlign.Start)
-                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow} | ${groupedItem.avgPulse}",
+                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow}_${groupedItem.avgPulse}",
                                 modifier = Modifier.weight(1f),
                                 textAlign = TextAlign.End )
                         }
@@ -138,7 +138,7 @@ fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
 
     Row (modifier=Modifier.padding(horizontal = 8.dp).clickable { navigateToEdit() }) {
         Text(dateTimeFormatter.format(item.measuredAt))
-        Text(" ${item.bpHigh}/${item.bpLow} | ${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
+        Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
         Text(item.location, textAlign = TextAlign.Right, modifier=Modifier.weight(1f))
 //        Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
 //        Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))

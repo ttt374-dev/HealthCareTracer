@@ -21,10 +21,26 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.home.DailyItem
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
+@Composable
+fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController){
+    val dailyItems by chartViewModel.dailyItems.collectAsState()
+
+    Scaffold(topBar = { CustomTopAppBar("Chart") },
+        bottomBar = {
+            CustomBottomAppBar(navController)
+    }){ innerPadding ->
+        Column(modifier=Modifier.padding(innerPadding)){
+            BpPulseChart(dailyItems)
+        }
+    }
+}
+////////////
 private fun LineChart.setupChart() {
     description.isEnabled = false
     xAxis.apply {
@@ -61,10 +77,12 @@ fun List<Item>.groupByDateAndAverage(valueSelector: (Item) -> Int): List<Entry> 
 //    return this.sortedBy { it.measuredAt }.map { Entry(it.measuredAt.toEpochMilli().toFloat(), valueSelector(it).toFloat())}
 //}
 @Composable
-fun BpPulseChart(items: List<Item>){
-    val pulseEntries = items.groupByDateAndAverage { it.pulse }
-    val bpHighEntries = items.groupByDateAndAverage { it.bpHigh }
-    val bpLowEntries = items.groupByDateAndAverage { it.bpLow }
+fun BpPulseChart(dailyItems: List<DailyItem>){
+    val bpHighEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpHigh.toFloat())}
+    val bpLowEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgBpLow.toFloat())}
+    val pulseEntries = dailyItems.map { Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it.avgPulse.toFloat())}
+//    val bpHighEntries = dailyItems.groupByDateAndAverage { it.bpHigh }
+//    val bpLowEntries = dailyItems.groupByDateAndAverage { it.bpLow }
     AndroidView(
         factory = { context -> LineChart(context).apply { setupChart() } },
         modifier = Modifier.fillMaxSize(),
@@ -77,18 +95,5 @@ fun BpPulseChart(items: List<Item>){
             chart.invalidate()
         }
     )
-}
-@Composable
-fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController){
-    val items by chartViewModel.items.collectAsState()
-
-    Scaffold(topBar = { CustomTopAppBar("Chart") },
-        bottomBar = {
-            CustomBottomAppBar(navController)
-    }){ innerPadding ->
-        Column(modifier=Modifier.padding(innerPadding)){
-            BpPulseChart(items)
-        }
-    }
 }
 

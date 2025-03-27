@@ -50,6 +50,13 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
             }
         }
     }
+    fun deleteItem(){
+        viewModelScope.launch {
+            itemRepository.deleteItem(itemUiState.value.toItem())
+            _itemUiState.update { itemUiState.value.copy(isSuccess = true) }
+        }
+    }
+
 //    override fun onCleared() {
 //        super.onCleared()
 //        _itemUiState.update { itemUiState.value.copy(isSuccess = false)  }
@@ -80,17 +87,17 @@ data class ItemUiState (
             pulse = pulse.toIntOrNull() ?: 0,
             location = location, measuredAt = measuredAt)
 
-    private fun parseRawInput(rawInput: String): Item {
-        val values = rawInput.split(" ").mapNotNull { it.toIntOrNull() }
-        val item = if (values.size == 3) {
-            Item(
-                bpHigh = values[0],
-                bpLow = values[1],
-                pulse = values[2],
-            )
-        } else Item()
-        return item.copy(location = this.location, measuredAt = this.measuredAt)
-    }
+//    private fun parseRawInput(rawInput: String): Item {
+//        val values = rawInput.split(" ").mapNotNull { it.toIntOrNull() }
+//        val item = if (values.size == 3) {
+//            Item(
+//                bpHigh = values[0],
+//                bpLow = values[1],
+//                pulse = values[2],
+//            )
+//        } else Item()
+//        return item.copy(location = this.location, measuredAt = this.measuredAt)
+//    }
 }
 fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
     return ItemUiState(editMode,  "", this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(),

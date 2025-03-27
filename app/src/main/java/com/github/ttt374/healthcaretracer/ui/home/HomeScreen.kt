@@ -6,25 +6,17 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +39,6 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import com.github.ttt374.healthcaretracer.ui.common.rememberExpandState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -79,14 +70,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
     if (filePickerDialogState.isOpen)
         filePickerLauncher.launch(arrayOf("*/*"))
 
-    // dialog
-    val deleteDialogState = rememberItemDialogState()
-    if (deleteDialogState.isOpen){
-        ConfirmDialog(title = { Text("Are you sure to delete ?") },
-            text = { Text("") },
-            onConfirm = { homeViewModel.deleteItem(deleteDialogState.item) },
-            closeDialog = { deleteDialogState.close()})
-    }
+
     Scaffold(topBar = { CustomTopAppBar("Home",
         menuItems = listOf(
             MenuItem("export", onClick = { homeViewModel.exportData()}),
@@ -120,7 +104,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                     items(groupedItem.items){ item ->
                         ItemRow(item,
                             navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
-                            onDeleteItem = { deleteDialogState.open(it) },
+                            //onDeleteItem = { deleteDialogState.open(it) },
                         )
                     }
                 }

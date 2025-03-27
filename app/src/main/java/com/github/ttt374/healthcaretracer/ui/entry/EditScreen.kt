@@ -22,10 +22,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
 import com.github.ttt374.healthcaretracer.ui.common.SelectableTextField
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import kotlinx.coroutines.flow.filter
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -48,13 +50,15 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
             ItemEntryContent(itemUiState = itemUiState,
                 updateItemUiState = editViewModel::updateItemUiState,
                 locationList = locationList,
-                onPost = editViewModel::upsertItem)
+                onPost = editViewModel::upsertItem,
+                onDelete = editViewModel::deleteItem)
         }
     }
 }
 @Composable
 fun ItemEntryContent(itemUiState: ItemUiState,
                      modifier: Modifier = Modifier,
+                     onDelete: () -> Unit = {},
                      onPost: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      locationList: List<String> = emptyList(),
@@ -75,6 +79,14 @@ fun ItemEntryContent(itemUiState: ItemUiState,
     val submitFocusRequester = remember { FocusRequester() }
     val locationFocusRequester = remember { FocusRequester() }
 
+    // dialog
+    val deleteDialogState = rememberItemDialogState()
+    if (deleteDialogState.isOpen){
+        ConfirmDialog(title = { Text("Are you sure to delete ?") },
+            text = { Text("") },
+            onConfirm = onDelete,
+            closeDialog = { deleteDialogState.close()})
+    }
     // 画面を開いたときに bpHigh にフォーカスを移動
     LaunchedEffect(Unit) {
         bpHighFocusRequester.requestFocus()
@@ -137,6 +149,14 @@ fun ItemEntryContent(itemUiState: ItemUiState,
 
         Row {
             Text("", modifier = Modifier.weight(1f))
+
+            if (itemUiState.editMode is EditMode.Edit){
+                Button(enabled = itemUiState.isValid, onClick = {
+                    deleteDialogState.open(itemUiState.toItem())
+                }){
+                    Text("Delete")
+                }
+            }
             Button(enabled = itemUiState.isValid, onClick = {
                 onPost()
                 //editViewModel.updateItem()

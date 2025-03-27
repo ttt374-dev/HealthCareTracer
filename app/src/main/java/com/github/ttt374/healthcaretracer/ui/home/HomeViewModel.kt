@@ -44,11 +44,6 @@ class HomeViewModel @Inject constructor (
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun deleteItem(item: Item){
-        viewModelScope.launch {
-            itemRepository.deleteItem(item)
-        }
-    }
 
     fun exportData(){
         viewModelScope.launch {

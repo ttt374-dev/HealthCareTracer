@@ -25,7 +25,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
 
     private var _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
-    val itemUiState: StateFlow<ItemUiState> = _itemUiState // StateFlow として公開
+    val itemUiState: StateFlow<ItemUiState> get() = _itemUiState // StateFlow として公開
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -77,17 +77,9 @@ data class ItemUiState (
 ){
     val isValid: Boolean
         get(){
-            val minBp = 40
-            val maxBp = 250
-            val minPulse = 30
-            val maxPulse = 200
-
             val item = toItem()
             return item.bpHigh.isValidBp && item.bpLow.isValidBp && item.pulse.isValidPulse &&
-                    item.bpHigh > item.bpLow &&
-                    item.bpHigh  in minBp .. maxBp &&
-                    item.bpLow in minBp .. maxBp &&
-                    item.pulse in minPulse .. maxPulse
+                    item.bpHigh > item.bpLow
             //Log.d("is valid", item.toString())
             //return item.bpHigh > item.bpLow && item.bpHigh > 50 && item.bpLow > 50 && item.pulse > 40
         }
@@ -112,3 +104,6 @@ sealed class EditMode {
     data class Edit(val itemId: Long) : EditMode()
 }
 
+fun <T : Comparable<T>> Pair<T, T>.contains(value: T): Boolean {
+    return value in first..second
+}

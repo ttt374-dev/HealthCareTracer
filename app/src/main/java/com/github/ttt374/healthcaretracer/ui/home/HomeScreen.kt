@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -199,7 +200,7 @@ fun BloodPressureText(bpHigh: Int, bpLow: Int) {
         append(bpHighText)
         if (bpHigh > 140) {
             addStyle(
-                style = SpanStyle(color = Color.Red),
+                style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold),
                 start = 0,
                 end = bpHighText.length
             )
@@ -211,7 +212,7 @@ fun BloodPressureText(bpHigh: Int, bpLow: Int) {
         append(bpLowText)
         if (bpLow > 90) {
             addStyle(
-                style = SpanStyle(color = Color.Red),
+                style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold),
                 start = bpHighText.length + 1, // スラッシュの後ろから
                 end = bpHighText.length + 1 + bpLowText.length
             )

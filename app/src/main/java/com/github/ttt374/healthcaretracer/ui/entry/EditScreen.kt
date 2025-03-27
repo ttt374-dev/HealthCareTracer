@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults.InputField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
 import com.github.ttt374.healthcaretracer.ui.common.SelectableTextField
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
+import com.github.ttt374.healthcaretracer.ui.home.withSubscript
 import kotlinx.coroutines.flow.filter
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -135,6 +137,11 @@ fun ItemEntryContent(itemUiState: ItemUiState,
                 //modifier = Modifier.weight(2f)
             )
         }
+        Row {
+            Text("Body Weight", modifier = Modifier.weight(1f))
+            TextField(itemUiState.bodyWeight, onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
+                label = { Text("Body Weight (optional)")})
+        }
 
         Row {
             Text("Location", modifier = Modifier.weight(1f))
@@ -145,6 +152,11 @@ fun ItemEntryContent(itemUiState: ItemUiState,
                 },
                 modifier = Modifier.focusRequester(locationFocusRequester)
             )
+        }
+        Row {
+            Text("Memo", modifier = Modifier.weight(1f))
+            TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))},
+                label = { Text("Memo (optional)")})
         }
 
         Row {

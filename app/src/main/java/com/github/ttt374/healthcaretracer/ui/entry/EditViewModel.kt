@@ -68,7 +68,9 @@ data class ItemUiState (
     val bpHigh: String = "",
     val bpLow: String = "",
     val pulse: String = "",
+    val bodyWeight: String = "",
     val location: String = "",
+    val memo: String = "",
     val measuredAt: Instant = Instant.now(),
 
     val isSuccess: Boolean = false,
@@ -82,11 +84,12 @@ data class ItemUiState (
         }
 
     fun toItem() = Item(
-            id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
-            bpHigh = bpHigh.toIntOrNull() ?: 0,
-            bpLow = bpLow.toIntOrNull() ?:0,
-            pulse = pulse.toIntOrNull() ?: 0,
-            location = location, measuredAt = measuredAt)
+        id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
+        bpHigh = bpHigh.toIntOrNull() ?: 0,
+        bpLow = bpLow.toIntOrNull() ?:0,
+        pulse = pulse.toIntOrNull() ?: 0,
+        bodyWeight = bodyWeight.toFloatOrNull() ?: 0F,
+        memo = memo, location = location, measuredAt = measuredAt)
 
 //    private fun parseRawInput(rawInput: String): Item {
 //        val values = rawInput.split(" ").mapNotNull { it.toIntOrNull() }
@@ -101,8 +104,10 @@ data class ItemUiState (
 //    }
 }
 fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
-    return ItemUiState(editMode,  "", this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(),
-        this.location, this.measuredAt, false)
+    return ItemUiState(editMode,  "",
+        this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(),
+        if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
+        this.location, this.memo, this.measuredAt, false)
 }
 
 sealed class EditMode {

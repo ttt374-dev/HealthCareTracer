@@ -31,7 +31,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     fun getAllLocationsFlow() = itemDao.getAllLocationsFlow()
 
     fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
-        items.sortedBy{ it.measuredAt }.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+        items.sortedBy{ it.measuredAt }.reversed().groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) ->
                 val avgBpHigh = dailyItems.map { it.bpHigh }.average().toInt()
                 val avgBpLow = dailyItems.map { it.bpLow }.average().toInt()

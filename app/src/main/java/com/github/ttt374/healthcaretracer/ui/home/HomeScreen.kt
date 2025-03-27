@@ -49,6 +49,7 @@ import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.withSign
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
@@ -94,9 +95,6 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
             LazyColumn {
-//                item {
-//                    ItemHeaderRow()
-//                }
                 dailyItems.forEach { groupedItem ->
                     item {
                         Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
@@ -144,57 +142,30 @@ fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     //val menuState = rememberExpandState()
 
-    Row (modifier=Modifier.padding(horizontal = 8.dp).clickable { navigateToEdit() }) {
-        Text(dateTimeFormatter.format(item.measuredAt))
-        //Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
-        Spacer(modifier = Modifier.width(16.dp))
-        Text("${item.bpHigh}/${item.bpLow}".withSubscript("mmHg"))
-        Text(item.pulse.toString().withSubscript("bpm"))
-        Text(item.location, textAlign = TextAlign.Right, modifier=Modifier.weight(1f))
-//        Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
-//        Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
-//        Text(item.bpLow.toString(), modifier = Modifier.weight(1f))
-//        Text(item.pulse.toString(), modifier = Modifier.weight(1f))
-//        Text(item.location, modifier=Modifier.weight(1f))
-
-//        Box {
-//            IconButton(onClick = { menuState.toggle() }, modifier = Modifier.wrapContentSize()){Icon(Icons.Filled.MoreVert, "menu")}
-//            DropdownMenu(menuState.visible, onDismissRequest = { menuState.fold()}){
-//                DropdownMenuItem(text = { Text("Edit")},
-//                    leadingIcon = { Icon(Icons.Filled.Edit, "edit") },
-//                    onClick = { navigateToEdit()})
-//                DropdownMenuItem(text = { Text("Delete")},
-//                    leadingIcon = { Icon(Icons.Filled.Delete, "delete")},
-//                    onClick = { onDeleteItem(item); menuState.fold()})
-//            }
-//        }
-
+    Column  (modifier=Modifier.padding(horizontal = 8.dp, vertical = 4.dp).clickable { navigateToEdit() }) {
+        Row {
+            Text(dateTimeFormatter.format(item.measuredAt))
+            //Text(" ${item.bpHigh}/${item.bpLow}_${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(16.dp))
+            Text("${item.bpHigh}/${item.bpLow}".withSubscript("mmHg"))
+            Text(item.pulse.toString().withSubscript("bpm"))
+            //Text(item.bodyWeight.toString().withSubscript("kg"), textAlign = TextAlign.Right)
+            Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
+            if (item.bodyWeight > 0){
+                Text(item.bodyWeight.toString().withSubscript("Kg"))
+            }
+            Text(item.location, textAlign = TextAlign.Right)
+        }
+        // 2行目: メモ（もしあれば表示）
+        item.memo.takeIf { it.isNotBlank() }?.let { memoText ->
+            //Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "memo: $memoText")
+        }
     }
-    HorizontalDivider(thickness = 1.dp, color = Color.Gray)
+
+    HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
-//@Composable
-//fun BloodPressure(bpHigh: Int, bpLow: Int){
-//    TextWithSubscript("${bpHigh}/${bpLow}","mmHg")
-//}
-//@Composable
-//fun BodyWeight(weight: Int){
-//    TextWithSubscript(weight.toString(), "kg")
-//}
-//@Composable
-//fun TextWithSubscript(text: String, subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp){
-//    val annotatedText= AnnotatedString.Builder().apply {
-//        // 大きな数字部分
-//        pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
-//        append(text)
-//
-//        // 小さな単位部分
-//        pop() // 数字部分のスタイルを終了
-//        pushStyle(SpanStyle(fontSize = subscriptFontSize, baselineShift = BaselineShift.Subscript))
-//        append(subscript)
-//    }.toAnnotatedString()
-//    Text(annotatedText)
-//}
-fun String.withSubscript(subscript: String, textFontSize: TextUnit = 18.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
+fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
     val text = this
     return AnnotatedString.Builder().apply {
         pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
@@ -206,6 +177,9 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 18.sp, subs
         append(subscript)
     }.toAnnotatedString()
 }
+
+fun Float.asBodyWeightString() =
+    if (this == 0.0F) "" else this.toString().withSubscript("Kg").toString()
 
 
 

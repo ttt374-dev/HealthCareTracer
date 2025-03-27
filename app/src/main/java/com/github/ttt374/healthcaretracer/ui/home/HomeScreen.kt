@@ -4,9 +4,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,8 +33,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -52,6 +57,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
                navController: NavController,
                ){
     val items by homeViewModel.items.collectAsState()
+    val groupedItems by homeViewModel.groupedItems.collectAsState()
 
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
@@ -97,15 +103,33 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
             LazyColumn {
-                item {
-                    ItemHeaderRow()
+//                item {
+//                    ItemHeaderRow()
+//                }
+                groupedItems.forEach { groupedItem ->
+                    item {
+                        Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
+                            verticalAlignment = Alignment.CenterVertically){
+                            Text(DateTimeFormatter.ofPattern("yyyy/M/d ").format(groupedItem.date),
+                                modifier = Modifier.weight(1f), textAlign = TextAlign.Start)
+                            Text("${groupedItem.avgBpHigh}/${groupedItem.avgBpLow} | ${groupedItem.avgPulse}",
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.End )
+                        }
+                    }
+                    items(groupedItem.items){ item ->
+                        ItemRow(item,
+                            navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
+                            onDeleteItem = { deleteDialogState.open(it) },
+                        )
+                    }
                 }
-                items(items){ item ->
-                    ItemRow(item,
-                        navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
-                        onDeleteItem = { deleteDialogState.open(it) },
-                    )
-                }
+//                items(items){ item ->
+//                    ItemRow(item,
+//                        navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
+//                        onDeleteItem = { deleteDialogState.open(it) },
+//                    )
+//                }
             }
         }
     }
@@ -125,27 +149,30 @@ fun ItemHeaderRow() {
 @Composable
 fun ItemRow(item: Item, navigateToEdit: () -> Unit = {},
             onDeleteItem: (Item) -> Unit = {}){
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
-    val menuState = rememberExpandState()
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm a").withZone(ZoneId.systemDefault())
+    //val menuState = rememberExpandState()
 
-    Row {
-        Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
-        Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
-        Text(item.bpLow.toString(), modifier = Modifier.weight(1f))
-        Text(item.pulse.toString(), modifier = Modifier.weight(1f))
-        Text(item.location, modifier=Modifier.weight(1f))
+    Row (modifier=Modifier.padding(horizontal = 8.dp).clickable { navigateToEdit() }) {
+        Text(dateTimeFormatter.format(item.measuredAt))
+        Text(" ${item.bpHigh}/${item.bpLow} | ${item.pulse}", textAlign = TextAlign.Left, modifier=Modifier.weight(1f))
+        Text(item.location, textAlign = TextAlign.Right, modifier=Modifier.weight(1f))
+//        Text(dateTimeFormatter.format(item.measuredAt), modifier = Modifier.weight(2f))
+//        Text(item.bpHigh.toString(), modifier = Modifier.weight(1f))
+//        Text(item.bpLow.toString(), modifier = Modifier.weight(1f))
+//        Text(item.pulse.toString(), modifier = Modifier.weight(1f))
+//        Text(item.location, modifier=Modifier.weight(1f))
 
-        Box {
-            IconButton(onClick = { menuState.toggle() }, modifier = Modifier.wrapContentSize()){Icon(Icons.Filled.MoreVert, "menu")}
-            DropdownMenu(menuState.visible, onDismissRequest = { menuState.fold()}){
-                DropdownMenuItem(text = { Text("Edit")},
-                    leadingIcon = { Icon(Icons.Filled.Edit, "edit") },
-                    onClick = { navigateToEdit()})
-                DropdownMenuItem(text = { Text("Delete")},
-                    leadingIcon = { Icon(Icons.Filled.Delete, "delete")},
-                    onClick = { onDeleteItem(item); menuState.fold()})
-            }
-        }
+//        Box {
+//            IconButton(onClick = { menuState.toggle() }, modifier = Modifier.wrapContentSize()){Icon(Icons.Filled.MoreVert, "menu")}
+//            DropdownMenu(menuState.visible, onDismissRequest = { menuState.fold()}){
+//                DropdownMenuItem(text = { Text("Edit")},
+//                    leadingIcon = { Icon(Icons.Filled.Edit, "edit") },
+//                    onClick = { navigateToEdit()})
+//                DropdownMenuItem(text = { Text("Delete")},
+//                    leadingIcon = { Icon(Icons.Filled.Delete, "delete")},
+//                    onClick = { onDeleteItem(item); menuState.fold()})
+//            }
+//        }
 
     }
     HorizontalDivider(thickness = 1.dp, color = Color.Gray)

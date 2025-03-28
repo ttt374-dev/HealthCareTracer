@@ -134,11 +134,11 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
         modifier = Modifier
             .aspectRatio(1f) // This is important for square sizing!
             .clip(CircleShape)
-                .background(color = if (isSelected) Color.Green else Color.Transparent)
-                .clickable(
-                    enabled = day.position == DayPosition.MonthDate,
-                    onClick = { onClick(day) }
-                ),
+            .background(color = if (isSelected) Color.Green else Color.Transparent)
+            .clickable(
+                enabled = day.position == DayPosition.MonthDate,
+                onClick = { onClick(day) }
+            ),
         contentAlignment = Alignment.TopCenter
     ) {
         Column {

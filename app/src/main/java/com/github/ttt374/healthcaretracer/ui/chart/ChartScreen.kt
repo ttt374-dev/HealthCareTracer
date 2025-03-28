@@ -27,12 +27,13 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
+import com.github.ttt374.healthcaretracer.ui.home.DailyItemsViewModel
 import java.time.Instant
 import java.time.ZoneId
 
 @Composable
-fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController){
-    val dailyItems by chartViewModel.dailyItems.collectAsState()
+fun ChartScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), navController: NavController){
+    val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Blood Pressure", "Pulse", "Body Weight")
 

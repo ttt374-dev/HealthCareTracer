@@ -52,9 +52,11 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
-               navController: NavController){
-    val dailyItems by homeViewModel.dailyItems.collectAsState()
+fun HomeScreen(
+            dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
+            importExportViewModel: ImportExportViewModel = hiltViewModel(),
+            navController: NavController){
+    val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -63,7 +65,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         onResult = { uri: Uri? ->
             selectedFileUri = uri
             Log.d("ImportScreen", "Selected file: $uri")
-            selectedFileUri?.let { homeViewModel.importData(it) }
+            selectedFileUri?.let { importExportViewModel.importData(it) }
             filePickerDialogState.close()
         }
     )
@@ -76,7 +78,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         CustomTopAppBar(
             "Home",
             menuItems = listOf(
-                MenuItem("export", onClick = { homeViewModel.exportData() }),
+                MenuItem("export", onClick = { importExportViewModel.exportData() }),
                 MenuItem("import", onClick = { filePickerDialogState.open() })
             )
         )
@@ -162,7 +164,6 @@ fun BloodPressureText(bpHigh: Int, bpLow: Int) {
         pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = if (bpHigh > HIGH_BP_THRESHOLD) Color.Red else Color.Unspecified))
         append(bpHigh.toString())
         pop()
-
         append("/")
 
         pushStyle(SpanStyle(color = if (bpLow > LOW_BP_THRESHOLD) Color.Red else Color.Unspecified))

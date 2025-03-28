@@ -27,7 +27,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     //private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
     private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
     private val dateString: String? = savedStateHandle["date"]
-    val date: LocalDate = dateString?.let { LocalDate.parse(it)} ?: LocalDate.now()
+    private val date: LocalDate = dateString?.let { LocalDate.parse(it)} ?: LocalDate.now()
     //private val selectedDate: LocalDate = savedStateHandle["date"]?.let { LocalDate.parse(it) } ?: LocalDate.now()
 
     private val _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
@@ -119,7 +119,6 @@ fun <T : Comparable<T>> Pair<T, T>.contains(value: T): Boolean {
      val (min, max) = if (first <= second) this else second to first
     return value in min..max
 }
-
 
 fun Instant.withDate(newDate: LocalDate, zone: ZoneId = ZoneId.systemDefault()): Instant {
     val currentDateTime = LocalDateTime.ofInstant(this, zone)

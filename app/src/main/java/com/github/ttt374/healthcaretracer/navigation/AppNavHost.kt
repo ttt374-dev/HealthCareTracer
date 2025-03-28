@@ -19,6 +19,7 @@ sealed class Screen(val route: String) {
     //data object Settings : Screen("settings")
 
     data object Entry : Screen("entry")
+    //data object EntryWithDate : Screen("entry/{date}")
     data object Edit : Screen("edit")
     data object Chart: Screen("chart")
     data object Calendar: Screen("calendar")
@@ -32,6 +33,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         //composable(Screen.Settings.route) { SettingsScreen() }
         //composable(Screen.Archived.route) { ArchivedScreen() }
         composable(Screen.Entry.route) { EntryScreen(navigateBack = { navController.popBackStack()}) }
+        composable("${Screen.Entry.route}/{date}", arguments = listOf(navArgument("date") { type = NavType.StringType }))
+            { EntryScreen(navigateBack = { navController.popBackStack()}) }
+
         composable("${Screen.Edit.route}/{itemId}", arguments = listOf(navArgument("itemId"){ type = NavType.LongType})) {
             EditScreen(navigateBack = { navController.popBackStack()})
         }

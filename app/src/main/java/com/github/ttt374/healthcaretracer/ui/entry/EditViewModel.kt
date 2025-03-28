@@ -17,25 +17,33 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.TimeZone
 import javax.inject.Inject
 
 @HiltViewModel
 class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
     //private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
     private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
+    private val dateString: String? = savedStateHandle["date"]
+    val date: LocalDate = dateString?.let { LocalDate.parse(it)} ?: LocalDate.now()
+    //private val selectedDate: LocalDate = savedStateHandle["date"]?.let { LocalDate.parse(it) } ?: LocalDate.now()
 
     private val _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
     val itemUiState: StateFlow<ItemUiState> get() = _itemUiState // StateFlow として公開
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
-        itemId?.let { id ->
+        if (itemId != null){
             viewModelScope.launch {
-                itemRepository.getItemFlow(id)
+                itemRepository.getItemFlow(itemId)
                     .filterNotNull()
-                    .map { it.toItemUiState(editMode = EditMode.Edit(id)) }
+                    .map { it.toItemUiState(editMode = EditMode.Edit(itemId)) }
                     .collect { _itemUiState.value = it } // `_itemUiState` を更新
             }
+        } else {
+            _itemUiState.value = ItemUiState(measuredAt = Instant.now().withDate(date))
         }
     }
     fun updateItemUiState(uiState: ItemUiState) {
@@ -108,4 +116,11 @@ sealed class EditMode {
 fun <T : Comparable<T>> Pair<T, T>.contains(value: T): Boolean {
      val (min, max) = if (first <= second) this else second to first
     return value in min..max
+}
+
+
+fun Instant.withDate(newDate: LocalDate, zone: ZoneId = ZoneId.systemDefault()): Instant {
+    val currentDateTime = LocalDateTime.ofInstant(this, zone)
+    val newDateTime = LocalDateTime.of(newDate, currentDateTime.toLocalTime())
+    return newDateTime.atZone(zone).toInstant()
 }

@@ -82,13 +82,15 @@ dependencies {
     //implementation(libs.room.paging)
 
     // graph tools
-    //implementation(libs.charts)
     implementation(libs.mpandroidchart)
 
     // icons
     implementation(libs.androidx.material.icons.extended)
 
-        // opencsv
+    // opencsv
     implementation(libs.opencsv)
 
+    // calendar
+    //implementation(libs.compose.calendar)
+    implementation("com.kizitonwose.calendar:compose:2.6.2")
 }

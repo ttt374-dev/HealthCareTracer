@@ -44,15 +44,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.navigation.Screen
-import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.withSign
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
@@ -96,33 +93,49 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
         }){ innerPadding ->
         Column(modifier= Modifier.padding(innerPadding)){
             LazyColumn() {
-                dailyItems.asReversed().forEach { dailyItem ->
-                    item {
-                        Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
-                            verticalAlignment = Alignment.CenterVertically){
-                            Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
-                                modifier = Modifier.weight(1f))
-                            BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
-                            Text("${dailyItem.avgPulse}".withSubscript("bpm"),
-                                textAlign = TextAlign.End )
-                        }
-                    }
-                    items(dailyItem.items){ item ->
-                        ItemRow(item,
-                            navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
-                        )
-                    }
+                items(dailyItems){ dailyItem ->
+                    DailyItemRow(dailyItem) { navController.navigate("${Screen.Edit.route}/$it") }
                 }
+//                dailyItems.asReversed().forEach { dailyItem ->
+//                    item {
+//                        Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
+//                            verticalAlignment = Alignment.CenterVertically){
+//                            Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
+//                                modifier = Modifier.weight(1f))
+//                            BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
+//                            Text("${dailyItem.avgPulse}".withSubscript("bpm"),
+//                                textAlign = TextAlign.End )
+//                        }
+//                    }
+//                    items(dailyItem.items){ item ->
+//                        ItemRow(item,
+//                            navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
+//                        )
+//                    }
+//                }
             }
         }
     }
 }
-
 @Composable
-fun ItemRow(item: Item, navigateToEdit: () -> Unit = {}){
+fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
+    Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
+        verticalAlignment = Alignment.CenterVertically){
+        Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
+            modifier = Modifier.weight(1f))
+        BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
+        Text("${dailyItem.avgPulse}".withSubscript("bpm"),
+            textAlign = TextAlign.End )
+    }
+    dailyItem.items.forEach { item ->
+        ItemRow(item, navigateToEdit)
+    }
+}
+@Composable
+fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
 
-    Column  (modifier=Modifier.padding(horizontal = 8.dp, vertical = 4.dp).clickable { navigateToEdit() }) {
+    Column  (modifier=Modifier.padding(horizontal = 8.dp, vertical = 4.dp).clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
@@ -155,12 +168,6 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subs
         append(subscript)
     }.toAnnotatedString()
 }
-
-fun Float.asBodyWeightString() =
-    if (this == 0.0F) "" else this.toString().withSubscript("Kg").toString()
-
-
-
 
 @Composable
 fun BloodPressureText(bpHigh: Int, bpLow: Int) {

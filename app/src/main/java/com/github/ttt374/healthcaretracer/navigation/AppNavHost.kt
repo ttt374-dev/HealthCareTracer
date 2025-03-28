@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.github.ttt374.healthcaretracer.ui.calendar.CalendarScreen
 import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
@@ -20,6 +21,7 @@ sealed class Screen(val route: String) {
     data object Entry : Screen("entry")
     data object Edit : Screen("edit")
     data object Chart: Screen("chart")
+    data object Calendar: Screen("calendar")
 }
 
 @Composable
@@ -34,4 +36,5 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             EditScreen(navigateBack = { navController.popBackStack()})
         }
         composable(Screen.Chart.route) { ChartScreen(navController=navController)}
+        composable(Screen.Calendar.route) { CalendarScreen(navController=navController)}
     }}

@@ -53,10 +53,8 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
-               navController: NavController,
-               ){
+               navController: NavController){
     val dailyItems by homeViewModel.dailyItems.collectAsState()
-
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -74,54 +72,39 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(),
             filePickerLauncher.launch(arrayOf("*/*"))
         }
     }
-//    if (filePickerDialogState.isOpen)
-//        filePickerLauncher.launch(arrayOf("*/*"))
-
-    Scaffold(topBar = { CustomTopAppBar("Home",
-        menuItems = listOf(
-            MenuItem("export", onClick = { homeViewModel.exportData()}),
-            MenuItem("import", onClick = { filePickerDialogState.open()}))
-
-        ) },
+    Scaffold(topBar = {
+        CustomTopAppBar(
+            "Home",
+            menuItems = listOf(
+                MenuItem("export", onClick = { homeViewModel.exportData() }),
+                MenuItem("import", onClick = { filePickerDialogState.open() })
+            )
+        )
+    },
         bottomBar = {
             CustomBottomAppBar(navController,
                 floatingActionButton = {
-                FloatingActionButton(onClick = { navController.navigate(Screen.Entry.route) }){
-                    Icon(Icons.Filled.Add, "add")
+                    FloatingActionButton(onClick = { navController.navigate(Screen.Entry.route) }) {
+                        Icon(Icons.Filled.Add, "add")
+                    }
                 }
-            })
-        }){ innerPadding ->
-        Column(modifier= Modifier.padding(innerPadding)){
-            LazyColumn() {
-                items(dailyItems){ dailyItem ->
+            )
+        }
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            LazyColumn {
+                items(dailyItems.asReversed()) { dailyItem ->
                     DailyItemRow(dailyItem) { navController.navigate("${Screen.Edit.route}/$it") }
                 }
-//                dailyItems.asReversed().forEach { dailyItem ->
-//                    item {
-//                        Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
-//                            verticalAlignment = Alignment.CenterVertically){
-//                            Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
-//                                modifier = Modifier.weight(1f))
-//                            BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
-//                            Text("${dailyItem.avgPulse}".withSubscript("bpm"),
-//                                textAlign = TextAlign.End )
-//                        }
-//                    }
-//                    items(dailyItem.items){ item ->
-//                        ItemRow(item,
-//                            navigateToEdit = { navController.navigate("${Screen.Edit.route}/${item.id}")},
-//                        )
-//                    }
-//                }
             }
         }
     }
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
-    Row (modifier=Modifier.fillMaxWidth().background(Color.LightGray),
+    Row (modifier= Modifier.fillMaxWidth().background(Color.LightGray),
         verticalAlignment = Alignment.CenterVertically){
-        Text(DateTimeFormatter.ofPattern("yyyy/M/d(E) ").format(dailyItem.date),
+        Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             modifier = Modifier.weight(1f))
         BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
         Text("${dailyItem.avgPulse}".withSubscript("bpm"),
@@ -135,7 +118,9 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
 fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
 
-    Column  (modifier=Modifier.padding(horizontal = 8.dp, vertical = 4.dp).clickable { navigateToEdit(item.id) }) {
+    Column  (modifier= Modifier
+        .padding(horizontal = 8.dp, vertical = 4.dp)
+        .clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
@@ -149,7 +134,6 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
         }
         // 2行目: メモ（もしあれば表示）
         item.memo.takeIf { it.isNotBlank() }?.let { memoText ->
-            //Spacer(modifier = Modifier.height(4.dp))
             Text(text = "memo: $memoText")
         }
     }
@@ -169,21 +153,21 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subs
     }.toAnnotatedString()
 }
 
+private const val HIGH_BP_THRESHOLD = 140
+private const val LOW_BP_THRESHOLD = 90
+
 @Composable
 fun BloodPressureText(bpHigh: Int, bpLow: Int) {
     val annotatedString = buildAnnotatedString {
-        pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
-        if (bpHigh > 140) pushStyle(SpanStyle(color = Color.Red))
+        pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = if (bpHigh > HIGH_BP_THRESHOLD) Color.Red else Color.Unspecified))
         append(bpHigh.toString())
-        if (bpHigh > 140) pop()
+        pop()
 
         append("/")
 
-        if (bpLow > 90) pushStyle(SpanStyle(color = Color.Red))
+        pushStyle(SpanStyle(color = if (bpLow > LOW_BP_THRESHOLD) Color.Red else Color.Unspecified))
         append(bpLow.toString())
-        if (bpLow > 90) pop()
-
-        pop() // FontWeightの解除
+        pop()
 
         pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
         append(" mmHg")

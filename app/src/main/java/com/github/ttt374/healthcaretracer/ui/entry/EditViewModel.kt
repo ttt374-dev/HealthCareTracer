@@ -39,7 +39,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
             viewModelScope.launch {
                 itemRepository.getItemFlow(itemId)
                     .filterNotNull()
-                    .map { it.toItemUiState(editMode = EditMode.Edit(itemId)) }
+                    .map { it.toItemUiState().copy(id = itemId) }
                     .collect { _itemUiState.value = it } // `_itemUiState` を更新
             }
         } else {
@@ -71,8 +71,8 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
 //    }
 }
 data class ItemUiState (
-    val editMode: EditMode = EditMode.Entry,
-    val rawInput: String = "",
+    //val editMode: EditMode = EditMode.Entry,
+    val id: Long? = null,
     val bpHigh: String = "",
     val bpLow: String = "",
     val pulse: String = "",
@@ -93,15 +93,16 @@ data class ItemUiState (
         }
 
     fun toItem() = Item(
-        id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
+        //id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
+        id = id?: 0,
         bpHigh = bpHigh.toIntOrNull() ?: 0,
         bpLow = bpLow.toIntOrNull() ?:0,
         pulse = pulse.toIntOrNull() ?: 0,
         bodyWeight = bodyWeight.toFloatOrNull() ?: 0F,
         memo = memo, location = location, measuredAt = measuredAt)
 }
-fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
-    return ItemUiState(editMode,  "",
+fun Item.toItemUiState(): ItemUiState {
+    return ItemUiState(  this.id,
         this.bpHigh.toString(), this.bpLow.toString(), this.pulse.toString(),
         //if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
         this.bodyWeight.takeIf { it != 0.0F }?.toString().orEmpty(),
@@ -110,7 +111,8 @@ fun Item.toItemUiState(editMode: EditMode = EditMode.Entry): ItemUiState {
 
 sealed class EditMode {
     data object Entry : EditMode()
-    data class Edit(val itemId: Long) : EditMode()
+    data object Edit: EditMode()
+    //data class Edit(val itemId: Long) : EditMode()
 }
 
 fun <T : Comparable<T>> Pair<T, T>.contains(value: T): Boolean {

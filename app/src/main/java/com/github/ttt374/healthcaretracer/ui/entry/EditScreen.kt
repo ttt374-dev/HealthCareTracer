@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -43,7 +44,8 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
 
     Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
         Column (modifier = Modifier.padding(innerPadding)) {
-            ItemEntryContent(itemUiState = itemUiState,
+            ItemEntryContent(editMode = EditMode.Edit,
+                itemUiState = itemUiState,
                 updateItemUiState = editViewModel::updateItemUiState,
                 locationList = locationList,
                 onPost = editViewModel::upsertItem,
@@ -52,8 +54,9 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () 
     }
 }
 @Composable
-fun ItemEntryContent(itemUiState: ItemUiState,
-                     modifier: Modifier = Modifier,
+fun ItemEntryContent(modifier: Modifier = Modifier,
+                     editMode: EditMode = EditMode.Entry,
+                     itemUiState: ItemUiState,
                      onDelete: () -> Unit = {},
                      onPost: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
@@ -85,8 +88,8 @@ fun ItemEntryContent(itemUiState: ItemUiState,
             closeDialog = { deleteDialogState.close()})
     }
     // 画面を開いたときに bpHigh にフォーカスを移動（新規エントリ時のみ）
-    LaunchedEffect(itemUiState.editMode) {
-        if (itemUiState.editMode is EditMode.Entry) {
+    LaunchedEffect(Unit) {
+        if (editMode is EditMode.Entry) {
             bpHighFocusRequester.requestFocus()
         }
     }
@@ -137,7 +140,7 @@ fun ItemEntryContent(itemUiState: ItemUiState,
         Row {
             Text("", modifier = Modifier.weight(1f))
 
-            if (itemUiState.editMode is EditMode.Edit){
+            if (editMode is EditMode.Edit){
                 Button(enabled = itemUiState.isValid, onClick = {
                     deleteDialogState.open(itemUiState.toItem())
                 }){

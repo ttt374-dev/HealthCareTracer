@@ -32,7 +32,9 @@ import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
+//fun isValidBpValue(bpValue: Int): Boolean {
+//    return bpValue in MIN_BP..MAX_BP
+//}
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
@@ -106,15 +108,17 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             bpUpperFocusRequester.requestFocus()
         }
     }
+    
     Column (modifier=modifier){
+        val labelModifier = Modifier.weight(1f)
         Row {
-            Text("Measured At", modifier = Modifier.weight(1f))
+            Text("Measured At", modifier = labelModifier)
             OutlinedButton(onClick = { dateTimeDialogState.open() }){
                 Text(dateTimeFormatter.format(itemUiState.measuredAt))
             }
         }
         Row {
-            Text("High BP", modifier = Modifier.weight(1f))
+            Text("High BP", modifier = labelModifier)
             BloodPressureInputField(
                 value = itemUiState.bpUpper,
                 onValueChange = { newValue ->
@@ -131,7 +135,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             )
         }
         Row {
-            Text("High Low", modifier = Modifier.weight(1f))
+            Text("High Low", modifier = labelModifier)
             BloodPressureInputField(
                 value = itemUiState.bpLower,
                 onValueChange = { newValue ->
@@ -148,7 +152,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             )
         }
         Row {
-            Text("Pulse", modifier = Modifier.weight(1f))
+            Text("Pulse", modifier = labelModifier)
             BloodPressureInputField(
                 value = itemUiState.pulse,
                 onValueChange = { newValue ->
@@ -163,7 +167,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             )
         }
         Row {
-            Text("", modifier = Modifier.weight(1f))
+            Text("", modifier = labelModifier)
 
             if (editMode is EditMode.Edit){
                 Button(onClick = { deleteDialogState.open(itemUiState.toItem()) }){
@@ -175,7 +179,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             }
         }
         Row {
-            Text("Body Weight", modifier = Modifier.weight(1f))
+            Text("Body Weight", modifier = labelModifier)
             TextField(itemUiState.bodyWeight, onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
                 //modifier = Modifier.focusRequester(bodyWeightFocusRequester),
@@ -183,7 +187,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
         }
 
         Row {
-            Text("Location", modifier = Modifier.weight(1f))
+            Text("Location", modifier = labelModifier)
             //TextField(itemUiState.location, { updateItemUiState(itemUiState.copy(location = it)) }, modifier = Modifier.weight(2f))
             SelectableTextField(itemUiState.location, locationList,
                 onValueChange = {
@@ -192,7 +196,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             )
         }
         Row {
-            Text("Memo", modifier = Modifier.weight(1f))
+            Text("Memo", modifier = labelModifier)
             TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))},
                 label = { Text("Memo (optional)")})
         }
@@ -215,9 +219,7 @@ fun BloodPressureInputField(
         modifier = modifier.focusRequester(focusRequester)
     )
 }
-//fun isValidBpValue(bpValue: Int): Boolean {
-//    return bpValue in MIN_BP..MAX_BP
-//}
+
 //fun isValidPulse(pulse: Int): Boolean {
 //    return pulse in MIN_PULSE..MAX_PULSE
 //}

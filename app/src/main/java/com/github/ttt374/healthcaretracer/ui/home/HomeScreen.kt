@@ -59,6 +59,8 @@ fun HomeScreen(
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+    val navigateToEntry = { navController.navigate(Screen.Entry.route) }
+    val navigateToEdit = { id: Long -> navController.navigate("${Screen.Edit.route}/$id")}
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -69,24 +71,27 @@ fun HomeScreen(
             filePickerDialogState.close()
         }
     )
-    LaunchedEffect(filePickerDialogState.isOpen) {
-        if (filePickerDialogState.isOpen) {
-            filePickerLauncher.launch(arrayOf("*/*"))
-        }
-    }
+//    LaunchedEffect(filePickerDialogState.isOpen) {
+//        if (filePickerDialogState.isOpen) {
+//            filePickerLauncher.launch(arrayOf("*/*"))
+//        }
+//    }
     Scaffold(topBar = {
         CustomTopAppBar(
             "Home",
             menuItems = listOf(
                 MenuItem("export", onClick = { importExportViewModel.exportData() }),
-                MenuItem("import", onClick = { filePickerDialogState.open() })
+                MenuItem("import", onClick = {
+                    filePickerDialogState.open()
+                    filePickerLauncher.launch(arrayOf("*/*"))
+                })
             )
         )
     },
         bottomBar = {
             CustomBottomAppBar(navController,
                 floatingActionButton = {
-                    FloatingActionButton(onClick = { navController.navigate(Screen.Entry.route) }) {
+                    FloatingActionButton(onClick = navigateToEntry) {
                         Icon(Icons.Filled.Add, "add")
                     }
                 }
@@ -96,7 +101,7 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn {
                 items(dailyItems.asReversed()) { dailyItem ->
-                    DailyItemRow(dailyItem) { navController.navigate("${Screen.Edit.route}/$it") }
+                    DailyItemRow(dailyItem, navigateToEdit)
                 }
             }
         }
@@ -128,7 +133,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
             Spacer(modifier = Modifier.width(16.dp))
             BloodPressureText(item.bpHigh, item.bpLow)
             Text(item.pulse.toString().withSubscript("bpm"))
-            Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
+            //Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             if (item.bodyWeight > 0){
                 Text(item.bodyWeight.toString().withSubscript("Kg"))
             }
@@ -143,10 +148,10 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
     HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
 fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
-    val text = this
+    //val text = this
     return AnnotatedString.Builder().apply {
         pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
-        append(text)
+       append(this@withSubscript)
 
         // 小さな単位部分
         pop()

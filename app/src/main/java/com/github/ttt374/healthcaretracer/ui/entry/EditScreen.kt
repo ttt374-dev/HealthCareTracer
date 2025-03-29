@@ -88,7 +88,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             closeDialog = { deleteDialogState.close()})
     }
     // 画面を開いたときに bpHigh にフォーカスを移動（新規エントリ時のみ）
-    LaunchedEffect(Unit) {
+    LaunchedEffect(editMode) {
         if (editMode is EditMode.Entry) {
             bpHighFocusRequester.requestFocus()
         }
@@ -200,20 +200,15 @@ fun BloodPressureInputField(
     )
 }
 
-fun String.isDigit(length: Int = 3) =
-    this.all { it.isDigit() } && this.length <= length
+fun String.isDigit(length: Int? = 3): Boolean {
+    return all { it.isDigit() } && (length == null || this.length <= length)
+}
 
 val Int.isValidBp: Boolean
     get() = this in 60..250
 
 val Int.isValidPulse: Boolean
     get() = this in 30..200
-
-//fun Int.isValidBp() =
-//    this in 60..250
-
-//fun Int.isValidPulse() =
-//    this in 30..200
 
 fun handleBpInput(
     newValue: String,
@@ -222,15 +217,12 @@ fun handleBpInput(
     nextFocusRequester: FocusRequester
 ) {
     if (newValue.isDigit(3)) {
-        onValueChange(newValue)
-        if (validate(newValue.toIntOrNull() ?: 0)) nextFocusRequester.requestFocus()
-        //if (newValue.length >= 2 && (newValue.toIntOrNull() ?: 0) >= 60){
-        //    nextFocusRequester.requestFocus()
-        //}
-//        newValue.toIntOrNull()?.let { value ->
-//            when {
-//                newValue.length >= 2 && value >= 60 -> nextFocusRequester.requestFocus()
-//            }
-//        }
+        val intValue = newValue.toIntOrNull()
+        if (intValue != null) {
+            onValueChange(newValue)
+            if (validate(intValue)) {
+                nextFocusRequester.requestFocus()
+            }
+        }
     }
 }

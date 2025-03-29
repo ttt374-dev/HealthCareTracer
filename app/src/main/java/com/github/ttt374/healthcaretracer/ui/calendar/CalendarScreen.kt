@@ -67,13 +67,17 @@ fun CalendarScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), n
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
     //var selectedItem by remember { mutableStateOf<DailyItem?>(null)}
 
+    val navigateToEntry = {date: LocalDate ->
+        navController.navigate("${Screen.Entry.route}/$selectedDate")
+    }
     Scaffold(topBar = { CustomTopAppBar("Chart") },
 
         bottomBar = {
             CustomBottomAppBar(
                 navController = navController,
                 floatingActionButton = {
-                    FloatingActionButton(onClick = { navController.navigate("${Screen.Entry.route}/${selectedDate.toString()}") }){
+                    FloatingActionButton(onClick = { navigateToEntry(selectedDate) }){
+                    //FloatingActionButton(onClick = { navController.navigate("${Screen.Entry.route}/${selectedDate.toString()}") }){
                         Icon(Icons.Filled.Add, "add")
                     }
                 })

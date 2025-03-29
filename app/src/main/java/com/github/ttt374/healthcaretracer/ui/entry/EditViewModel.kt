@@ -54,21 +54,23 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
         if (itemUiState.value.isValid){
             viewModelScope.launch {
                 itemRepository.upsertItem(itemUiState.value.toItem())
-                _itemUiState.value = itemUiState.value.copy(isSuccess = true)
+                setSuccessState(true)
             }
         }
     }
     fun deleteItem(){
         viewModelScope.launch {
             itemRepository.deleteItem(itemUiState.value.toItem())
-            _itemUiState.value = itemUiState.value.copy(isSuccess = true)
+            setSuccessState(true)
         }
     }
-
-//    override fun onCleared() {
-//        super.onCleared()
-//        _itemUiState.update { itemUiState.value.copy(isSuccess = false)  }
-//    }
+    override fun onCleared() {
+        super.onCleared()
+        setSuccessState(false)
+    }
+    private fun setSuccessState(value: Boolean){
+        _itemUiState.value = itemUiState.value.copy(isSuccess = value)
+    }
 }
 data class ItemUiState (
     //val editMode: EditMode = EditMode.Entry,

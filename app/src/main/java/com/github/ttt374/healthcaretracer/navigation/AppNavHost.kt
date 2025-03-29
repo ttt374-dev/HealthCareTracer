@@ -14,13 +14,10 @@ import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
 
-sealed class Screen(val route: String) {
+sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object Home : Screen("home")
-    //data object Settings : Screen("settings")
-
-    data object Entry : Screen("entry")
-    //data object EntryWithDate : Screen("entry/{date}")
-    data object Edit : Screen("edit")
+    data object Entry : Screen("entry", "entry/{date}")  // date is optional
+    data object Edit : Screen("edit", "edit/{itemId}")
     data object Chart: Screen("chart")
     data object Calendar: Screen("calendar")
 }
@@ -28,17 +25,19 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(Screen.Home.route) { HomeScreen(navController=navController) }
-        //composable(route = Screen.HomeId.route, arguments = listOf(navArgument("id") { type = NavType.LongType })) { HomeScreen() }
-        //composable(Screen.Settings.route) { SettingsScreen() }
-        //composable(Screen.Archived.route) { ArchivedScreen() }
-        composable(Screen.Entry.route) { EntryScreen(navigateBack = { navController.popBackStack()}) }
-        composable("${Screen.Entry.route}/{date}", arguments = listOf(navArgument("date") { type = NavType.StringType }))
-            { EntryScreen(navigateBack = { navController.popBackStack()}) }
-
-        composable("${Screen.Edit.route}/{itemId}", arguments = listOf(navArgument("itemId"){ type = NavType.LongType})) {
-            EditScreen(navigateBack = { navController.popBackStack()})
+        composable(Screen.Home.route) { HomeScreen(
+            navController=navController) }
+        //composable(Screen.Entry.route) { EntryScreen(navigateBack = { navController.popBackStack()}) }
+        composable(Screen.Entry.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
+            EntryScreen(navigateBack = { navController.navigateUp()})
+        }
+//        composable("${Screen.Edit.route}/{itemId}") {
+//            EditScreen(navigateBack = { navController.popBackStack()})
+//        }
+        composable(Screen.Edit.routeWithArgs, arguments = listOf(navArgument("itemId"){ type = NavType.LongType})) {
+            EditScreen(navigateBack = { navController.navigateUp()})
         }
         composable(Screen.Chart.route) { ChartScreen(navController=navController)}
         composable(Screen.Calendar.route) { CalendarScreen(navController=navController)}
-    }}
+    }
+}

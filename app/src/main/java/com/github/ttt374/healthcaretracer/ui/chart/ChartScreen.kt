@@ -24,6 +24,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
@@ -32,14 +33,14 @@ import java.time.Instant
 import java.time.ZoneId
 
 @Composable
-fun ChartScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), navController: NavController){
+fun ChartScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Blood Pressure", "Pulse", "Body Weight")
 
     Scaffold(topBar = { CustomTopAppBar("Chart") },
         bottomBar = {
-            CustomBottomAppBar(navController)
+            CustomBottomAppBar(appNavigator.navController)
         }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             TabRow(selectedTabIndex = selectedTabIndex) {

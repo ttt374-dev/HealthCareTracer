@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.ttt374.healthcaretracer.data.Item
+import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.navigation.Screen
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -55,12 +56,12 @@ import java.time.format.DateTimeFormatter
 fun HomeScreen(
             dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
             importExportViewModel: ImportExportViewModel = hiltViewModel(),
-            navController: NavController){
+            appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
-    val navigateToEntry = { navController.navigate(Screen.Entry.route) }
-    val navigateToEdit = { id: Long -> navController.navigate("${Screen.Edit.route}/$id")}
+    //val navigateToEntry = { navController.navigate(Screen.Entry.route) }
+    //val navigateToEdit = { id: Long -> navController.navigate("${Screen.Edit.route}/$id")}
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -89,9 +90,9 @@ fun HomeScreen(
         )
     },
         bottomBar = {
-            CustomBottomAppBar(navController,
+            CustomBottomAppBar(appNavigator.navController,
                 floatingActionButton = {
-                    FloatingActionButton(onClick = navigateToEntry) {
+                    FloatingActionButton(onClick = appNavigator::navigateToEntry) {
                         Icon(Icons.Filled.Add, "add")
                     }
                 }
@@ -101,7 +102,7 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn {
                 items(dailyItems.asReversed()) { dailyItem ->
-                    DailyItemRow(dailyItem, navigateToEdit)
+                    DailyItemRow(dailyItem, appNavigator::navigateToEdit)
                 }
             }
         }
@@ -125,15 +126,14 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
 fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
 
-    Column  (modifier= Modifier
-        .padding(horizontal = 8.dp, vertical = 4.dp)
+    Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth()
         .clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
             BloodPressureText(item.bpHigh, item.bpLow)
             Text(item.pulse.toString().withSubscript("bpm"))
-            //Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
+            Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             if (item.bodyWeight > 0){
                 Text(item.bodyWeight.toString().withSubscript("Kg"))
             }

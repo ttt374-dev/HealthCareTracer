@@ -13,6 +13,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
+import java.time.LocalDate
 
 sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object Home : Screen("home")
@@ -25,21 +26,29 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
+    val appNavigator = AppNavigator(navController)
+
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) { HomeScreen(
-            navController=navController) }
-        //composable(Screen.Entry.route) { EntryScreen(navigateBack = { navController.popBackStack()}) }
+            appNavigator = appNavigator) }
         composable(Screen.Entry.route) { EntryScreen(navigateBack = navController::navigateUp)}
         composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
             EntryScreen(navigateBack = { navController.navigateUp()})
         }
-//        composable("${Screen.Edit.route}/{itemId}") {
-//            EditScreen(navigateBack = { navController.popBackStack()})
-//        }
         composable(Screen.Edit.routeWithArgs, arguments = listOf(navArgument("itemId"){ type = NavType.LongType})) {
             EditScreen(navigateBack = { navController.navigateUp()})
         }
-        composable(Screen.Chart.route) { ChartScreen(navController=navController)}
-        composable(Screen.Calendar.route) { CalendarScreen(navController=navController)}
+        composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
+        composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
     }
+}
+class AppNavigator(val navController: NavHostController){
+    fun navigateBack() = navController.popBackStack()
+    fun navigateTo(route: String) = navController.navigate(route)
+
+    fun navigateToHome() = navigateTo(Screen.Home.route)
+    fun navigateToEntry(date: LocalDate? = null) =
+        navigateTo(date?.let { "${Screen.EntryWithDate.route}/$date" } ?: Screen.Entry.route)
+    fun navigateToEdit(itemId: Long) = navigateTo("${Screen.Edit.route}/$itemId")
+    fun navigateToChart() = navigateTo(Screen.Chart.route)
 }

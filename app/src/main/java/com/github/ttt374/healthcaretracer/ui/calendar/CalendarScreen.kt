@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.navigation.Screen
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -61,22 +62,22 @@ import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), navController: NavController){ // (chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController) {
+fun CalendarScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){ // (chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController) {
     //val datePickerState = rememberDatePickerState()
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
     //var selectedItem by remember { mutableStateOf<DailyItem?>(null)}
 
-    val navigateToEntry = {date: LocalDate ->
-        navController.navigate("${Screen.Entry.route}/$selectedDate")
-    }
+//    val navigateToEntry = {date: LocalDate ->
+//        navController.navigate("${Screen.Entry.route}/$selectedDate")
+//    }
     Scaffold(topBar = { CustomTopAppBar("Chart") },
 
         bottomBar = {
             CustomBottomAppBar(
-                navController = navController,
+                navController = appNavigator.navController,
                 floatingActionButton = {
-                    FloatingActionButton(onClick = { navigateToEntry(selectedDate) }){
+                    FloatingActionButton(onClick = { appNavigator.navigateToEntry(selectedDate) }){
                     //FloatingActionButton(onClick = { navController.navigate("${Screen.Entry.route}/${selectedDate.toString()}") }){
                         Icon(Icons.Filled.Add, "add")
                     }
@@ -117,7 +118,7 @@ fun CalendarScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), n
                     Spacer(modifier = Modifier.height(16.dp))
                     val selectedItem =  dailyItems.find { item -> item.date == selectedDate }
                     selectedItem?.let { dailyItem ->
-                        DailyItemRow(dailyItem, navigateToEdit = { navController.navigate("${Screen.Edit.route}/$it")})
+                        DailyItemRow(dailyItem, navigateToEdit = appNavigator::navigateToEdit)
                     }
 
 //                    Button(onClick = {

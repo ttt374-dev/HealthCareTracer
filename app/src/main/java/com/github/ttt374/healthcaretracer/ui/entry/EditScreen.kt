@@ -54,6 +54,21 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), appNavigator: App
         }
     }
 }
+class FocusManager (private val focusRequesters: List<FocusRequester>, initialIndex: Int = 0) {
+    private var currentFocusIndex: Int = initialIndex
+
+    fun shiftFocus(){
+        if (currentFocusIndex < focusRequesters.size - 1) {
+            currentFocusIndex++ // 次のフィールドに移動
+        } else {
+            currentFocusIndex = 0 // もし最後のフィールドなら最初に戻る
+        }
+        focusRequesters[currentFocusIndex].requestFocus() // 次のフィールドにフォーカスを移す
+    }
+    fun shiftFocusIf(condition: () -> Boolean){
+        if (condition()) shiftFocus()
+    }
+}
 @Composable
 fun ItemEntryContent(modifier: Modifier = Modifier,
                      editMode: EditMode = EditMode.Entry,
@@ -63,7 +78,6 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      locationList: List<String> = emptyList(),
 ){
-    //val itemUiState = entryUiState.itemUiState
     val dateTimeDialogState = rememberDialogState(false)
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
 
@@ -76,8 +90,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
     val bpUpperFocusRequester = remember { FocusRequester() }
     val bpLowerFocusRequester = remember { FocusRequester() }
     val pulseFocusRequester = remember { FocusRequester() }
-    //val submitFocusRequester = remember { FocusRequester() }
-    //val bodyWeightFocusRequester = remember { FocusRequester() }
+    val focusManager = remember { FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, pulseFocusRequester)) }
 
     // dialog
     val deleteDialogState = rememberItemDialogState()
@@ -106,9 +119,11 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                 value = itemUiState.bpUpper,
                 onValueChange = { newValue ->
                     updateItemUiState(itemUiState.copy(bpUpper = newValue))
-                    if ((newValue.toIntOrNull() ?: 0) > MIN_BP){
-                        bpLowerFocusRequester.requestFocus()
-                    }
+                    focusManager.shiftFocusIf() { (newValue.toIntOrNull() ?: 0) > MIN_BP }
+//                    if ((newValue.toIntOrNull() ?: 0) > MIN_BP){
+//                        //bpLowerFocusRequester.requestFocus()
+//                        focusManager.shiftFocus()
+//                    }
                 },
                 label = "BP High",
                 focusRequester = bpUpperFocusRequester,
@@ -121,9 +136,11 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                 value = itemUiState.bpLower,
                 onValueChange = { newValue ->
                     updateItemUiState(itemUiState.copy(bpLower = newValue))
-                    if ((newValue.toIntOrNull() ?: 0) > MIN_BP){
-                        pulseFocusRequester.requestFocus()
-                    }
+                    focusManager.shiftFocusIf() { (newValue.toIntOrNull() ?: 0) > MIN_BP }
+//                    if ((newValue.toIntOrNull() ?: 0) > MIN_BP){
+//                        //pulseFocusRequester.requestFocus()
+//                        focusManager.shiftFocus()
+//                    }
                 },
                 label = "BP Low",
                 focusRequester = bpLowerFocusRequester,

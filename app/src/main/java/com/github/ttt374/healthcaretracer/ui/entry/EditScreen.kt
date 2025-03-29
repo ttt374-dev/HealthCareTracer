@@ -217,12 +217,14 @@ fun handleBpInput(
     nextFocusRequester: FocusRequester
 ) {
     if (newValue.isDigit(3)) {
-        val intValue = newValue.toIntOrNull()
-        if (intValue != null) {
-            onValueChange(newValue)
-            if (validate(intValue)) {
-                nextFocusRequester.requestFocus()
-            }
-        }
+        onValueChange(newValue)
+        if (validate(newValue.toIntOrNull() ?: 0)) nextFocusRequester.requestFocus()
+//        val intValue = newValue.toIntOrNull()
+//        if (intValue != null) {
+//            onValueChange(newValue)
+//            if (validate(intValue)) {
+//                nextFocusRequester.requestFocus()
+//            }
+//        }
     }
 }

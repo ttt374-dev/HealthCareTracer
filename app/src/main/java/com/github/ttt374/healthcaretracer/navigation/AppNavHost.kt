@@ -16,7 +16,8 @@ import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
 
 sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object Home : Screen("home")
-    data object Entry : Screen("entry", "entry/{date}")  // date is optional
+    data object Entry: Screen("entry")
+    data object EntryWithDate : Screen("entry", "entry/{date}")  // date is optional
     data object Edit : Screen("edit", "edit/{itemId}")
     data object Chart: Screen("chart")
     data object Calendar: Screen("calendar")
@@ -28,7 +29,8 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Home.route) { HomeScreen(
             navController=navController) }
         //composable(Screen.Entry.route) { EntryScreen(navigateBack = { navController.popBackStack()}) }
-        composable(Screen.Entry.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
+        composable(Screen.Entry.route) { EntryScreen(navigateBack = navController::navigateUp)}
+        composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
             EntryScreen(navigateBack = { navController.navigateUp()})
         }
 //        composable("${Screen.Edit.route}/{itemId}") {

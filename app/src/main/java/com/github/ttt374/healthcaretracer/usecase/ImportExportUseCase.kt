@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.opencsv.CSVReader
@@ -38,8 +39,8 @@ class ExportDataUseCase(private val itemRepository: ItemRepository) {
                     val data = arrayOf(
                         item.id.toString(),
                         formatter.format(item.measuredAt),
-                        item.bpHigh.toString(),
-                        item.bpLow.toString(),
+                        item.bp.upper.toString(),
+                        item.bp.lower.toString(),
                         item.pulse.toString(),
                         item.bodyWeight.toString(),
                         item.location,
@@ -71,8 +72,7 @@ class ImportDataUseCase(
                                 val item = Item(measuredAt = Instant.parse(columns[1])
                                         .atOffset(ZoneOffset.UTC)
                                         .toInstant(),
-                                    bpHigh = columns[2].toInt(),
-                                    bpLow = columns[3].toInt(),
+                                    bp = BloodPressure(columns[2].toInt(), columns[3].toInt()),
                                     pulse = columns[4].toInt(),
                                     bodyWeight = columns[5].toFloat(),
                                     location = columns[6],

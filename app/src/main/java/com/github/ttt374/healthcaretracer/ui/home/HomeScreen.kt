@@ -114,7 +114,7 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
         verticalAlignment = Alignment.CenterVertically){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             modifier = Modifier.weight(1f))
-        BloodPressureText(dailyItem.avgBpHigh, dailyItem.avgBpLow)
+        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower)
         Text("${dailyItem.avgPulse}".withSubscript("bpm"),
             textAlign = TextAlign.End )
     }
@@ -131,7 +131,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
-            BloodPressureText(item.bpHigh, item.bpLow)
+            BloodPressureText(item.bp.upper, item.bp.lower)
             Text(item.pulse.toString().withSubscript("bpm"))
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             if (item.bodyWeight > 0){
@@ -139,6 +139,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
             }
             Text(item.location, textAlign = TextAlign.Right)
         }
+
         // 2行目: メモ（もしあれば表示）
         item.memo.takeIf { it.isNotBlank() }?.let { memoText ->
             Text(text = "memo: $memoText")
@@ -181,3 +182,15 @@ fun BloodPressureText(bpHigh: Int, bpLow: Int) {
     }
     Text(text = annotatedString)
 }
+
+fun getHypertensionGrade(bpHigh: Int, bpLow: Int): String {
+    return when {
+        bpHigh >= 180 || bpLow >= 110 -> "Grade 3 Hypertension"
+        bpHigh in 160..179 || bpLow in 100..109 -> "Grade 2 Hypertension"
+        bpHigh in 140..159 || bpLow in 90..99 -> "Grade 1 Hypertension"
+        bpHigh in 130..139 || bpLow in 85..89 -> "High-Normal Blood Pressure"
+        bpHigh >= 140 && bpLow < 90 -> "Isolated Systolic Hypertension"
+        else -> "Normal Blood Pressure"
+    }
+}
+

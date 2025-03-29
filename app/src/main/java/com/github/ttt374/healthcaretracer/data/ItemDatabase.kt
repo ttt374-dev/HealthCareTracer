@@ -10,7 +10,7 @@ import java.time.Instant
 
 /////////////////////////////
 @Database(entities = [Item::class], version = 1, exportSchema = false)
-@TypeConverters(InstantConverters::class)
+@TypeConverters(InstantConverters::class, BloodPressureConverter::class)
 abstract class ItemDatabase : RoomDatabase() {
     abstract fun itemDao(): ItemDao
 
@@ -18,7 +18,7 @@ abstract class ItemDatabase : RoomDatabase() {
         @Volatile
         private var instant: ItemDatabase? = null
 
-        fun getDatabase(context: Context, databaseName: String="items_database_03"): ItemDatabase {
+        fun getDatabase(context: Context, databaseName: String="items_database_04"): ItemDatabase {
             return instant ?: synchronized(this) {
                 Room.databaseBuilder(context, ItemDatabase::class.java, databaseName)
                     .build()
@@ -39,5 +39,17 @@ class InstantConverters {
     @TypeConverter
     fun dateToTimestamp(instant: Instant?): Long? {
         return instant?.toEpochMilli()
+    }
+}
+class BloodPressureConverter {
+    @TypeConverter
+    fun fromBloodPressure(bp: BloodPressure): String {
+        return "${bp.systolic},${bp.diastolic}"
+    }
+
+    @TypeConverter
+    fun toBloodPressure(data: String): BloodPressure {
+        val values = data.split(",")
+        return BloodPressure(values[0].toInt(), values[1].toInt())
     }
 }

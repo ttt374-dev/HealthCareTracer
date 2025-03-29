@@ -42,7 +42,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
     }
 }
-class AppNavigator(val navController: NavHostController){
+class AppNavigator(private val navController: NavHostController){
     fun navigateBack() = navController.popBackStack()
     fun navigateTo(route: String) = navController.navigate(route)
 

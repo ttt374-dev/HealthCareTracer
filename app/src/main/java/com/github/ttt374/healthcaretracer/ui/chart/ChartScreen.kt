@@ -17,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -105,11 +104,11 @@ fun HealthChart(update: (LineChart) -> Unit){
 @Composable
 fun BloodPressureChart(dailyItems: List<DailyItem>){
     HealthChart(){ chart ->
-        val bpHighEntries = dailyItems.toEntries {it.avgBpHigh.toFloat() }
-        val bpLowEntries = dailyItems.toEntries {it.avgBpLow.toFloat() }
+        val bpUpperEntries = dailyItems.toEntries {it.avgBp.upper.toFloat() }
+        val bpLowerEntries = dailyItems.toEntries {it.avgBp.lower.toFloat() }
 
-        val bpHighDataSet = LineDataSet(bpHighEntries, "BP High").apply { setStyle(Color.BLUE) }
-        val bpLowDataSet = LineDataSet(bpLowEntries, "BP Low").apply { setStyle(Color.GREEN) }
+        val bpHighDataSet = LineDataSet(bpUpperEntries, "BP High").apply { setStyle(Color.BLUE) }
+        val bpLowDataSet = LineDataSet(bpLowerEntries, "BP Low").apply { setStyle(Color.GREEN) }
 
         chart.data = LineData(bpHighDataSet, bpLowDataSet)
         chart.invalidate()

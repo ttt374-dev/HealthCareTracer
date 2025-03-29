@@ -75,7 +75,7 @@ fun CalendarScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), a
 
         bottomBar = {
             CustomBottomAppBar(
-                navController = appNavigator.navController,
+                appNavigator = appNavigator,
                 floatingActionButton = {
                     FloatingActionButton(onClick = { appNavigator.navigateToEntry(selectedDate) }){
                     //FloatingActionButton(onClick = { navController.navigate("${Screen.Entry.route}/${selectedDate.toString()}") }){

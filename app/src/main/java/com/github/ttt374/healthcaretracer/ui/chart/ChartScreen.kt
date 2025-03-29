@@ -40,7 +40,7 @@ fun ChartScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), appN
 
     Scaffold(topBar = { CustomTopAppBar("Chart") },
         bottomBar = {
-            CustomBottomAppBar(appNavigator.navController)
+            CustomBottomAppBar(appNavigator)
         }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             TabRow(selectedTabIndex = selectedTabIndex) {

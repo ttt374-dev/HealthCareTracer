@@ -31,12 +31,12 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) { HomeScreen(
             appNavigator = appNavigator) }
-        composable(Screen.Entry.route) { EntryScreen(navigateBack = navController::navigateUp)}
+        composable(Screen.Entry.route) { EntryScreen(appNavigator = appNavigator)}
         composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
-            EntryScreen(navigateBack = { navController.navigateUp()})
+            EntryScreen(appNavigator = appNavigator)
         }
         composable(Screen.Edit.routeWithArgs, arguments = listOf(navArgument("itemId"){ type = NavType.LongType})) {
-            EditScreen(navigateBack = { navController.navigateUp()})
+            EditScreen(appNavigator=appNavigator)
         }
         composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
@@ -51,4 +51,5 @@ class AppNavigator(val navController: NavHostController){
         navigateTo(date?.let { "${Screen.EntryWithDate.route}/$date" } ?: Screen.Entry.route)
     fun navigateToEdit(itemId: Long) = navigateTo("${Screen.Edit.route}/$itemId")
     fun navigateToChart() = navigateTo(Screen.Chart.route)
+    fun navigateToCalendar() = navigateTo(Screen.Calendar.route)
 }

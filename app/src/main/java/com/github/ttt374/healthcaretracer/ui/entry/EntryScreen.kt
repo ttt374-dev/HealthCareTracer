@@ -9,20 +9,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 
 @Composable
-fun EntryScreen(viewModel: EditViewModel = hiltViewModel(),
-                navigateBack: () -> Unit = {}){
+fun EntryScreen(viewModel: EditViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val uiState by viewModel.itemUiState.collectAsState()
     val locationList by viewModel.locationList.collectAsState()
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            navigateBack()
+            appNavigator.navigateBack()
         }
     }
-    Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = navigateBack) }){ innerPadding ->
+    Scaffold(topBar = { CustomTopAppBar("Entry", navigateBack = appNavigator::navigateBack) }){ innerPadding ->
         Column (modifier = Modifier.padding(innerPadding)) {
             ItemEntryContent(itemUiState = uiState,
                 updateItemUiState = viewModel::updateItemUiState,

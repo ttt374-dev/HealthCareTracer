@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
@@ -32,17 +33,17 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), navigateBack: () -> Unit = {}) {
+fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
     val locationList by editViewModel.locationList.collectAsState()
 
     LaunchedEffect(itemUiState.isSuccess) {
         if (itemUiState.isSuccess) {
-            navigateBack()
+            appNavigator.navigateBack()
         }
     }
 
-    Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = navigateBack) }){ innerPadding ->
+    Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = appNavigator::navigateBack) }){ innerPadding ->
         Column (modifier = Modifier.padding(innerPadding)) {
             ItemEntryContent(editMode = EditMode.Edit,
                 itemUiState = itemUiState,

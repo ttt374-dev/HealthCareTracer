@@ -90,7 +90,7 @@ fun HomeScreen(
         )
     },
         bottomBar = {
-            CustomBottomAppBar(appNavigator.navController,
+            CustomBottomAppBar(appNavigator,
                 floatingActionButton = {
                     FloatingActionButton(onClick = appNavigator::navigateToEntry) {
                         Icon(Icons.Filled.Add, "add")

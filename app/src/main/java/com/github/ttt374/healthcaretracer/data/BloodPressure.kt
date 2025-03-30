@@ -1,5 +1,7 @@
 package com.github.ttt374.healthcaretracer.data
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -12,6 +14,7 @@ import androidx.compose.ui.unit.sp
 data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
     val upper: Int get() = systolic
     val lower: Int get() = diastolic
+
     fun toAnnotatedString(): AnnotatedString {
         return buildAnnotatedString {
             val sbpColor = BloodPressureCategory.getCategory(upper, true).color
@@ -49,7 +52,9 @@ sealed class BloodPressureCategory(
 
     companion object {
         fun getCategory(bp: BloodPressure): BloodPressureCategory {
-            return values().find { bp.upper in it.sbpRange || bp.lower in it.dbpRange } ?: Normal
+            return values().find { bp.upper in it.sbpRange && bp.lower in it.dbpRange }
+                ?: values().find { bp.upper in it.sbpRange || bp.lower in it.dbpRange }
+                ?: Normal
         }
 
         fun getCategory(value: Int, isSbp: Boolean): BloodPressureCategory {

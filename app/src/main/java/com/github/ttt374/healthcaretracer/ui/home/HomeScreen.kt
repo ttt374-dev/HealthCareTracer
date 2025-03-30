@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.navigation.Screen
@@ -110,12 +112,16 @@ fun HomeScreen(
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
-    Row (modifier= Modifier.fillMaxWidth().background(Color.LightGray),
+    Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         verticalAlignment = Alignment.CenterVertically){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
-        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower)
+        Text(dailyItem.avgBp.toAnnotatedString())
+//        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower,
+//            color = MaterialTheme.colorScheme.onSecondaryContainer,)
         Text("${dailyItem.avgPulse}".withSubscript("bpm"),
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
     }
     dailyItem.items.forEach { item ->
@@ -131,25 +137,32 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
-            BloodPressureText(item.bp.upper, item.bp.lower)
+            Text(item.bp.toAnnotatedString())
+            //BloodPressureText(item.bp.upper, item.bp.lower, color = MaterialTheme.colorScheme.primary)
             Text(item.pulse.toString().withSubscript("bpm"))
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             if (item.bodyWeight > 0){
                 Text(item.bodyWeight.toString().withSubscript("Kg"))
             }
-            Text(item.location, textAlign = TextAlign.Right)
         }
 
-        // 2行目: メモ（もしあれば表示）
-        item.memo.takeIf { it.isNotBlank() }?.let { memoText ->
-            Text(text = "memo: $memoText")
+        Row {
+            //Text(getHypertensionGrade(item.bp.upper, item.bp.lower))
+            val htnGrade = BloodPressureCategory.getCategory(item.bp) // fromValues(item.bp.upper, item.bp.lower)
+            Text(htnGrade.name, color = htnGrade.color)
+            Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
+            Text(item.location, textAlign = TextAlign.Right)
+        }
+        Row {
+            item.memo.takeIf { it.isNotBlank() }?.let { memoText ->
+                Text(text = "memo: $memoText", fontSize = 12.sp)
+            }
         }
     }
 
     HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
 fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
-    //val text = this
     return AnnotatedString.Builder().apply {
         pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
        append(this@withSubscript)
@@ -164,33 +177,45 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subs
 private const val HIGH_BP_THRESHOLD = 140
 private const val LOW_BP_THRESHOLD = 90
 
-@Composable
-fun BloodPressureText(bpHigh: Int, bpLow: Int) {
-    val annotatedString = buildAnnotatedString {
-        pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = if (bpHigh > HIGH_BP_THRESHOLD) Color.Red else Color.Unspecified))
-        append(bpHigh.toString())
-        pop()
-        append("/")
+//
+//@Composable
+//fun BloodPressureText(bpUpper: Int, bpLower: Int, color: Color) {
+//    Text(text = BloodPressure(bpUpper, bpLower).toAnnotatedString(), color = color)
+//}
+//
 
-        pushStyle(SpanStyle(color = if (bpLow > LOW_BP_THRESHOLD) Color.Red else Color.Unspecified))
-        append(bpLow.toString())
-        pop()
+//val OrangeLight = Color(0xFFFFC107) // Light Orange (Amber 500)
+val OrangeDark = Color(0xFFF57C00)  // Dark Orange (Orange 700)
 
-        pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
-        append(" mmHg")
-        pop()
+sealed class BloodPressureCategory(
+    val name: String,
+    val sbpRange: IntRange,
+    val dbpRange: IntRange,
+    val color: Color,
+) {
+    data object Normal : BloodPressureCategory("Normal", 90..119, 60..79, Color.Unspecified)
+    data object Elevated : BloodPressureCategory("Elevated", 120..129, 60..79, Color.Unspecified)
+    data object HypertensionStage1 : BloodPressureCategory("Hypertension Stage 1", 130..139, 80..89, OrangeDark)
+    data object HypertensionStage2 : BloodPressureCategory("Hypertension Stage 2", 140..179, 90..119, Color.Red)
+    data object HypertensiveCrisis : BloodPressureCategory("Hypertensive Crisis", 180..Int.MAX_VALUE, 120..Int.MAX_VALUE, Color.Magenta)
+
+    companion object {
+        fun getCategory(bp: BloodPressure): BloodPressureCategory {
+            return values().find { bp.upper in it.sbpRange || bp.lower in it.dbpRange } ?: Normal
+        }
+        fun getCategory(value: Int, isSbp: Boolean): BloodPressureCategory {
+            return values().find {
+                if (isSbp) value in it.sbpRange else value in it.dbpRange
+            } ?: Normal
+        }
+//        fun fromValues(sbp: Int, dbp: Int): BloodPressureCategory {
+//            return values().find { sbp in it.sbpRange || dbp in it.dbpRange } ?: Normal
+//        }
+//        fun fromValue(value: Int, isSbp: Boolean): BloodPressureCategory {
+//            return values().find {
+//                if (isSbp) value in it.sbpRange else value in it.dbpRange
+//            } ?: Normal
+//        }
+        private fun values() = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
     }
-    Text(text = annotatedString)
 }
-
-fun getHypertensionGrade(bpHigh: Int, bpLow: Int): String {
-    return when {
-        bpHigh >= 180 || bpLow >= 110 -> "Grade 3 Hypertension"
-        bpHigh in 160..179 || bpLow in 100..109 -> "Grade 2 Hypertension"
-        bpHigh in 140..159 || bpLow in 90..99 -> "Grade 1 Hypertension"
-        bpHigh in 130..139 || bpLow in 85..89 -> "High-Normal Blood Pressure"
-        bpHigh >= 140 && bpLow < 90 -> "Isolated Systolic Hypertension"
-        else -> "Normal Blood Pressure"
-    }
-}
-

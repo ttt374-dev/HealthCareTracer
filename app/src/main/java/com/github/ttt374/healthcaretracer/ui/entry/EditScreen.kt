@@ -39,9 +39,10 @@ import java.time.format.DateTimeFormatter
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
     val locationList by editViewModel.locationList.collectAsState()
+    val saveState by editViewModel.saveState.collectAsState()
 
-    LaunchedEffect(itemUiState.isSuccess) {
-        if (itemUiState.isSuccess) {
+    LaunchedEffect(saveState) {
+        if (saveState) {
             appNavigator.navigateBack()
         }
     }

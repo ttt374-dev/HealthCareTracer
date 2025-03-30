@@ -29,14 +29,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
-    //private val itemId: Long = checkNotNull(savedStateHandle["itemId"])
     private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
     private val dateString: String? = savedStateHandle["date"]
     private val date: LocalDate = dateString?.let { LocalDate.parse(it)} ?: LocalDate.now()
-    //private val selectedDate: LocalDate = savedStateHandle["date"]?.let { LocalDate.parse(it) } ?: LocalDate.now()
 
     private val _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
     val itemUiState: StateFlow<ItemUiState> get() = _itemUiState // StateFlow として公開
+    private val _saveState = MutableStateFlow(false)
+    val saveState: StateFlow<Boolean> get() = _saveState
+
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -73,11 +74,11 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
         setSuccessState(false)
     }
     private fun setSuccessState(value: Boolean){
-        _itemUiState.value = itemUiState.value.copy(isSuccess = value)
+        //_itemUiState.value = itemUiState.value.copy(isSuccess = value)
+        _saveState.value = value
     }
 }
 data class ItemUiState (
-    //val editMode: EditMode = EditMode.Entry,
     val id: Long? = null,
     val bpUpper: String = "",
     val bpLower: String = "",
@@ -87,7 +88,7 @@ data class ItemUiState (
     val memo: String = "",
     val measuredAt: Instant = Instant.now(),
 
-    val isSuccess: Boolean = false,
+    //val isSuccess: Boolean = false,
 ){
     fun toItem() = Item(
         //id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
@@ -123,7 +124,7 @@ fun Item.toItemUiState(): ItemUiState {
         this.bp.upper.toString(), this.bp.lower.toString(), this.pulse.toString(),
         //if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
         this.bodyWeight.takeIf { it != 0.0F }?.toString().orEmpty(),
-        this.location, this.memo, this.measuredAt, false)
+        this.location, this.memo, this.measuredAt)
 }
 
 sealed class EditMode {

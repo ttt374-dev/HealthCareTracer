@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.github.ttt374.healthcaretracer.data.BloodPressure
+import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.navigation.Screen
@@ -183,39 +184,3 @@ private const val LOW_BP_THRESHOLD = 90
 //    Text(text = BloodPressure(bpUpper, bpLower).toAnnotatedString(), color = color)
 //}
 //
-
-//val OrangeLight = Color(0xFFFFC107) // Light Orange (Amber 500)
-val OrangeDark = Color(0xFFF57C00)  // Dark Orange (Orange 700)
-
-sealed class BloodPressureCategory(
-    val name: String,
-    val sbpRange: IntRange,
-    val dbpRange: IntRange,
-    val color: Color,
-) {
-    data object Normal : BloodPressureCategory("Normal", 90..119, 60..79, Color.Unspecified)
-    data object Elevated : BloodPressureCategory("Elevated", 120..129, 60..79, Color.Unspecified)
-    data object HypertensionStage1 : BloodPressureCategory("Hypertension Stage 1", 130..139, 80..89, OrangeDark)
-    data object HypertensionStage2 : BloodPressureCategory("Hypertension Stage 2", 140..179, 90..119, Color.Red)
-    data object HypertensiveCrisis : BloodPressureCategory("Hypertensive Crisis", 180..Int.MAX_VALUE, 120..Int.MAX_VALUE, Color.Magenta)
-
-    companion object {
-        fun getCategory(bp: BloodPressure): BloodPressureCategory {
-            return values().find { bp.upper in it.sbpRange || bp.lower in it.dbpRange } ?: Normal
-        }
-        fun getCategory(value: Int, isSbp: Boolean): BloodPressureCategory {
-            return values().find {
-                if (isSbp) value in it.sbpRange else value in it.dbpRange
-            } ?: Normal
-        }
-//        fun fromValues(sbp: Int, dbp: Int): BloodPressureCategory {
-//            return values().find { sbp in it.sbpRange || dbp in it.dbpRange } ?: Normal
-//        }
-//        fun fromValue(value: Int, isSbp: Boolean): BloodPressureCategory {
-//            return values().find {
-//                if (isSbp) value in it.sbpRange else value in it.dbpRange
-//            } ?: Normal
-//        }
-        private fun values() = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
-    }
-}

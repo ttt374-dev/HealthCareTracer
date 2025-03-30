@@ -36,10 +36,10 @@ import java.time.format.DateTimeFormatter
 //    return bpValue in MIN_BP..MAX_BP
 //}
 @Composable
-fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), appNavigator: AppNavigator) {
+fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: ItemViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
-    val locationList by editViewModel.locationList.collectAsState()
-    val saveState by editViewModel.saveState.collectAsState()
+    val locationList by itemViewModel.locationList.collectAsState()
+    val saveState by itemViewModel.saveState.collectAsState()
 
     LaunchedEffect(saveState) {
         if (saveState) {
@@ -52,8 +52,8 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), appNavigator: App
                 itemUiState = itemUiState,
                 updateItemUiState = editViewModel::updateItemUiState,
                 locationList = locationList,
-                onPost = editViewModel::upsertItem,
-                onDelete = editViewModel::deleteItem)
+                onPost = { itemViewModel.upsertItem(itemUiState.toItem())},
+                onDelete = { itemViewModel.deleteItem(itemUiState.toItem())})
         }
     }
 }
@@ -71,6 +71,11 @@ class FocusManager (private val focusRequesters: List<FocusRequester>, initialIn
     fun shiftFocusIf(condition: () -> Boolean){
         if (condition()) shiftFocus()
     }
+}
+sealed class EditMode {
+    data object Entry : EditMode()
+    data object Edit: EditMode()
+    //data class Edit(val itemId: Long) : EditMode()
 }
 @Composable
 fun ItemEntryContent(modifier: Modifier = Modifier,
@@ -220,8 +225,3 @@ fun BloodPressureInputField(
         modifier = modifier.focusRequester(focusRequester)
     )
 }
-
-//fun isValidPulse(pulse: Int): Boolean {
-//    return pulse in MIN_PULSE..MAX_PULSE
-//}
-

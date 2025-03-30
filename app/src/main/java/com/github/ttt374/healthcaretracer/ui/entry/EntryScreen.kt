@@ -13,10 +13,10 @@ import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 
 @Composable
-fun EntryScreen(viewModel: EditViewModel = hiltViewModel(), appNavigator: AppNavigator){
+fun EntryScreen(viewModel: EntryViewModel = hiltViewModel(), itemViewModel: ItemViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val uiState by viewModel.itemUiState.collectAsState()
-    val locationList by viewModel.locationList.collectAsState()
-    val saveState by viewModel.saveState.collectAsState()
+    val locationList by itemViewModel.locationList.collectAsState()
+    val saveState by itemViewModel.saveState.collectAsState()
 
     LaunchedEffect(saveState) {
         if (saveState) {
@@ -28,7 +28,7 @@ fun EntryScreen(viewModel: EditViewModel = hiltViewModel(), appNavigator: AppNav
             ItemEntryContent(itemUiState = uiState,
                 updateItemUiState = viewModel::updateItemUiState,
                 locationList = locationList,
-                onPost = viewModel::upsertItem)
+                onPost = { itemViewModel.upsertItem(uiState.toItem())})
         }
     }
 }

@@ -76,7 +76,7 @@ private fun LineChart.setupChart() {
     axisLeft.apply {
         spaceTop = 40f
         spaceBottom = 40f
-        axisMinimum = 0f
+        //axisMinimum = 0f
     }
     axisRight.isEnabled = false
 }

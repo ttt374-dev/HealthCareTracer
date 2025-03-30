@@ -11,6 +11,7 @@ import com.github.ttt374.healthcaretracer.data.MAX_BP
 import com.github.ttt374.healthcaretracer.data.MAX_PULSE
 import com.github.ttt374.healthcaretracer.data.MIN_BP
 import com.github.ttt374.healthcaretracer.data.MIN_PULSE
+import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,9 +27,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlin.system.exitProcess
 
 @HiltViewModel
-class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
+class EditViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCase, savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
     private val itemId: Long? = savedStateHandle["itemId"] // TODO: error check
     private val dateString: String? = savedStateHandle["date"]
     private val date: LocalDate = dateString?.let { LocalDate.parse(it)} ?: LocalDate.now()
@@ -59,6 +61,7 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     fun upsertItem(){
         viewModelScope.launch {
             itemRepository.upsertItem(itemUiState.value.toItem())
+            exportDataUseCase("items-autosave.csv")
             setSuccessState(true)
         }
 

@@ -23,16 +23,22 @@ import java.time.format.DateTimeFormatter
 
 
 class ExportDataUseCase(private val itemRepository: ItemRepository) {
-    suspend operator fun invoke(): Result<String> = runCatching {
+    suspend operator fun invoke(filename: String? = null): Result<String> = runCatching {
         val downloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        val filenameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_hh_mm").withZone(ZoneId.systemDefault())
-        val file = File(downloadFolder, "items-${filenameFormatter.format(Instant.now())}.csv")
+        val filenameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm").withZone(ZoneId.systemDefault())
+        val defaultFilename = "items-${filenameFormatter.format(Instant.now())}.csv"
+
+        val finalFilename = filename?.let {
+            if (it.endsWith(".csv")) it else "$it.csv"
+        } ?: defaultFilename
+
+        val file = File(downloadFolder, finalFilename)
         Log.d("download CSV to", file.absolutePath)
 
         val items = itemRepository.retrieveItemsFlow().firstOrNull()
         withContext(Dispatchers.IO) {
             CSVWriter(FileWriter(file)).use { writer ->
-                writer.writeNext(arrayOf("id", "measuredAt", "high BP", "low BP", "pulse", "body weight", "location", "memo"))
+                writer.writeNext(arrayOf("id", "measuredAt", "BP upper", "BP lower", "pulse", "body weight", "location", "memo"))
                 val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
 
                 items?.forEach { item ->

@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,20 +33,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.navigation.Screen
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
@@ -57,9 +51,9 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
-            dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
-            importExportViewModel: ImportExportViewModel = hiltViewModel(),
-            appNavigator: AppNavigator){
+    dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
+    importExportViewModel: BackupDataViewModel = hiltViewModel(),
+    appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }

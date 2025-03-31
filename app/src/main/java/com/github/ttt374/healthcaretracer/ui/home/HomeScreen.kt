@@ -51,7 +51,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
-    dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
+    dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     importExportViewModel: BackupDataViewModel = hiltViewModel(),
     appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
@@ -136,7 +136,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
             //BloodPressureText(item.bp.upper, item.bp.lower, color = MaterialTheme.colorScheme.primary)
             Text(item.pulse.toString().withSubscript("bpm"))
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
-            if (item.bodyWeight > 0){
+            if (item.bodyWeight != null){
                 Text(item.bodyWeight.toString().withSubscript("Kg"))
             }
         }

@@ -27,7 +27,7 @@ data class ItemUiState (
         //bpHigh = bpHigh.toIntOrNull() ?: 0,
         //bpLow = bpLow.toIntOrNull() ?:0,
         pulse = pulse.toIntOrNull() ?: 0,
-        bodyWeight = bodyWeight.toFloatOrNull() ?: 0F,
+        bodyWeight = if (bodyWeight == "") bodyWeight.toFloatOrNull() else null,
         memo = memo, location = location, measuredAt = measuredAt)
 //    fun isBpUpperValid(): Boolean {
 //        return (bpUpper.toIntOrNull() ?: 0) in MIN_BP..MAX_BP

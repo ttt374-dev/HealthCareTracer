@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.ui.calendar
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,14 +14,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,33 +32,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.navigation.Screen
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
 import com.github.ttt374.healthcaretracer.ui.home.DailyItemRow
-import com.github.ttt374.healthcaretracer.ui.home.DailyItemsViewModel
-import com.github.ttt374.healthcaretracer.ui.home.ItemRow
+import com.github.ttt374.healthcaretracer.ui.home.ItemsViewModel
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
-import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){ // (chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController) {
+fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){ // (chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController) {
     //val datePickerState = rememberDatePickerState()
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }

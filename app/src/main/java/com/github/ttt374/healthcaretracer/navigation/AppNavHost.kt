@@ -13,6 +13,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
+import com.github.ttt374.healthcaretracer.ui.statics.StaticsScreen
 import java.time.LocalDate
 
 sealed class Screen(val route: String, val routeWithArgs: String = "") {
@@ -22,6 +23,7 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object Edit : Screen("edit", "edit/{itemId}")
     data object Chart: Screen("chart")
     data object Calendar: Screen("calendar")
+    data object Statics: Screen("statics")
 }
 
 @Composable
@@ -40,6 +42,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
+        composable(Screen.Statics.route) { StaticsScreen(appNavigator=appNavigator)}
     }
 }
 class AppNavigator(private val navController: NavHostController){
@@ -52,4 +55,5 @@ class AppNavigator(private val navController: NavHostController){
     fun navigateToEdit(itemId: Long) = navigateTo("${Screen.Edit.route}/$itemId")
     fun navigateToChart() = navigateTo(Screen.Chart.route)
     fun navigateToCalendar() = navigateTo(Screen.Calendar.route)
+    fun navigateToStatics() = navigateTo(Screen.Statics.route)
 }

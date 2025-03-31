@@ -32,9 +32,6 @@ import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-//fun isValidBpValue(bpValue: Int): Boolean {
-//    return bpValue in MIN_BP..MAX_BP
-//}
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: ItemViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
@@ -75,7 +72,6 @@ class FocusManager (private val focusRequesters: List<FocusRequester>, initialIn
 sealed class EditMode {
     data object Entry : EditMode()
     data object Edit: EditMode()
-    //data class Edit(val itemId: Long) : EditMode()
 }
 @Composable
 fun ItemEntryContent(modifier: Modifier = Modifier,
@@ -143,17 +139,17 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                 },
                 label = { Text("Bp Lower")},
                 keyboardOptions = numberKeyboardOptions,
-                modifier = modifier.focusRequester(bpUpperFocusRequester)
+                modifier = modifier.focusRequester(bpLowerFocusRequester)
             )
         }
         InputFieldRow("Pulse") {
             TextField(itemUiState.pulse,
                 onValueChange = {
-                    updateItemUiState(itemUiState.copy(bpLower = it))
+                    updateItemUiState(itemUiState.copy(pulse = it))
                 },
                 label = { Text("Pulse")},
                 keyboardOptions = numberKeyboardOptions,
-                modifier = modifier.focusRequester(bpUpperFocusRequester)
+                modifier = modifier.focusRequester(pulseFocusRequester)
             )
         }
         InputFieldRow("") {

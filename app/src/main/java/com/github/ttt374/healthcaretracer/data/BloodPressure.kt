@@ -9,6 +9,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 
 
 data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
@@ -33,6 +34,22 @@ data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
             pop()
         }
     }
+}
+fun List<BloodPressure>.average(): BloodPressure {
+    if (isEmpty()) return BloodPressure()
+
+    val avgUpper = sumOf { it.upper }.toDouble() / size
+    val avgLower = sumOf { it.lower }.toDouble() / size
+
+    return BloodPressure(avgUpper.roundToInt(), avgLower.roundToInt())
+}
+fun List<BloodPressure>.max(): BloodPressure {
+    if (isEmpty()) return BloodPressure()
+    return BloodPressure(this.map { it.upper}.max(), this.map { it.lower}.max())
+}
+fun List<BloodPressure>.min(): BloodPressure {
+    if (isEmpty()) return BloodPressure()
+    return BloodPressure(this.map { it.upper}.min(), this.map { it.lower}.min())
 }
 
 //val OrangeLight = Color(0xFFFFC107) // Light Orange (Amber 500)

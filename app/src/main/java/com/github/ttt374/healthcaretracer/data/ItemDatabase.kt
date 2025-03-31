@@ -18,7 +18,7 @@ abstract class ItemDatabase : RoomDatabase() {
         @Volatile
         private var instant: ItemDatabase? = null
 
-        fun getDatabase(context: Context, databaseName: String="items_database_04"): ItemDatabase {
+        fun getDatabase(context: Context, databaseName: String="items_database_05"): ItemDatabase {
             return instant ?: synchronized(this) {
                 Room.databaseBuilder(context, ItemDatabase::class.java, databaseName)
                     .build()

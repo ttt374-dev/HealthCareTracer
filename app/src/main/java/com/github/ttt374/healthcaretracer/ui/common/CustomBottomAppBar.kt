@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.ui.common
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.BottomAppBar
@@ -18,7 +19,8 @@ fun CustomBottomAppBar (appNavigator: AppNavigator, floatingActionButton: @Compo
     val actions = listOf(
         BottomAction(Icons.Filled.Home, "home", appNavigator::navigateToHome),
         BottomAction(Icons.AutoMirrored.Filled.ShowChart, "chart", appNavigator::navigateToChart),
-        BottomAction(Icons.Filled.CalendarMonth, "calendar", appNavigator::navigateToCalendar)
+        BottomAction(Icons.Filled.CalendarMonth, "calendar", appNavigator::navigateToCalendar),
+        BottomAction(Icons.Filled.Analytics, "statics", appNavigator::navigateToStatics)
     )
     BottomAppBar(actions = {
         actions.forEach { action ->

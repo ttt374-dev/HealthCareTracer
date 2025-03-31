@@ -18,7 +18,7 @@ data class Item (
 //    val bpLow: Int = 0,
     val bp: BloodPressure = BloodPressure(),
     val pulse: Int = 0,
-    val bodyWeight: Float = 0F,
+    val bodyWeight: Float? = null,
     val location: String = "",
 
     val memo: String = "",

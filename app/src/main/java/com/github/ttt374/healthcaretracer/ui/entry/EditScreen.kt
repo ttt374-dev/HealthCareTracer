@@ -60,7 +60,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
 class FocusManager (private val focusRequesters: List<FocusRequester>, initialIndex: Int = 0) {
     private var currentFocusIndex: Int = initialIndex
 
-    fun shiftFocus(){
+    private fun shiftFocus(){
         if (currentFocusIndex < focusRequesters.size - 1) {
             currentFocusIndex++ // 次のフィールドに移動
         } else {
@@ -114,114 +114,81 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             bpUpperFocusRequester.requestFocus()
         }
     }
-    
+    val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+    val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
+
     Column (modifier=modifier){
         val labelModifier = Modifier.weight(1f)
-        Row {
-            Text("Measured At", modifier = labelModifier)
+        InputFieldRow("Measured At"){
             OutlinedButton(onClick = { dateTimeDialogState.open() }){
                 Text(dateTimeFormatter.format(itemUiState.measuredAt))
             }
         }
-        Row {
-            Text("High BP", modifier = labelModifier)
-            BloodPressureInputField(
-                value = itemUiState.bpUpper,
-                onValueChange = { newValue ->
-                    updateItemUiState(itemUiState.copy(bpUpper = newValue))
-                    focusManager.shiftFocusIf() { (newValue.toIntOrNull() ?: 0) > MIN_BP }
-//                    if ((newValue.toIntOrNull() ?: 0) > MIN_BP){
-//                        //bpLowerFocusRequester.requestFocus()
-//                        focusManager.shiftFocus()
-//                    }
+        InputFieldRow("Bp Upper"){
+            TextField(itemUiState.bpUpper,
+                onValueChange = {
+                     updateItemUiState(itemUiState.copy(bpUpper = it))
+                    focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
                 },
-                label = "BP High",
-                focusRequester = bpUpperFocusRequester,
-                //modifier = Modifier.weight(2f)
+                label = { Text("Bp Upper")},
+                keyboardOptions = numberKeyboardOptions,
+                modifier = modifier.focusRequester(bpUpperFocusRequester)
             )
         }
-        Row {
-            Text("High Low", modifier = labelModifier)
-            BloodPressureInputField(
-                value = itemUiState.bpLower,
-                onValueChange = { newValue ->
-                    updateItemUiState(itemUiState.copy(bpLower = newValue))
-                    focusManager.shiftFocusIf() { (newValue.toIntOrNull() ?: 0) > MIN_BP }
-//                    if ((newValue.toIntOrNull() ?: 0) > MIN_BP){
-//                        //pulseFocusRequester.requestFocus()
-//                        focusManager.shiftFocus()
-//                    }
+        InputFieldRow("Bp Lower") {
+            TextField(itemUiState.bpLower,
+                onValueChange = {
+                    updateItemUiState(itemUiState.copy(bpLower = it))
+                    focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
                 },
-                label = "BP Low",
-                focusRequester = bpLowerFocusRequester,
-                //modifier = Modifier.weight(2f)
+                label = { Text("Bp Lower")},
+                keyboardOptions = numberKeyboardOptions,
+                modifier = modifier.focusRequester(bpUpperFocusRequester)
             )
         }
-        Row {
-            Text("Pulse", modifier = labelModifier)
-            BloodPressureInputField(
-                value = itemUiState.pulse,
-                onValueChange = { newValue ->
-                    updateItemUiState(itemUiState.copy(pulse = newValue))
-//                    if (itemUiState.isPulseValid()){
-//                    //if (isValidPulse(newValue.toIntOrNull() ?: 0 )){
-//                        //bodyWeightFocusRequester.requestFocus()
-//                    }
+        InputFieldRow("Pulse") {
+            TextField(itemUiState.pulse,
+                onValueChange = {
+                    updateItemUiState(itemUiState.copy(bpLower = it))
                 },
-                label = "Pulse",
-                focusRequester = pulseFocusRequester,
+                label = { Text("Pulse")},
+                keyboardOptions = numberKeyboardOptions,
+                modifier = modifier.focusRequester(bpUpperFocusRequester)
             )
         }
-        Row {
-            Text("", modifier = labelModifier)
-
+        InputFieldRow("") {
+            Button(enabled = itemUiState.isValid(), onClick = { onPost() }){
+                Text("OK")
+            }
+        }
+        InputFieldRow("Body Weight") {
+            TextField(itemUiState.bodyWeight,
+                onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
+                keyboardOptions = decimalKeyboardOptions,
+                label = { Text("Body Weight (optional)")})
+        }
+        InputFieldRow("Location") {
+            SelectableTextField(itemUiState.location, locationList,
+                onValueChange = { updateItemUiState(itemUiState.copy(location = it)) },
+            )
+        }
+        InputFieldRow("Memo") {
+            TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))},
+                label = { Text("Memo (optional)")})
+        }
+        InputFieldRow("") {
             if (editMode is EditMode.Edit){
                 Button(onClick = { deleteDialogState.open(itemUiState.toItem()) }){
                     Text("Delete")
                 }
             }
-            Button(enabled = itemUiState.isValid(), onClick = { onPost() }){
-                Text("OK")
-            }
-        }
-        Row {
-            Text("Body Weight", modifier = labelModifier)
-            TextField(itemUiState.bodyWeight, onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal),
-                //modifier = Modifier.focusRequester(bodyWeightFocusRequester),
-                label = { Text("Body Weight (optional)")})
-        }
-
-        Row {
-            Text("Location", modifier = labelModifier)
-            //TextField(itemUiState.location, { updateItemUiState(itemUiState.copy(location = it)) }, modifier = Modifier.weight(2f))
-            SelectableTextField(itemUiState.location, locationList,
-                onValueChange = {
-                    updateItemUiState(itemUiState.copy(location = it))
-                },
-            )
-        }
-        Row {
-            Text("Memo", modifier = labelModifier)
-            TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))},
-                label = { Text("Memo (optional)")})
         }
     }
 }
-
 @Composable
-fun BloodPressureInputField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-        modifier = modifier.focusRequester(focusRequester)
-    )
+fun InputFieldRow(label: String, inputField: @Composable () -> Unit){
+    Row {
+        Text(label, modifier = Modifier.weight(1f))
+        inputField()
+    }
 }

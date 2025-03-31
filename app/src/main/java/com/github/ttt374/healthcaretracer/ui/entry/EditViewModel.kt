@@ -1,43 +1,22 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.BloodPressure
-import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
-import com.github.ttt374.healthcaretracer.data.MAX_BP
-import com.github.ttt374.healthcaretracer.data.MAX_PULSE
-import com.github.ttt374.healthcaretracer.data.MIN_BP
-import com.github.ttt374.healthcaretracer.data.MIN_PULSE
-import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.TimeZone
 import javax.inject.Inject
-import kotlin.system.exitProcess
 
 @HiltViewModel
 class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
     private val itemId: Long = checkNotNull(savedStateHandle["itemId"]) // TODO: error check
      private val _itemUiState = MutableStateFlow(ItemUiState()) // MutableStateFlow に変更
     val itemUiState: StateFlow<ItemUiState> get() = _itemUiState // StateFlow として公開
-    //private val _saveState = MutableStateFlow(false)
-    //val saveState: StateFlow<Boolean> get() = _saveState
-
-    //val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         viewModelScope.launch {
@@ -50,35 +29,4 @@ class EditViewModel @Inject constructor (savedStateHandle: SavedStateHandle, pri
     fun updateItemUiState(uiState: ItemUiState) {
         _itemUiState.value = uiState
     }
-//    fun upsertItem(){
-//        viewModelScope.launch {
-//            itemRepository.upsertItem(itemUiState.value.toItem())
-//            exportDataUseCase("items-autosave.csv")
-//            setSuccessState(true)
-//        }
-//
-//    }
-//    fun deleteItem(){
-//        viewModelScope.launch {
-//            itemRepository.deleteItem(itemUiState.value.toItem())
-//            setSuccessState(true)
-//        }
-//    }
-//    override fun onCleared() {
-//        super.onCleared()
-//        setSuccessState(false)
-//    }
-//    private fun setSuccessState(value: Boolean){
-//        //_itemUiState.value = itemUiState.value.copy(isSuccess = value)
-//        _saveState.value = value
-//    }
 }
-
-
-
-
-//fun <T : Comparable<T>> Pair<T, T>.contains(value: T): Boolean {
-//     val (min, max) = if (first <= second) this else second to first
-//    return value in min..max
-//}
-

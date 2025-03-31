@@ -26,7 +26,6 @@ class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCas
             exportDataUseCase("items-autosave.csv")
             setSuccessState(true)
         }
-
     }
     fun deleteItem(item: Item){
         viewModelScope.launch {

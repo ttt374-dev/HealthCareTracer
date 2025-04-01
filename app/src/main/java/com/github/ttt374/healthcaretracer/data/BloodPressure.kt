@@ -9,47 +9,50 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
+import java.time.Instant
+import java.time.ZoneId
 
 
-data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
-    val upper: Int get() = systolic
-    val lower: Int get() = diastolic
-
-    fun toAnnotatedString(): AnnotatedString {
-        return buildAnnotatedString {
-            val sbpColor = BloodPressureCategory.getCategory(upper, true).color
-            val dbpColor = BloodPressureCategory.getCategory(lower, false).color
+//data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
+//    val upper: Int get() = systolic
+//    val lower: Int get() = diastolic
+//
+////    fun toAnnotatedString(): AnnotatedString {
+////        return bloodPressureFormatted(upper, lower)
+////    }
+//}
+fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int?=null): AnnotatedString {
+    return buildAnnotatedString {
+        if (bpUpper != null){
+            val sbpColor = BloodPressureCategory.getCategory(bpUpper, true).color
             pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = sbpColor))
-            append(upper.toString())
+            append(bpUpper.toString())
             pop()
-            append("/")
-
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = dbpColor))
-            append(lower.toString())
-            pop()
-
-            pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
-            append(" mmHg")
-            pop()
+        } else {
+            append("-")
         }
+        append("/")
+
+        if (bpLower != null){
+            val dbpColor = BloodPressureCategory.getCategory(bpLower, false).color
+            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = dbpColor))
+            append(bpLower.toString())
+            pop()
+        } else {
+            append("-")
+        }
+        if (meGap != null){
+            append("(")
+            val gapColor = if (meGap > 20) Color.Red else Color.Unspecified
+            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = gapColor))
+            append(meGap.toString())
+            pop()
+            append(")")
+        }
+        pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
+        append("mmHg")
+        pop()
     }
-}
-fun List<BloodPressure>.average(): BloodPressure {
-    if (isEmpty()) return BloodPressure()
-
-    val avgUpper = sumOf { it.upper }.toDouble() / size
-    val avgLower = sumOf { it.lower }.toDouble() / size
-
-    return BloodPressure(avgUpper.roundToInt(), avgLower.roundToInt())
-}
-fun List<BloodPressure>.max(): BloodPressure {
-    if (isEmpty()) return BloodPressure()
-    return BloodPressure(this.map { it.upper}.max(), this.map { it.lower}.max())
-}
-fun List<BloodPressure>.min(): BloodPressure {
-    if (isEmpty()) return BloodPressure()
-    return BloodPressure(this.map { it.upper}.min(), this.map { it.lower}.min())
 }
 
 //val OrangeLight = Color(0xFFFFC107) // Light Orange (Amber 500)
@@ -68,9 +71,10 @@ sealed class BloodPressureCategory(
     data object HypertensiveCrisis : BloodPressureCategory("HTN Crisis",180..Int.MAX_VALUE,120..Int.MAX_VALUE,Color.Magenta)
 
     companion object {
-        fun getCategory(bp: BloodPressure): BloodPressureCategory {
-            return values().find { bp.upper in it.sbpRange && bp.lower in it.dbpRange }
-                ?: values().find { bp.upper in it.sbpRange || bp.lower in it.dbpRange }
+        //fun getCategory(bp: BloodPressure): BloodPressureCategory {
+        fun getCategory(bpUpper: Int, bpLower: Int): BloodPressureCategory {
+            return values().find { bpUpper in it.sbpRange && bpLower in it.dbpRange }
+                ?: values().find { bpUpper in it.sbpRange || bpLower in it.dbpRange }
                 ?: Normal
         }
 
@@ -80,4 +84,24 @@ sealed class BloodPressureCategory(
 
         private fun values() = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
     }
+}
+// ME Gap
+fun List<Item>.gapME(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
+    val morningAvg = this.filter { it.measuredAt.isMorning(zoneId) }.map { it.bpUpper }.averageOrNull()
+    val eveningAvg = this.filter { it.measuredAt.isEvening(zoneId) }.map { it.bpUpper }.averageOrNull()
+
+    return if (morningAvg != null && eveningAvg != null) {
+        morningAvg - eveningAvg // ME差の計算
+    } else {
+        null
+    }
+}
+fun Instant.isMorning(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
+    val localTime = this.atZone(zoneId).toLocalTime()
+    return localTime.hour in 4..10 || (localTime.hour == 11 && localTime.minute == 0)
+}
+
+fun Instant.isEvening(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
+    val localTime = this.atZone(zoneId).toLocalTime()
+    return localTime.hour in 17..23 || localTime.hour in 0..2
 }

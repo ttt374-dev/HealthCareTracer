@@ -13,16 +13,14 @@ const val MAX_BP = 260
 data class Item (
     @PrimaryKey(autoGenerate=true)
     val id: Long = 0,
-    val measuredAt: Instant = Instant.now(),
-//    val bpHigh: Int = 0,
-//    val bpLow: Int = 0,
-    val bp: BloodPressure = BloodPressure(),
-    val pulse: Int = 0,
+    val bpUpper: Int? = null,
+    val bpLower: Int? = null,
+    //val bp: BloodPressure = BloodPressure(),
+    val pulse: Int? = 0,
     val bodyWeight: Float? = null,
     val location: String = "",
-
     val memo: String = "",
-){
-//    val isValid: Boolean
-//        get() = bp.isValid && pulse in MIN_PULSE..MAX_PULSE
-}
+
+    val measuredAt: Instant = Instant.now(),
+)
+

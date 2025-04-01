@@ -130,7 +130,7 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
             .clip(CircleShape)
             .background(color = if (isSelected) Color.Green else Color.Transparent)
             .clickable(
-                enabled = day.position == DayPosition.MonthDate,
+                //enabled = day.position == DayPosition.MonthDate,
                 onClick = { onClick(day) }
             ),
         contentAlignment = Alignment.TopCenter

@@ -35,23 +35,22 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
         items.sortedBy{ it.measuredAt }.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) ->
-                val avgBp = dailyItems.map { it.bp }.average()
-//                val avgBpHigh = dailyItems.map { it.bpHigh }.average().toInt()
-//                val avgBpLow = dailyItems.map { it.bpLow }.average().toInt()
-                val avgPulse = dailyItems.map { it.pulse }.average().toInt()
-                val avgBodyWeight = dailyItems.mapNotNull { it.bodyWeight }.average().toFloat()
-
                 DailyItem(
                     date = date,
-                    avgBp = avgBp,
-                    avgPulse = avgPulse,
-                    avgBodyWeight = avgBodyWeight,
+                    avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
+                    avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
+                    avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
+                    avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
                     items = dailyItems
                 )
             }
     }
 }
-//
+fun <T : Number> List<T?>.averageOrNull(): Double? {
+    val filtered = this.filterNotNull()
+    return if (filtered.isEmpty()) null else filtered.map { it.toDouble() }.average()
+}
+
 //fun List<BloodPressure>.average(): BloodPressure {
 //    if (this.isEmpty()) return BloodPressure(0, 0) // 空リストならデフォルト値を返す
 //

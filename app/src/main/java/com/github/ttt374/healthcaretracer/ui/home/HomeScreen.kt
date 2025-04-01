@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,6 +44,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.Item
+import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
+import com.github.ttt374.healthcaretracer.data.gapME
+import com.github.ttt374.healthcaretracer.data.isEvening
+import com.github.ttt374.healthcaretracer.data.isMorning
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -51,7 +58,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
-    dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
+    dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
     importExportViewModel: BackupDataViewModel = hiltViewModel(),
     appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
@@ -107,17 +114,25 @@ fun HomeScreen(
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
-    Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
+    Row (modifier= Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.secondaryContainer),
         verticalAlignment = Alignment.CenterVertically){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
-        Text(dailyItem.avgBp.toAnnotatedString())
+        //Text(BloodPressure(dailyItem.avgBpUpper ?: 0, dailyItem.avgBpLower ?: 0).toAnnotatedString())
+        Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.items.gapME()?.toInt()))
+        //Text(Pair(dailyItem.avgBpUpper, dailyItem.avgBpLower).toBloodPressureString())
 //        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower,
 //            color = MaterialTheme.colorScheme.onSecondaryContainer,)
-        Text("${dailyItem.avgPulse}".withSubscript("bpm"),
+//        Text("(")
+//        Text(dailyItem.items.gapME().toDisplayString().withSubscript("mmHg"))
+//        Text(")")
+        Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
+
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, navigateToEdit)
@@ -127,24 +142,40 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
 fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
 
-    Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth()
+    Column (modifier= Modifier
+        .padding(horizontal = 8.dp, vertical = 4.dp)
+        .fillMaxWidth()
         .clickable { navigateToEdit(item.id) }) {
         Row {
+            //val meMark =
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(item.bp.toAnnotatedString())
-            //BloodPressureText(item.bp.upper, item.bp.lower, color = MaterialTheme.colorScheme.primary)
-            Text(item.pulse.toString().withSubscript("bpm"))
-            Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
-            if (item.bodyWeight != null){
-                Text(item.bodyWeight.toString().withSubscript("Kg"))
+            with(item.measuredAt) {
+                when {
+                    isMorning() -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
+                    isEvening() -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
+                    else -> Text("")
+                }
             }
+
+            Spacer(modifier = Modifier.width(16.dp))
+            //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
+            //Text(bloodPressureFormatted(item.bpUpper, item.bpLower))
+            Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
+            //BloodPressureText(item.bp.upper, item.bp.lower, color = MaterialTheme.colorScheme.primary)
+            Text(item.pulse.toPulseString())
+            Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
+            Text(item.bodyWeight.toBodyWeightString())
+
         }
 
         Row {
             //Text(getHypertensionGrade(item.bp.upper, item.bp.lower))
-            val htnGrade = BloodPressureCategory.getCategory(item.bp) // fromValues(item.bp.upper, item.bp.lower)
-            Text(htnGrade.name, color = htnGrade.color)
+            if (item.bpUpper == null || item.bpLower == null){
+                Text("-")
+            } else {
+                val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower) // fromValues(item.bp.upper, item.bp.lower)
+                Text(htnGrade.name, color = htnGrade.color)
+            }
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.location, textAlign = TextAlign.Right)
         }
@@ -157,6 +188,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
 
     HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
+
 fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
     return AnnotatedString.Builder().apply {
         pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
@@ -168,6 +200,12 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subs
         append(subscript)
     }.toAnnotatedString()
 }
+
+fun Number?.toDisplayString(): String = this?.toString() ?: "-"
+fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString().withSubscript("kg")
+fun Number?.toPulseString(): AnnotatedString = toDisplayString().withSubscript("bpm")
+fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())
+
 
 private const val HIGH_BP_THRESHOLD = 140
 private const val LOW_BP_THRESHOLD = 90

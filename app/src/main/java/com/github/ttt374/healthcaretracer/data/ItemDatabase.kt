@@ -18,7 +18,7 @@ abstract class ItemDatabase : RoomDatabase() {
         @Volatile
         private var instant: ItemDatabase? = null
 
-        fun getDatabase(context: Context, databaseName: String="items_database_05"): ItemDatabase {
+        fun getDatabase(context: Context, databaseName: String="items_database_06"): ItemDatabase {
             return instant ?: synchronized(this) {
                 Room.databaseBuilder(context, ItemDatabase::class.java, databaseName)
                     .build()
@@ -41,15 +41,15 @@ class InstantConverters {
         return instant?.toEpochMilli()
     }
 }
-class BloodPressureConverter {
-    @TypeConverter
-    fun fromBloodPressure(bp: BloodPressure): String {
-        return "${bp.systolic},${bp.diastolic}"
-    }
-
-    @TypeConverter
-    fun toBloodPressure(data: String): BloodPressure {
-        val values = data.split(",")
-        return BloodPressure(values[0].toInt(), values[1].toInt())
-    }
-}
+//class BloodPressureConverter {
+//    @TypeConverter
+//    fun fromBloodPressure(bp: BloodPressure): String {
+//        return "${bp.systolic},${bp.diastolic}"
+//    }
+//
+//    @TypeConverter
+//    fun toBloodPressure(data: String): BloodPressure {
+//        val values = data.split(",")
+//        return BloodPressure(values[0].toInt(), values[1].toInt())
+//    }
+//}

@@ -2,7 +2,6 @@ package com.github.ttt374.healthcaretracer.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,8 +21,10 @@ class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : View
 
 data class DailyItem (
     val date: LocalDate,
-    val avgBp: BloodPressure,
-    val avgPulse: Int,
-    val avgBodyWeight: Float,
-    val items: List<Item>
+    //val avgBp: BloodPressure,
+    val avgBpUpper: Double? = null,
+    val avgBpLower: Double? = null,
+    val avgPulse: Double? = null,
+    val avgBodyWeight: Double? = null,
+    val items: List<Item> = emptyList(),
 )

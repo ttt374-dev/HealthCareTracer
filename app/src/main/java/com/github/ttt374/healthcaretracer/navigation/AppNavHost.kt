@@ -31,8 +31,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val appNavigator = AppNavigator(navController)
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
-        composable(Screen.Home.route) { HomeScreen(
-            appNavigator = appNavigator) }
+        composable(Screen.Home.route) { HomeScreen(appNavigator = appNavigator) }
         composable(Screen.Entry.route) { EntryScreen(appNavigator = appNavigator)}
         composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
             EntryScreen(appNavigator = appNavigator)

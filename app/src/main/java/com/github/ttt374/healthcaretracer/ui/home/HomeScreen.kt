@@ -43,6 +43,7 @@ import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
+import com.github.ttt374.healthcaretracer.data.gapME
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -109,19 +110,25 @@ fun HomeScreen(
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
-    Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
+    Row (modifier= Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colorScheme.secondaryContainer),
         verticalAlignment = Alignment.CenterVertically){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
         //Text(BloodPressure(dailyItem.avgBpUpper ?: 0, dailyItem.avgBpLower ?: 0).toAnnotatedString())
-        //Text(bloodPressureFormatted(dailyItem.avgBpUpper, dailyItem.avgBpLower))
-        Text(Pair(dailyItem.avgBpUpper, dailyItem.avgBpLower).toBloodPressureString())
+        Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.items.gapME()?.toInt()))
+        //Text(Pair(dailyItem.avgBpUpper, dailyItem.avgBpLower).toBloodPressureString())
 //        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower,
 //            color = MaterialTheme.colorScheme.onSecondaryContainer,)
+//        Text("(")
+//        Text(dailyItem.items.gapME().toDisplayString().withSubscript("mmHg"))
+//        Text(")")
         Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
+
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, navigateToEdit)
@@ -131,7 +138,9 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
 fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
 
-    Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth()
+    Column (modifier= Modifier
+        .padding(horizontal = 8.dp, vertical = 4.dp)
+        .fillMaxWidth()
         .clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)

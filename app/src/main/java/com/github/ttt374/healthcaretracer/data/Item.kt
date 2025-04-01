@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
+import java.time.ZoneId
 
 const val MIN_PULSE = 30
 const val MAX_PULSE = 200
@@ -23,3 +24,4 @@ data class Item (
 
     val measuredAt: Instant = Instant.now(),
 )
+

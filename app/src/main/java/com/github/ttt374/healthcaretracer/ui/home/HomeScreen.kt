@@ -39,8 +39,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.Item
+import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -112,10 +114,12 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
-        Text(dailyItem.avgBp.toAnnotatedString())
+        //Text(BloodPressure(dailyItem.avgBpUpper ?: 0, dailyItem.avgBpLower ?: 0).toAnnotatedString())
+        //Text(bloodPressureFormatted(dailyItem.avgBpUpper, dailyItem.avgBpLower))
+        Text(Pair(dailyItem.avgBpUpper, dailyItem.avgBpLower).toBloodPressureString())
 //        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower,
 //            color = MaterialTheme.colorScheme.onSecondaryContainer,)
-        Text("${dailyItem.avgPulse}".withSubscript("bpm"),
+        Text(dailyItem.avgPulse.toDisplayString().withSubscript("bpm"),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
     }
@@ -132,19 +136,24 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
             Spacer(modifier = Modifier.width(16.dp))
-            Text(item.bp.toAnnotatedString())
+            //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
+            //Text(bloodPressureFormatted(item.bpUpper, item.bpLower))
+            Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
             //BloodPressureText(item.bp.upper, item.bp.lower, color = MaterialTheme.colorScheme.primary)
-            Text(item.pulse.toString().withSubscript("bpm"))
+            Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
-            if (item.bodyWeight > 0){
-                Text(item.bodyWeight.toString().withSubscript("Kg"))
-            }
+            Text(item.bodyWeight.toBodyWeightString())
+
         }
 
         Row {
             //Text(getHypertensionGrade(item.bp.upper, item.bp.lower))
-            val htnGrade = BloodPressureCategory.getCategory(item.bp) // fromValues(item.bp.upper, item.bp.lower)
-            Text(htnGrade.name, color = htnGrade.color)
+            if (item.bpUpper == null || item.bpLower == null){
+                Text("-")
+            } else {
+                val htnGrade = BloodPressureCategory.getCategory(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0)) // fromValues(item.bp.upper, item.bp.lower)
+                Text(htnGrade.name, color = htnGrade.color)
+            }
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.location, textAlign = TextAlign.Right)
         }
@@ -157,6 +166,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
 
     HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
+
 fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
     return AnnotatedString.Builder().apply {
         pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
@@ -168,6 +178,12 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subs
         append(subscript)
     }.toAnnotatedString()
 }
+
+fun Number?.toDisplayString(): String = this?.toString() ?: "-"
+fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString().withSubscript("kg")
+fun Number?.toPulseString(): AnnotatedString = toDisplayString().withSubscript("bpm")
+fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())
+
 
 private const val HIGH_BP_THRESHOLD = 140
 private const val LOW_BP_THRESHOLD = 90

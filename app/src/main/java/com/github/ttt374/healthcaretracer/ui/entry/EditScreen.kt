@@ -143,7 +143,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                 },
                 label = { Text("Bp Lower")},
                 keyboardOptions = numberKeyboardOptions,
-                modifier = modifier.focusRequester(bpUpperFocusRequester)
+                modifier = modifier.focusRequester(bpLowerFocusRequester)
             )
         }
         InputFieldRow("Pulse") {
@@ -153,7 +153,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                 },
                 label = { Text("Pulse")},
                 keyboardOptions = numberKeyboardOptions,
-                modifier = modifier.focusRequester(bpUpperFocusRequester)
+                modifier = modifier.focusRequester(pulseFocusRequester)
             )
         }
         InputFieldRow("") {

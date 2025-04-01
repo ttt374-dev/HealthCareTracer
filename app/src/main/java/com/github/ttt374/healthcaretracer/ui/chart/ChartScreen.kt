@@ -89,8 +89,10 @@ private fun LineDataSet.setStyle(color: Int) {
     this.circleRadius = 4f
 }
 
-fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Float ) = this.map {
-    Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), takeValue(it))
+fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Double? ) = this.mapNotNull {
+    takeValue(it)?.let { it1 ->
+        Entry(it.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli().toFloat(), it1.toFloat())
+    }
 }
 
 @Composable
@@ -104,8 +106,8 @@ fun HealthChart(update: (LineChart) -> Unit){
 @Composable
 fun BloodPressureChart(dailyItems: List<DailyItem>){
     HealthChart(){ chart ->
-        val bpUpperEntries = dailyItems.toEntries {it.avgBp.upper.toFloat() }
-        val bpLowerEntries = dailyItems.toEntries {it.avgBp.lower.toFloat() }
+        val bpUpperEntries = dailyItems.toEntries {it.avgBpUpper  }
+        val bpLowerEntries = dailyItems.toEntries {it.avgBpLower }
 
         val bpHighDataSet = LineDataSet(bpUpperEntries, "BP High").apply { setStyle(Color.BLUE) }
         val bpLowDataSet = LineDataSet(bpLowerEntries, "BP Low").apply { setStyle(Color.GREEN) }
@@ -118,7 +120,7 @@ fun BloodPressureChart(dailyItems: List<DailyItem>){
 @Composable
 fun PulseChart(dailyItems: List<DailyItem>){
     HealthChart(){ chart ->
-        val pulseEntries = dailyItems.toEntries {it.avgPulse.toFloat() }
+        val pulseEntries = dailyItems.toEntries {it.avgPulse }
 
         val pulseDataSet = LineDataSet(pulseEntries, "Pulse").apply { setStyle(Color.RED) }
         chart.data = LineData(pulseDataSet)
@@ -128,7 +130,7 @@ fun PulseChart(dailyItems: List<DailyItem>){
 @Composable
 fun BodyWeightChart(dailyItems: List<DailyItem>){
     HealthChart(){ chart ->
-        val bodyWightEntries = dailyItems.sortedBy { it.date }.filter { it.avgBodyWeight > 0 }.toEntries { it.avgBodyWeight }
+        val bodyWightEntries = dailyItems.toEntries { it.avgBodyWeight }
         val bodyWeightDataSet = LineDataSet(bodyWightEntries, "Body Weight").apply { setStyle(Color.GREEN) }
 
         chart.data = LineData(bodyWeightDataSet)

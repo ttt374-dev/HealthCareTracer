@@ -22,8 +22,10 @@ class DailyItemsViewModel @Inject constructor (
 
 data class DailyItem (
     val date: LocalDate,
-    val avgBp: BloodPressure,
-    val avgPulse: Int,
-    val avgBodyWeight: Float,
-    val items: List<Item>
+    //val avgBp: BloodPressure,
+    val avgBpUpper: Double? = null,
+    val avgBpLower: Double? = null,
+    val avgPulse: Double? = null,
+    val avgBodyWeight: Double? = null,
+    val items: List<Item> = emptyList(),
 )

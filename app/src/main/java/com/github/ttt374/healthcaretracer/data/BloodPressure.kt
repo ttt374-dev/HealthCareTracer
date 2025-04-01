@@ -1,7 +1,5 @@
 package com.github.ttt374.healthcaretracer.data
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -15,26 +13,37 @@ data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
     val upper: Int get() = systolic
     val lower: Int get() = diastolic
 
-    fun toAnnotatedString(): AnnotatedString {
-        return buildAnnotatedString {
-            val sbpColor = BloodPressureCategory.getCategory(upper, true).color
-            val dbpColor = BloodPressureCategory.getCategory(lower, false).color
+//    fun toAnnotatedString(): AnnotatedString {
+//        return bloodPressureFormatted(upper, lower)
+//    }
+}
+fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?): AnnotatedString {
+    return buildAnnotatedString {
+        if (bpUpper != null){
+            val sbpColor = BloodPressureCategory.getCategory(bpUpper, true).color
+
             pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = sbpColor))
-            append(upper.toString())
+            append(bpUpper.toString())
             pop()
-            append("/")
-
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = dbpColor))
-            append(lower.toString())
-            pop()
-
-            pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
-            append(" mmHg")
-            pop()
+        } else {
+            append("-")
         }
+        append("/")
+
+        if (bpLower != null){
+            val dbpColor = BloodPressureCategory.getCategory(bpLower, false).color
+            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = dbpColor))
+            append(bpLower.toString())
+            pop()
+        } else {
+            append("-")
+        }
+
+        pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
+        append(" mmHg")
+        pop()
     }
 }
-
 //val OrangeLight = Color(0xFFFFC107) // Light Orange (Amber 500)
 //val OrangeDark = Color(0xFFF57C00)  // Dark Orange (Orange 700)
 

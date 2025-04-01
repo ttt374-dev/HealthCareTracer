@@ -10,7 +10,7 @@ import java.time.Instant
 
 /////////////////////////////
 @Database(entities = [Item::class], version = 1, exportSchema = false)
-@TypeConverters(InstantConverters::class, BloodPressureConverter::class)
+@TypeConverters(InstantConverters::class)
 abstract class ItemDatabase : RoomDatabase() {
     abstract fun itemDao(): ItemDao
 

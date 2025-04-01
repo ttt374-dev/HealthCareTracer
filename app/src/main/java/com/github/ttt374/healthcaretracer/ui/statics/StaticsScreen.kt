@@ -14,11 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.ttt374.healthcaretracer.data.BloodPressure
-import com.github.ttt374.healthcaretracer.data.Item
-import com.github.ttt374.healthcaretracer.data.average
-import com.github.ttt374.healthcaretracer.data.max
-import com.github.ttt374.healthcaretracer.data.min
+import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
+import com.github.ttt374.healthcaretracer.data.gapME
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -28,7 +25,7 @@ import com.github.ttt374.healthcaretracer.ui.home.withSubscript
 @SuppressLint("DefaultLocale")
 @Composable
 fun StaticsScreen(itemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
-    //val dailyItems by itemsViewModel.dailyItems.collectAsState()
+    val dailyItems by itemsViewModel.dailyItems.collectAsState()
     val items by itemsViewModel.items.collectAsState()
 
     Scaffold(topBar = { CustomTopAppBar("Statics") },
@@ -37,14 +34,27 @@ fun StaticsScreen(itemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator
         }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             StaticsHeadersRow()
-            StaticsItemRow("average", items.map { it.bp }.average(), items.map { it.pulse }.average(),
+            val meGapList = dailyItems.map { it.items.gapME()}
+
+            StaticsItemRow("average", 
+                items.mapNotNull { it.bpUpper }.average(),
+                items.mapNotNull { it.bpLower }.average(),
+                meGapList.filterNotNull().average(),
+                items.mapNotNull { it.pulse }.average(),
                 items.mapNotNull { it.bodyWeight }.average()  )
-            StaticsItemRow("max", items.map { it.bp }.max(),
-                items.maxOfOrNull { it.pulse.toDouble() } ?: 0.0,
-                items.maxOfOrNull { it.bodyWeight?.toDouble() ?: 0.0 } )
-            StaticsItemRow("min", items.map { it.bp }.min(),
-                items.minOfOrNull { it.pulse.toDouble() } ?: 0.0,
-                items.minOfOrNull { it.bodyWeight?.toDouble() ?: 0.0 } )
+            StaticsItemRow("max", 
+                items.mapNotNull { it.bpUpper }.maxOrNull()?.toDouble(),
+                items.mapNotNull { it.bpLower }.maxOrNull()?.toDouble(),
+                meGapList.filterNotNull().maxOrNull(),
+                items.mapNotNull { it.pulse }.maxOrNull()?.toDouble(),
+                items.mapNotNull { it.bodyWeight }.maxOrNull()?.toDouble())
+            StaticsItemRow("min",
+                items.mapNotNull { it.bpUpper }.minOrNull()?.toDouble(),
+                items.mapNotNull { it.bpLower }.minOrNull()?.toDouble(),
+                meGapList.filterNotNull().minOrNull(),
+                items.mapNotNull { it.pulse }.minOrNull()?.toDouble(),
+                items.mapNotNull { it.bodyWeight }.minOrNull()?.toDouble())    
+
 //            StaticsItemRow("min", items.map { it.bp }.min(), items.map { it.pulse.toDouble() }.min(),
 //                items.map { it.bodyWeight?.toDouble() ?: 0.0 }.min()  )
 
@@ -70,10 +80,11 @@ fun StaticsHeadersRow(){
 }
 @SuppressLint("DefaultLocale")
 @Composable
-fun StaticsItemRow(label: String, bp: BloodPressure, pulse: Double, bodyWeight: Double?){
+fun StaticsItemRow(label: String, bpUpper: Double?, bpLower: Double?, meGap: Double?, pulse: Double?, bodyWeight: Double?){
     Row {
         Text(label, Modifier.weight(1f))
-        Text(bp.toAnnotatedString(), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpper?.toInt(), bpLower?.toInt(), meGap?.toInt()))
+        //Text(bp.toAnnotatedString(), Modifier.weight(1f))
         Text(String.format("%.1f", pulse).withSubscript("bps"), Modifier.weight(1f))
         Text(String.format("%.1f", bodyWeight).withSubscript("kg"), Modifier.weight(1f))
     }

@@ -42,7 +42,7 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int?=null): Anno
             append("-")
         }
         if (meGap != null){
-            append("(")
+            append(" (")
             val gapColor = if (meGap > 20) Color.Red else Color.Unspecified
             pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = gapColor))
             append(meGap.toString())

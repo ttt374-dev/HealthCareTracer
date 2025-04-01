@@ -58,7 +58,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
-    dailyItemsViewModel: DailyItemsViewModel = hiltViewModel(),
+    dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     importExportViewModel: BackupDataViewModel = hiltViewModel(),
     appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()

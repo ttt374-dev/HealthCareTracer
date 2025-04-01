@@ -1,7 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -86,7 +85,6 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
 ){
     val datePickerDialogState = rememberDialogState(false)
     val timePickerDialogState = rememberDialogState(false)
-    //val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
 

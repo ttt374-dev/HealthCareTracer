@@ -21,7 +21,6 @@ class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : View
 
 data class DailyItem (
     val date: LocalDate,
-    //val avgBp: BloodPressure,
     val avgBpUpper: Double? = null,
     val avgBpLower: Double? = null,
     val avgPulse: Double? = null,

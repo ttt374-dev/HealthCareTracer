@@ -12,11 +12,8 @@ data class ItemUiState (
     val location: String = "",
     val memo: String = "",
     val measuredAt: Instant = Instant.now(),
-
-    //val isSuccess: Boolean = false,
 ){
     fun toItem() = Item(
-        //id = (this.editMode as? EditMode.Edit)?.itemId ?: 0, // editModeがEditならidを更新、それ以外は0,
         id = id?: 0,
         bpUpper = bpUpper.toIntOrNull(),
         bpLower = bpLower.toIntOrNull(),
@@ -26,31 +23,14 @@ data class ItemUiState (
         pulse = pulse.toIntOrNull(),
         bodyWeight = bodyWeight.toFloatOrNull(),
         memo = memo, location = location, measuredAt = measuredAt)
-//    fun isBpUpperValid(): Boolean {
-//        return (bpUpper.toIntOrNull() ?: 0) in MIN_BP..MAX_BP
-//    }
-//    fun isBpLowerValid(): Boolean {
-//        return (bpLower.toIntOrNull() ?: 0) in MIN_BP..MAX_BP
-//    }
-//    fun isPulseValid(): Boolean {
-//        return (pulse.toIntOrNull() ?: 0) in MIN_PULSE..MAX_PULSE
-//    }
+
     fun isValid(): Boolean {
-        //return true // TODO
         if (bpUpper.isEmpty() && bpLower.isEmpty()) return true
         if (bpUpper.isEmpty() || bpLower.isEmpty()) return false
 
         return bpUpper.toIntOrNull()?.let { upper ->
             bpLower.toIntOrNull()?.let { lower -> upper > lower }
         } ?: false
-//        val bpUpperInt = bpUpper.toIntOrNull() ?: 0
-//        val bpLowerInt = bpLower.toIntOrNull() ?: 0
-//        val pulseInt = pulse.toIntOrNull() ?: 0
-//
-//        return bpUpperInt in MIN_BP..MAX_BP &&
-//                bpLowerInt in MIN_BP..MAX_BP &&
-//                pulseInt in MIN_PULSE..MAX_PULSE &&
-//                bpUpperInt > bpLowerInt
     }
 }
 fun Item.toItemUiState(): ItemUiState {
@@ -58,8 +38,6 @@ fun Item.toItemUiState(): ItemUiState {
         this.bpUpper.toStringOrEmpty(),
         this.bpLower.toStringOrEmpty(),
         this.pulse.toStringOrEmpty(),
-        //if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
-        //this.bodyWeight.takeIf { it != 0.0F }?.toString().orEmpty(),
         this.bodyWeight.toStringOrEmpty(),
         this.location, this.memo, this.measuredAt)
 }

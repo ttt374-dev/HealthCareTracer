@@ -1,7 +1,6 @@
 package com.github.ttt374.healthcaretracer.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavArgs
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,7 +12,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
-import com.github.ttt374.healthcaretracer.ui.statics.StaticsScreen
+import com.github.ttt374.healthcaretracer.ui.statics.StatisticsScreen
 import java.time.LocalDate
 
 sealed class Screen(val route: String, val routeWithArgs: String = "") {
@@ -41,7 +40,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
-        composable(Screen.Statics.route) { StaticsScreen(appNavigator=appNavigator)}
+        composable(Screen.Statics.route) { StatisticsScreen(appNavigator=appNavigator)}
     }
 }
 class AppNavigator(private val navController: NavHostController){

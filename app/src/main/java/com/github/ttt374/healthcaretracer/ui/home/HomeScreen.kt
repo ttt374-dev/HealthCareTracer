@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,8 +66,6 @@ fun HomeScreen(
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
-    //val navigateToEntry = { navController.navigate(Screen.Entry.route) }
-    //val navigateToEdit = { id: Long -> navController.navigate("${Screen.Edit.route}/$id")}
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -76,11 +76,11 @@ fun HomeScreen(
             filePickerDialogState.close()
         }
     )
-//    LaunchedEffect(filePickerDialogState.isOpen) {
-//        if (filePickerDialogState.isOpen) {
-//            filePickerLauncher.launch(arrayOf("*/*"))
-//        }
-//    }
+    LaunchedEffect(filePickerDialogState.isOpen) {
+        if (filePickerDialogState.isOpen) {
+            filePickerLauncher.launch(arrayOf("*/*"))
+        }
+    }
     Scaffold(topBar = {
         CustomTopAppBar(
             "Home",
@@ -88,7 +88,7 @@ fun HomeScreen(
                 MenuItem("export", onClick = { importExportViewModel.exportData() }),
                 MenuItem("import", onClick = {
                     filePickerDialogState.open()
-                    filePickerLauncher.launch(arrayOf("*/*"))
+                    //filePickerLauncher.launch(arrayOf("*/*"))
                 })
             )
         )
@@ -99,13 +99,13 @@ fun HomeScreen(
                     FloatingActionButton(onClick = appNavigator::navigateToEntry) {
                         Icon(Icons.Filled.Add, "add")
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            LazyColumn {
-                items(dailyItems.asReversed()) { dailyItem ->
+            LazyColumn(reverseLayout = true) {
+                items(dailyItems) { dailyItem ->
                     DailyItemRow(dailyItem, appNavigator::navigateToEdit)
                 }
             }
@@ -114,21 +114,13 @@ fun HomeScreen(
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
-    Row (modifier= Modifier
-        .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.secondaryContainer),
+    Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
-        //Text(BloodPressure(dailyItem.avgBpUpper ?: 0, dailyItem.avgBpLower ?: 0).toAnnotatedString())
         Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.items.gapME()?.toInt()))
-        //Text(Pair(dailyItem.avgBpUpper, dailyItem.avgBpLower).toBloodPressureString())
-//        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower,
-//            color = MaterialTheme.colorScheme.onSecondaryContainer,)
-//        Text("(")
-//        Text(dailyItem.items.gapME().toDisplayString().withSubscript("mmHg"))
-//        Text(")")
         Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
@@ -159,9 +151,8 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
 
             Spacer(modifier = Modifier.width(16.dp))
             //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
-            //Text(bloodPressureFormatted(item.bpUpper, item.bpLower))
-            Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
-            //BloodPressureText(item.bp.upper, item.bp.lower, color = MaterialTheme.colorScheme.primary)
+            Text(bloodPressureFormatted(item.bpUpper, item.bpLower))
+            //Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
             Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.bodyWeight.toBodyWeightString())
@@ -169,11 +160,10 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
         }
 
         Row {
-            //Text(getHypertensionGrade(item.bp.upper, item.bp.lower))
             if (item.bpUpper == null || item.bpLower == null){
                 Text("-")
             } else {
-                val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower) // fromValues(item.bp.upper, item.bp.lower)
+                val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)
                 Text(htnGrade.name, color = htnGrade.color)
             }
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
@@ -201,18 +191,15 @@ fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subs
     }.toAnnotatedString()
 }
 
-fun Number?.toDisplayString(): String = this?.toString() ?: "-"
-fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString().withSubscript("kg")
+fun Number?.toDisplayString(format: String? = null): String {
+    return this?.let  {
+        if (format != null)
+            String.format(format, this)
+        else
+            this.toString()
+    }   ?: "-"
+}
+fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString("%.1f").withSubscript("kg")
 fun Number?.toPulseString(): AnnotatedString = toDisplayString().withSubscript("bpm")
-fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())
+//fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())
 
-
-private const val HIGH_BP_THRESHOLD = 140
-private const val LOW_BP_THRESHOLD = 90
-
-//
-//@Composable
-//fun BloodPressureText(bpUpper: Int, bpLower: Int, color: Color) {
-//    Text(text = BloodPressure(bpUpper, bpLower).toAnnotatedString(), color = color)
-//}
-//

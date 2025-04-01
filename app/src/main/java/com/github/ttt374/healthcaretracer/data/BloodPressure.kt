@@ -1,7 +1,5 @@
 package com.github.ttt374.healthcaretracer.data
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -21,42 +19,34 @@ import java.time.ZoneId
 ////        return bloodPressureFormatted(upper, lower)
 ////    }
 //}
-fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int?=null): AnnotatedString {
+fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null): AnnotatedString {
     return buildAnnotatedString {
-        if (bpUpper != null){
-            val sbpColor = BloodPressureCategory.getCategory(bpUpper, true).color
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = sbpColor))
-            append(bpUpper.toString())
-            pop()
-        } else {
-            append("-")
+        fun appendBp(value: Int?, isSbp: Boolean) {
+            if (value != null) {
+                pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = BloodPressureCategory.getCategory(value, isSbp).color))
+                append(value.toString())
+                pop()
+            } else {
+                append("-")
+            }
         }
+        appendBp(bpUpper, true)
         append("/")
+        appendBp(bpLower, false)
 
-        if (bpLower != null){
-            val dbpColor = BloodPressureCategory.getCategory(bpLower, false).color
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = dbpColor))
-            append(bpLower.toString())
-            pop()
-        } else {
-            append("-")
-        }
-        if (meGap != null){
+        meGap?.let {
             append(" (")
-            val gapColor = if (meGap > 20) Color.Red else Color.Unspecified
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = gapColor))
-            append(meGap.toString())
+            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = if (it > 20) Color.Red else Color.Unspecified))
+            append(it.toString())
             pop()
             append(")")
         }
+
         pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
         append("mmHg")
-        pop()
+        pop() // 明示的に `pop()` を追加
     }
 }
-
-//val OrangeLight = Color(0xFFFFC107) // Light Orange (Amber 500)
-//val OrangeDark = Color(0xFFF57C00)  // Dark Orange (Orange 700)
 
 sealed class BloodPressureCategory(
     val name: String,
@@ -71,37 +61,37 @@ sealed class BloodPressureCategory(
     data object HypertensiveCrisis : BloodPressureCategory("HTN Crisis",180..Int.MAX_VALUE,120..Int.MAX_VALUE,Color.Magenta)
 
     companion object {
-        //fun getCategory(bp: BloodPressure): BloodPressureCategory {
+        private val categories = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
+
         fun getCategory(bpUpper: Int, bpLower: Int): BloodPressureCategory {
-            return values().find { bpUpper in it.sbpRange && bpLower in it.dbpRange }
-                ?: values().find { bpUpper in it.sbpRange || bpLower in it.dbpRange }
+            return categories.firstOrNull { bpUpper in it.sbpRange && bpLower in it.dbpRange }
+                ?: categories.firstOrNull { bpUpper in it.sbpRange || bpLower in it.dbpRange }
                 ?: Normal
         }
 
         fun getCategory(value: Int, isSbp: Boolean): BloodPressureCategory {
-            return values().find { if (isSbp) value in it.sbpRange else value in it.dbpRange } ?: Normal
+            return categories.firstOrNull { if (isSbp) value in it.sbpRange else value in it.dbpRange } ?: Normal
         }
-
-        private fun values() = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
     }
 }
 // ME Gap
 fun List<Item>.gapME(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
-    val morningAvg = this.filter { it.measuredAt.isMorning(zoneId) }.map { it.bpUpper }.averageOrNull()
-    val eveningAvg = this.filter { it.measuredAt.isEvening(zoneId) }.map { it.bpUpper }.averageOrNull()
+    val (morning, evening) = this
+        .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
+        .partition { (instant, _) -> instant.isMorning(zoneId) }
 
-    return if (morningAvg != null && eveningAvg != null) {
-        morningAvg - eveningAvg // ME差の計算
-    } else {
-        null
-    }
+    val morningAvg = morning.map { it.second }.averageOrNull()
+    val eveningAvg = evening.map { it.second }.averageOrNull()
+
+    return morningAvg?.let { m -> eveningAvg?.let { m - it } }
 }
+
 fun Instant.isMorning(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-    val localTime = this.atZone(zoneId).toLocalTime()
-    return localTime.hour in 4..10 || (localTime.hour == 11 && localTime.minute == 0)
+    val hour = this.atZone(zoneId).hour
+    return hour in 4..11
 }
 
 fun Instant.isEvening(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-    val localTime = this.atZone(zoneId).toLocalTime()
-    return localTime.hour in 17..23 || localTime.hour in 0..2
+    val hour = this.atZone(zoneId).hour
+    return hour in 17..23 || hour in 0..2
 }

@@ -32,19 +32,19 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
 
     fun getAllItemsFlow() = itemDao.getAllItemsFlow()
 
-    fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
-        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-            .map { (date, dailyItems) ->
-                DailyItem(
-                    date = date,
-                    avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
-                    avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
-                    avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
-                    avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
-                    items = dailyItems
-                )
-            }.sortedBy{ it.date }
-    }
+//    fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
+//        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+//            .map { (date, dailyItems) ->
+//                DailyItem(
+//                    date = date,
+//                    avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
+//                    avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
+//                    avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
+//                    avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
+//                    items = dailyItems
+//                )
+//            }.sortedBy{ it.date }
+//    }
 }
 fun <T : Number> List<T?>.averageOrNull(): Double? {
     val filtered = this.filterNotNull()

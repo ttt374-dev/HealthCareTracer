@@ -1,5 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.MIN_BP
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -122,15 +125,14 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
 
     Column (modifier=modifier){
         InputFieldRow("Measured At"){
-            OutlinedButton(onClick = { datePickerDialogState.open() }){
-                Text(dateFormatter.format(itemUiState.measuredAt))
+            Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
+                OutlinedButton(onClick = { datePickerDialogState.open() }){
+                    Text(dateFormatter.format(itemUiState.measuredAt))
+                }
+                OutlinedButton(onClick = { timePickerDialogState.open() }){
+                    Text(timeFormatter.format(itemUiState.measuredAt))
+                }
             }
-            OutlinedButton(onClick = { timePickerDialogState.open() }){
-                Text(timeFormatter.format(itemUiState.measuredAt))
-            }
-//            OutlinedButton(onClick = { dateTimeDialogState.open() }){
-//                Text(dateTimeFormatter.format(itemUiState.measuredAt))
-//            }
         }
         InputFieldRow("Bp Upper"){
             TextField(itemUiState.bpUpper,
@@ -173,7 +175,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             TextField(itemUiState.bodyWeight,
                 onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
                 keyboardOptions = decimalKeyboardOptions,
-                label = { Text("Body Weight (optional)")})
+                label = { Text("Body Weight")})
         }
         InputFieldRow("Location") {
             SelectableTextField(itemUiState.location, locationList,
@@ -182,7 +184,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
         }
         InputFieldRow("Memo") {
             TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))},
-                label = { Text("Memo (optional)")})
+                label = { Text("Memo")})
         }
         InputFieldRow("") {
             if (editMode is EditMode.Edit){
@@ -195,7 +197,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
 }
 @Composable
 fun InputFieldRow(label: String, inputField: @Composable () -> Unit){
-    Row {
+    Row (horizontalArrangement = Arrangement.spacedBy(16.dp),) {
         Text(label, modifier = Modifier.weight(1f))
         inputField()
     }

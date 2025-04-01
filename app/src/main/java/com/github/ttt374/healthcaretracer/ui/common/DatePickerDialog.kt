@@ -28,7 +28,6 @@ fun DatePickerDialog(
     onDismiss: () -> Unit,
     zoneId: ZoneId = ZoneId.systemDefault(),
 ) {
-    //val localDate = remember(selectedInstant) { selectedInstant.atZone(zoneId).toLocalDate() }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedInstant.toEpochMilli()
     )
@@ -56,10 +55,6 @@ fun DatePickerDialog(
         DatePicker(state = datePickerState)
     }
 }
-
-//fun Instant.toLocalDate(zoneId: ZoneId = ZoneId.systemDefault()): LocalDate {
-//    return this.atZone(zoneId).toLocalDate()
-//}
 
 fun Instant.withLocalDate(localDate: LocalDate, zoneId: ZoneId = ZoneId.systemDefault()): Instant {
     val currentDateTime = this.atZone(zoneId).toLocalTime() // 既存の時刻を保持

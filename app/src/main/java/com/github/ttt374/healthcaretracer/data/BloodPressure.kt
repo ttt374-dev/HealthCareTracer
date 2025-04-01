@@ -11,14 +11,14 @@ import java.time.Instant
 import java.time.ZoneId
 
 
-data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
-    val upper: Int get() = systolic
-    val lower: Int get() = diastolic
-
-//    fun toAnnotatedString(): AnnotatedString {
-//        return bloodPressureFormatted(upper, lower)
-//    }
-}
+//data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
+//    val upper: Int get() = systolic
+//    val lower: Int get() = diastolic
+//
+////    fun toAnnotatedString(): AnnotatedString {
+////        return bloodPressureFormatted(upper, lower)
+////    }
+//}
 fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int?=null): AnnotatedString {
     return buildAnnotatedString {
         if (bpUpper != null){
@@ -68,9 +68,10 @@ sealed class BloodPressureCategory(
     data object HypertensiveCrisis : BloodPressureCategory("HTN Crisis",180..Int.MAX_VALUE,120..Int.MAX_VALUE,Color.Magenta)
 
     companion object {
-        fun getCategory(bp: BloodPressure): BloodPressureCategory {
-            return values().find { bp.upper in it.sbpRange && bp.lower in it.dbpRange }
-                ?: values().find { bp.upper in it.sbpRange || bp.lower in it.dbpRange }
+        //fun getCategory(bp: BloodPressure): BloodPressureCategory {
+        fun getCategory(bpUpper: Int, bpLower: Int): BloodPressureCategory {
+            return values().find { bpUpper in it.sbpRange && bpLower in it.dbpRange }
+                ?: values().find { bpUpper in it.sbpRange || bpLower in it.dbpRange }
                 ?: Normal
         }
 

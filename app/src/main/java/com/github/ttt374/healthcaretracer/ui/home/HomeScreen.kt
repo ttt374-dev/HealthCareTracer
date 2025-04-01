@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,11 +42,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
 import com.github.ttt374.healthcaretracer.data.gapME
+import com.github.ttt374.healthcaretracer.data.isEvening
+import com.github.ttt374.healthcaretracer.data.isMorning
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -143,7 +147,16 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
         .fillMaxWidth()
         .clickable { navigateToEdit(item.id) }) {
         Row {
+            //val meMark =
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
+            with(item.measuredAt) {
+                when {
+                    isMorning() -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
+                    isEvening() -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
+                    else -> Text("")
+                }
+            }
+
             Spacer(modifier = Modifier.width(16.dp))
             //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
             //Text(bloodPressureFormatted(item.bpUpper, item.bpLower))
@@ -160,7 +173,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
             if (item.bpUpper == null || item.bpLower == null){
                 Text("-")
             } else {
-                val htnGrade = BloodPressureCategory.getCategory(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0)) // fromValues(item.bp.upper, item.bp.lower)
+                val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower) // fromValues(item.bp.upper, item.bp.lower)
                 Text(htnGrade.name, color = htnGrade.color)
             }
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る

@@ -1,11 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
-import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.Item
-import com.github.ttt374.healthcaretracer.data.MAX_BP
-import com.github.ttt374.healthcaretracer.data.MAX_PULSE
-import com.github.ttt374.healthcaretracer.data.MIN_BP
-import com.github.ttt374.healthcaretracer.data.MIN_PULSE
 import java.time.Instant
 
 data class ItemUiState (

@@ -30,7 +30,7 @@ interface ItemDao {
     suspend fun clearAll()
 
     // query
-    @Query("SELECT * FROM items ORDER by measuredAt DESC")
+    @Query("SELECT * FROM items ORDER by measuredAt ASC")
     fun getAllItemsFlow(): Flow<List<Item>>
 
     @Query("SELECT * FROM items WHERE id = :id")

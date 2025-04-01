@@ -64,6 +64,7 @@ fun HomeScreen(
     importExportViewModel: BackupDataViewModel = hiltViewModel(),
     appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
+    //val dailyItemsReversed = remember { dailyItems.reversed()}
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -104,7 +105,7 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            LazyColumn(reverseLayout = true) {
+            LazyColumn { // (reverseLayout = true) {
                 items(dailyItems) { dailyItem ->
                     DailyItemRow(dailyItem, appNavigator::navigateToEdit)
                 }

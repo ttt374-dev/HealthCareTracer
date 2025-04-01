@@ -33,7 +33,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     fun getAllItemsFlow() = itemDao.getAllItemsFlow()
 
     fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
-        items.sortedBy{ it.measuredAt }.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) ->
                 DailyItem(
                     date = date,
@@ -43,7 +43,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
                     avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
                     items = dailyItems
                 )
-            }
+            }.sortedBy{ it.date }
     }
 }
 fun <T : Number> List<T?>.averageOrNull(): Double? {

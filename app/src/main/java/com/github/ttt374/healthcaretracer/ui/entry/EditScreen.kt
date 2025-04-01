@@ -19,19 +19,18 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.ttt374.healthcaretracer.data.MAX_BP
-import com.github.ttt374.healthcaretracer.data.MAX_PULSE
 import com.github.ttt374.healthcaretracer.data.MIN_BP
-import com.github.ttt374.healthcaretracer.data.MIN_PULSE
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import com.github.ttt374.healthcaretracer.ui.common.DateTimeDialog
+import com.github.ttt374.healthcaretracer.ui.common.DatePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.SelectableTextField
+import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: ItemViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
@@ -82,13 +81,21 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      locationList: List<String> = emptyList(),
 ){
-    val dateTimeDialogState = rememberDialogState(false)
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+    val datePickerDialogState = rememberDialogState(false)
+    val timePickerDialogState = rememberDialogState(false)
+    //val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
 
-    if (dateTimeDialogState.isOpen)
-        DateTimeDialog(itemUiState.measuredAt, dateTimeFormatter.zone,
-                onConfirm = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
-                closeDialog = { dateTimeDialogState.close() })
+    if (datePickerDialogState.isOpen){
+        DatePickerDialog(itemUiState.measuredAt,
+                { updateItemUiState(itemUiState.copy(measuredAt = it)) },
+                 { datePickerDialogState.close() })
+    }
+    if (timePickerDialogState.isOpen){
+       TimePickerDialog(itemUiState.measuredAt,
+           { updateItemUiState(itemUiState.copy(measuredAt = it))}, { timePickerDialogState.close()})
+    }
 
     // focus requesters
     val bpUpperFocusRequester = remember { FocusRequester() }
@@ -114,11 +121,16 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
 
     Column (modifier=modifier){
-        val labelModifier = Modifier.weight(1f)
         InputFieldRow("Measured At"){
-            OutlinedButton(onClick = { dateTimeDialogState.open() }){
-                Text(dateTimeFormatter.format(itemUiState.measuredAt))
+            OutlinedButton(onClick = { datePickerDialogState.open() }){
+                Text(dateFormatter.format(itemUiState.measuredAt))
             }
+            OutlinedButton(onClick = { timePickerDialogState.open() }){
+                Text(timeFormatter.format(itemUiState.measuredAt))
+            }
+//            OutlinedButton(onClick = { dateTimeDialogState.open() }){
+//                Text(dateTimeFormatter.format(itemUiState.measuredAt))
+//            }
         }
         InputFieldRow("Bp Upper"){
             TextField(itemUiState.bpUpper,

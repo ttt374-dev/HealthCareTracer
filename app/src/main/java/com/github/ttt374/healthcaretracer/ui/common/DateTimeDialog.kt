@@ -22,7 +22,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -111,30 +110,30 @@ fun DateTimeDialog(date: Instant, zoneId: ZoneId = ZoneId.systemDefault(), is24H
         )
     }
     if (timePickerVisibleState.isOpen){
-        TimePickerDialog(LocalTime.of(dateTimePickerState.timePickerState.hour, dateTimePickerState.timePickerState.minute),
-            is24Hour, onConfirm = { time ->
-                dateTimePickerState.updateTime(LocalTime.of(time.hour, time.minute))
-            },
-            closeDialog = { timePickerVisibleState.close() }
-        )
+//        TimePickerDialog(LocalTime.of(dateTimePickerState.timePickerState.hour, dateTimePickerState.timePickerState.minute),
+//            is24Hour, onConfirm = { time ->
+//                dateTimePickerState.updateTime(LocalTime.of(time.hour, time.minute))
+//            },
+//            closeDialog = { timePickerVisibleState.close() }
+//        )
     }
 }
-private fun getTimeFormatter(is24Hour: Boolean): DateTimeFormatter {
+fun getTimeFormatter(is24Hour: Boolean): DateTimeFormatter {
     return DateTimeFormatter.ofPattern(if (is24Hour) "HH:mm" else "h:mm a")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimePickerDialog(time: LocalTime, is24Hour: Boolean = false, onConfirm: (LocalTime) -> Unit, closeDialog: () -> Unit){
-    val state = remember { TimePickerState(time.hour, time.minute, is24Hour)}
-
-    ConfirmDialog(
-        title = { Text("select time")},
-        text = { TimePicker(state = state) },
-        onConfirm = { onConfirm(LocalTime.of(state.hour, state.minute))},
-        closeDialog = closeDialog,
-    )
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun TimePickerDialog(time: LocalTime, is24Hour: Boolean = false, onConfirm: (LocalTime) -> Unit, closeDialog: () -> Unit){
+//    val state = remember { TimePickerState(time.hour, time.minute, is24Hour)}
+//
+//    ConfirmDialog(
+//        title = { Text("select time")},
+//        text = { TimePicker(state = state) },
+//        onConfirm = { onConfirm(LocalTime.of(state.hour, state.minute))},
+//        closeDialog = closeDialog,
+//    )
+//}
 @Composable
 fun DateTimePickerSelectNowButton(dateTimePickerState: DateTimePickerState, label: String = "Now"){
     TextButton(onClick = { dateTimePickerState.updateNow() }){

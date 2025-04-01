@@ -60,10 +60,13 @@ data class ItemUiState (
 }
 fun Item.toItemUiState(): ItemUiState {
     return ItemUiState(  this.id,
-        this.bpUpper.toString(),
-        this.bpLower.toString(),
-        this.pulse.toString(),
+        this.bpUpper.toStringOrEmpty(),
+        this.bpLower.toStringOrEmpty(),
+        this.pulse.toStringOrEmpty(),
         //if (this.bodyWeight == 0.0F) "" else this.bodyWeight.toString(),
-        this.bodyWeight.takeIf { it != 0.0F }?.toString().orEmpty(),
+        //this.bodyWeight.takeIf { it != 0.0F }?.toString().orEmpty(),
+        this.bodyWeight.toStringOrEmpty(),
         this.location, this.memo, this.measuredAt)
 }
+
+fun Number?.toStringOrEmpty(): String = this?.toString() ?: ""

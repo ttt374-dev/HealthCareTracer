@@ -149,7 +149,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
         InputFieldRow("Pulse") {
             TextField(itemUiState.pulse,
                 onValueChange = {
-                    updateItemUiState(itemUiState.copy(bpLower = it))
+                    updateItemUiState(itemUiState.copy(pulse = it))
                 },
                 label = { Text("Pulse")},
                 keyboardOptions = numberKeyboardOptions,

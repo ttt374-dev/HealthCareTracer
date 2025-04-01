@@ -119,7 +119,7 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
         Text(Pair(dailyItem.avgBpUpper, dailyItem.avgBpLower).toBloodPressureString())
 //        BloodPressureText(dailyItem.avgBp.upper, dailyItem.avgBp.lower,
 //            color = MaterialTheme.colorScheme.onSecondaryContainer,)
-        Text(dailyItem.avgPulse.toDisplayString().withSubscript("bpm"),
+        Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
     }

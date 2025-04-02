@@ -3,26 +3,19 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.Item
+import com.github.ttt374.healthcaretracer.data.DailyItem
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.github.ttt374.healthcaretracer.data.averageOrNull
-import com.github.ttt374.healthcaretracer.data.gapME
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,7 +47,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
         val pulseList = items.mapNotNull { it.pulse?.toDouble() }
         val bodyWeightList = items.mapNotNull { it.bodyWeight?.toDouble() }
         val meGapList = items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-            .map { (_, dailyItems) -> dailyItems.gapME() }.filterNotNull()
+            .map { (date, dailyItems) -> DailyItem(date=date, items=dailyItems).meGap() }.filterNotNull()
 
         StatisticsData(
             avgBpUpper = bpUpperList.averageOrNull(),

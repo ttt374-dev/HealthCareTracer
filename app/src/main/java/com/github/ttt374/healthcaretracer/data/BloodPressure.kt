@@ -11,14 +11,17 @@ import java.time.Instant
 import java.time.ZoneId
 
 
-//data class BloodPressure(val systolic: Int = 0, val diastolic: Int = 0) {
-//    val upper: Int get() = systolic
-//    val lower: Int get() = diastolic
-//
-////    fun toAnnotatedString(): AnnotatedString {
-////        return bloodPressureFormatted(upper, lower)
-////    }
-//}
+data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
+    val upper: Int? get() = systolic
+    val lower: Int? get() = diastolic
+    //val isValid: Boolean get() = upper != null && lower != null
+    fun toDisplayString(meGap: Int? = null, showUnit: Boolean = true) =
+            bloodPressureFormatted(upper, lower, meGap, showUnit)
+    fun htnCategory()= BloodPressureCategory.getCategory(upper, lower)
+//    fun toAnnotatedString(): AnnotatedString {
+//        return bloodPressureFormatted(upper, lower)
+//    }
+}
 fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null, showUnit: Boolean = true): AnnotatedString {
     return buildAnnotatedString {
         fun appendBp(value: Int?, isSbp: Boolean) {
@@ -55,6 +58,7 @@ sealed class BloodPressureCategory(
     val dbpRange: IntRange,
     val color: Color,
 ) {
+    data object Invalid: BloodPressureCategory("Normal", 0..90, 0..59, Color.Gray)
     data object Normal : BloodPressureCategory("Normal", 90..119, 60..79, Color.Unspecified)
     data object Elevated : BloodPressureCategory("Elevated", 120..129, 60..79, Color.Unspecified)
     data object HypertensionStage1 : BloodPressureCategory("HTN Stage 1", 130..139, 80..89, Color(0xFFF57C00)) // dark orange
@@ -64,7 +68,7 @@ sealed class BloodPressureCategory(
     companion object {
         private val categories = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
 
-        fun getCategory(bpUpper: Int, bpLower: Int): BloodPressureCategory {
+        fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
             return categories.firstOrNull { bpUpper in it.sbpRange && bpLower in it.dbpRange }
                 ?: categories.firstOrNull { bpUpper in it.sbpRange || bpLower in it.dbpRange }
                 ?: Normal
@@ -76,16 +80,16 @@ sealed class BloodPressureCategory(
     }
 }
 // ME Gap
-fun List<Item>.gapME(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
-    val (morning, evening) = this
-        .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
-        .partition { (instant, _) -> instant.isMorning(zoneId) }
-
-    val morningAvg = morning.map { it.second }.averageOrNull()
-    val eveningAvg = evening.map { it.second }.averageOrNull()
-
-    return morningAvg?.let { m -> eveningAvg?.let { m - it } }
-}
+//fun List<Item>.gapME(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
+//    val (morning, evening) = this
+//        .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
+//        .partition { (instant, _) -> instant.isMorning(zoneId) }
+//
+//    val morningAvg = morning.map { it.second }.averageOrNull()
+//    val eveningAvg = evening.map { it.second }.averageOrNull()
+//
+//    return morningAvg?.let { m -> eveningAvg?.let { m - it } }
+//}
 
 fun Instant.isMorning(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
     val hour = this.atZone(zoneId).hour

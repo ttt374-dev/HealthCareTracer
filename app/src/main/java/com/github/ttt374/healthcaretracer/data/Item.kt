@@ -3,6 +3,8 @@ package com.github.ttt374.healthcaretracer.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 //const val MIN_PULSE = 30
 //const val MAX_PULSE = 200
@@ -23,3 +25,25 @@ data class Item (
     val measuredAt: Instant = Instant.now(),
 )
 
+data class DailyItem (
+    val date: LocalDate,
+    val avgBpUpper: Double? = null,
+    val avgBpLower: Double? = null,
+    val avgPulse: Double? = null,
+    val avgBodyWeight: Double? = null,
+    val items: List<Item> = emptyList(),
+
+){
+    fun meGap(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
+        with(items){
+            val (morning, evening) = this
+                .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
+                .partition { (instant, _) -> instant.isMorning(zoneId) }
+
+            val morningAvg = morning.map { it.second }.averageOrNull()
+            val eveningAvg = evening.map { it.second }.averageOrNull()
+
+            return morningAvg?.let { m -> eveningAvg?.let { m - it } }
+        }
+    }
+}

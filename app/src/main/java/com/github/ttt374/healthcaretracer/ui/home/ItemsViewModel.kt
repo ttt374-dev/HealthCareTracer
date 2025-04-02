@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.DailyItem
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.github.ttt374.healthcaretracer.data.averageOrNull
@@ -37,11 +38,3 @@ fun List<Item>.groupByDate(): List<DailyItem> {
         }.sortedBy { it.date }
 }
 
-data class DailyItem (
-    val date: LocalDate,
-    val avgBpUpper: Double? = null,
-    val avgBpLower: Double? = null,
-    val avgPulse: Double? = null,
-    val avgBodyWeight: Double? = null,
-    val items: List<Item> = emptyList(),
-)

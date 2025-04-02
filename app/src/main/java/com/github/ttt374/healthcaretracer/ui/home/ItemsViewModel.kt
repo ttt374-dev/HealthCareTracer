@@ -19,19 +19,22 @@ class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : View
 //        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val items = itemRepository.getAllItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val dailyItems = itemRepository.getAllItemsFlow().map { items ->
-            items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-                .map { (date, dailyItems) ->
-                    DailyItem(
-                        date = date,
-                        avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
-                        avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
-                        avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
-                        avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
-                        items = dailyItems
-                    )
-                }.sortedBy { it.date }
-        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val dailyItems = itemRepository.getAllItemsFlow().map { items ->items.groupByDate() }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+}
+
+fun List<Item>.groupByDate(): List<DailyItem> {
+    return groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+        .map { (date, dailyItems) ->
+            DailyItem(
+                date = date,
+                avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
+                avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
+                avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
+                avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
+                items = dailyItems
+            )
+        }.sortedBy { it.date }
 }
 
 data class DailyItem (

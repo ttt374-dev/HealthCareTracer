@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
 import android.graphics.Color
+import android.icu.text.CaseMap.Upper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,10 +33,14 @@ import java.time.Instant
 import java.time.ZoneId
 
 @Composable
-fun ChartScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){
-    val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
+fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Blood Pressure", "Pulse", "Body Weight")
+
+    val bpUpperEntries by chartViewModel.bpUpperEntries.collectAsState()
+    val bpLowerEntries by chartViewModel.bpLowerEntries.collectAsState()
+    val pulseEntries by chartViewModel.pulseEntries.collectAsState()
+    val bodyWeightEntries by chartViewModel.bodyWeightEntries.collectAsState()
 
     Scaffold(topBar = { CustomTopAppBar("Chart") },
         bottomBar = {
@@ -53,9 +58,9 @@ fun ChartScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNaviga
             }
             // 選択されたタブに応じて異なるグラフを表示
             when (selectedTabIndex) {
-                0 -> BloodPressureChart(dailyItems)
-                1 -> PulseChart(dailyItems)
-                2 -> BodyWeightChart(dailyItems)
+                0 -> BloodPressureChart(bpUpperEntries, bpLowerEntries)
+                1 -> PulseChart(pulseEntries)
+                2 -> BodyWeightChart(bodyWeightEntries)
             }
         }
     }
@@ -96,7 +101,6 @@ fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Double?): List<Entry> {
     }
 }
 
-
 @Composable
 fun HealthChart(update: (LineChart) -> Unit){
     AndroidView(
@@ -106,35 +110,26 @@ fun HealthChart(update: (LineChart) -> Unit){
     )
 }
 @Composable
-fun BloodPressureChart(dailyItems: List<DailyItem>){
+fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>){
     HealthChart(){ chart ->
-        val bpUpperEntries = dailyItems.toEntries {it.avgBpUpper  }
-        val bpLowerEntries = dailyItems.toEntries {it.avgBpLower }
-
         val bpHighDataSet = LineDataSet(bpUpperEntries, "BP High").applyStyle(Color.BLUE)
         val bpLowDataSet = LineDataSet(bpLowerEntries, "BP Low").applyStyle(Color.GREEN)
-
         chart.data = LineData(bpHighDataSet, bpLowDataSet)
         chart.invalidate()
     }
 }
 
 @Composable
-fun PulseChart(dailyItems: List<DailyItem>){
-    HealthChart(){ chart ->
-        val pulseEntries = dailyItems.toEntries {it.avgPulse }
-
-        val pulseDataSet = LineDataSet(pulseEntries, "Pulse").applyStyle(Color.RED)
+fun PulseChart(pulseEntries: List<Entry>){
+    HealthChart(){ chart ->val pulseDataSet = LineDataSet(pulseEntries, "Pulse").applyStyle(Color.RED)
         chart.data = LineData(pulseDataSet)
         chart.invalidate()
     }
 }
 @Composable
-fun BodyWeightChart(dailyItems: List<DailyItem>){
+fun BodyWeightChart(bodyWeightEntries: List<Entry>){
     HealthChart(){ chart ->
-        val bodyWeightEntries = dailyItems.toEntries { it.avgBodyWeight }
         val bodyWeightDataSet = LineDataSet(bodyWeightEntries, "Body Weight").applyStyle(Color.GREEN)
-
         chart.data = LineData(bodyWeightDataSet)
         chart.invalidate()
     }

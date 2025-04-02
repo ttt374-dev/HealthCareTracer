@@ -1,7 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
 import android.graphics.Color
-import android.icu.text.CaseMap.Upper
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.mikephil.charting.charts.LineChart
@@ -27,13 +28,17 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
-import com.github.ttt374.healthcaretracer.ui.home.ItemsViewModel
 import java.time.Instant
 import java.time.ZoneId
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
+    val selectedRange by chartViewModel.selectedRange.collectAsState()
+//    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
+//    val cutoffDate = Instant.now().minus(selectedRange.days, ChronoUnit.DAYS)
+
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Blood Pressure", "Pulse", "Body Weight")
 
@@ -47,6 +52,13 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             CustomBottomAppBar(appNavigator)
         }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = Modifier.padding(16.dp)) {
+                Column {
+                    TimeRangeDropdown(selectedRange) { chartViewModel.setSelectedRange(it) }
+//                    Text("from: " + dateFormatter.format(cutoffDate))
+//                    Text("# of data: " + bpUpperEntries.size)
+                }
+            }
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->
                     Tab(

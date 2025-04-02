@@ -7,6 +7,7 @@ import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.github.ttt374.healthcaretracer.data.averageOrNull
 import com.github.ttt374.healthcaretracer.data.gapME
+import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
     //val filteredItems = itemRepository.getRecentItemsFlow(selectedRange.value.days.toInt()).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     @OptIn(ExperimentalCoroutinesApi::class)
     val filteredItems = selectedRange.flatMapLatest { range ->
-        itemRepository.getRecentItemsFlow(range.days.toInt())
+        itemRepository.getRecentItemsFlow(range.days)
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 //

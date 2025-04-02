@@ -27,6 +27,7 @@ import com.github.ttt374.healthcaretracer.data.gapME
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.home.ItemsViewModel
 import com.github.ttt374.healthcaretracer.ui.home.toBodyWeightString
 import com.github.ttt374.healthcaretracer.ui.home.toPulseString
@@ -40,10 +41,10 @@ import java.time.temporal.ChronoUnit
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val selectedRange by viewModel.selectedRange.collectAsState()
     val statistics by viewModel.statistics.collectAsState()
-    val filteredItems by viewModel.filteredItems.collectAsState()
+    //val filteredItems by viewModel.filteredItems.collectAsState()
 
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
-    val cutoffDate = Instant.now().minus(selectedRange.days, ChronoUnit.DAYS)
+//    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
+//    val cutoffDate = Instant.now().minus(selectedRange.days, ChronoUnit.DAYS)
 
     Scaffold(
         topBar = { CustomTopAppBar("Statistics") },
@@ -53,8 +54,8 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             Box(modifier = Modifier.padding(16.dp)) {
                 Column {
                     TimeRangeDropdown(selectedRange) { viewModel.setSelectedRange(it) }
-                    Text("from: " + dateFormatter.format(cutoffDate))
-                    Text("# of data: " + filteredItems.size)
+//                    Text("from: " + dateFormatter.format(cutoffDate))
+//                    Text("# of data: " + filteredItems.size)
                 }
             }
             HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
@@ -105,37 +106,9 @@ fun StatisticsItemRow(label: String, bpUpper: Double?, bpLower: Double?, meGap: 
     }
     HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
-// filter
-@Composable
-fun TimeRangeDropdown(selectedRange: TimeRange, onRangeSelected: (TimeRange) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    val ranges = TimeRange.entries
 
-    //Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-    Box (modifier=Modifier.padding(8.dp)){
-        Button(onClick = { expanded = true }) {
-            Text(selectedRange.label)
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            ranges.forEach { range ->
-                DropdownMenuItem(text = { Text(range.label) }, onClick = {
-                    onRangeSelected(range)
-                    expanded = false
-                })
-            }
-        }
-    }
-
-}
-
-enum class TimeRange(val days: Long, val label: String) {
-    ONE_WEEK(7, "1 Week"),
-    ONE_MONTH(30, "1 Month"),
-    SIX_MONTHS(180, "6 Months")
-}
-
-fun List<Item>.filterByRange(range: TimeRange): List<Item> {
-    val cutoffDate = Instant.now().minus(range.days, ChronoUnit.DAYS)
-    return filter { it.measuredAt.isAfter(cutoffDate) }
-}
+//fun List<Item>.filterByRange(range: TimeRange): List<Item> {
+//    val cutoffDate = Instant.now().minus(range.days.toLong(), ChronoUnit.DAYS)
+//    return filter { it.measuredAt.isAfter(cutoffDate) }
+//}
 

@@ -28,7 +28,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
     @OptIn(ExperimentalCoroutinesApi::class)
     val filteredItems = selectedRange.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days)
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 //
 //
@@ -38,7 +38,9 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
 //    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun setSelectedRange(range: TimeRange) {
-        _selectedRange.value = range
+        if (_selectedRange.value != range) {
+            _selectedRange.value = range
+        }
     }
 
     val statistics = filteredItems.map { items ->
@@ -50,40 +52,45 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
             .map { (date, dailyItems) -> DailyItem(date=date, items=dailyItems).meGap() }.filterNotNull()
 
         StatisticsData(
-            avgBpUpper = bpUpperList.averageOrNull(),
-            avgBpLower = bpLowerList.averageOrNull(),
-            avgPulse = pulseList.averageOrNull(),
-            avgBodyWeight = bodyWeightList.averageOrNull(),
-            avgMeGap = meGapList.averageOrNull(),
-            maxBpUpper = bpUpperList.maxOrNull(),
-            maxBpLower = bpLowerList.maxOrNull(),
-            maxPulse = pulseList.maxOrNull(),
-            maxBodyWeight = bodyWeightList.maxOrNull(),
-            maxMeGap = meGapList.maxOrNull(),
-            minBpUpper = bpUpperList.minOrNull(),
-            minBpLower = bpLowerList.minOrNull(),
-            minPulse = pulseList.minOrNull(),
-            minBodyWeight = bodyWeightList.minOrNull(),
-            minMeGap = meGapList.minOrNull()
+            bpUpper = StatValue(
+                avg = bpUpperList.averageOrNull(),
+                max = bpUpperList.maxOrNull(),
+                min = bpUpperList.minOrNull()
+            ),
+            bpLower = StatValue(
+                avg = bpLowerList.averageOrNull(),
+                max = bpLowerList.maxOrNull(),
+                min = bpLowerList.minOrNull()
+            ),
+            meGap = StatValue(
+                avg = meGapList.averageOrNull(),
+                max = meGapList.maxOrNull(),
+                min = meGapList.minOrNull()
+            ),
+            pulse = StatValue(
+                avg = pulseList.averageOrNull(),
+                max = pulseList.maxOrNull(),
+                min = pulseList.minOrNull()
+            ),
+            bodyWeight = StatValue(
+                avg = bodyWeightList.averageOrNull(),
+                max = bodyWeightList.maxOrNull(),
+                min = bodyWeightList.minOrNull()
+            ),
         )
     }.stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
 
 }
-
 data class StatisticsData(
-    val avgBpUpper: Double? = null,
-    val avgBpLower: Double? = null,
-    val avgPulse: Double? = null,
-    val avgBodyWeight: Double? = null,
-    val avgMeGap: Double? = null,
-    val maxBpUpper: Double? = null,
-    val maxBpLower: Double? = null,
-    val maxPulse: Double? = null,
-    val maxBodyWeight: Double? = null,
-    val maxMeGap: Double? = null,
-    val minBpUpper: Double? = null,
-    val minBpLower: Double? = null,
-    val minPulse: Double? = null,
-    val minBodyWeight: Double? = null,
-    val minMeGap: Double? = null
+    val bpUpper: StatValue = StatValue(),
+    val bpLower: StatValue = StatValue(),
+    val pulse: StatValue = StatValue(),
+    val bodyWeight: StatValue = StatValue(),
+    val meGap: StatValue = StatValue(),
+)
+
+data class StatValue(
+    val avg: Double? = null,
+    val max: Double? = null,
+    val min: Double? = null
 )

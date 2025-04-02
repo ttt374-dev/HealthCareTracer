@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +23,7 @@ fun TimeRangeDropdown(selectedRange: TimeRange, onRangeSelected: (TimeRange) -> 
 
     //Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
     Box (modifier= Modifier.padding(8.dp)){
-        Button(onClick = { expanded = true }) {
+        OutlinedButton(onClick = { expanded = true }) {
             Text(selectedRange.label)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

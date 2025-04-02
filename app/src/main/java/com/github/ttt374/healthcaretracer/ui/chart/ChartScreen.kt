@@ -52,12 +52,8 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             CustomBottomAppBar(appNavigator)
         }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            Box(modifier = Modifier.padding(16.dp)) {
-                Column {
-                    TimeRangeDropdown(selectedRange) { chartViewModel.setSelectedRange(it) }
-//                    Text("from: " + dateFormatter.format(cutoffDate))
-//                    Text("# of data: " + bpUpperEntries.size)
-                }
+            Box(modifier = Modifier.padding(4.dp)) {
+                TimeRangeDropdown(selectedRange) { chartViewModel.setSelectedRange(it) }
             }
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->

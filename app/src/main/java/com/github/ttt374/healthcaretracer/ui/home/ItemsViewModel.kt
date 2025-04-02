@@ -16,12 +16,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : ViewModel(){
-//    val dailyItems = itemRepository.dailyItemsFlow()
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val items = itemRepository.getAllItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val dailyItems = itemRepository.getAllItemsFlow().map { items ->items.groupByDate() }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }
 
 fun List<Item>.groupByDate(): List<DailyItem> {

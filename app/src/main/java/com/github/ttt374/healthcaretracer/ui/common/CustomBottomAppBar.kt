@@ -18,8 +18,8 @@ import com.github.ttt374.healthcaretracer.navigation.Screen
 fun CustomBottomAppBar (appNavigator: AppNavigator, floatingActionButton: @Composable (() -> Unit)? = null ){
     val actions = listOf(
         BottomAction(Icons.Filled.Home, "home", appNavigator::navigateToHome),
-        BottomAction(Icons.AutoMirrored.Filled.ShowChart, "chart", appNavigator::navigateToChart),
         BottomAction(Icons.Filled.CalendarMonth, "calendar", appNavigator::navigateToCalendar),
+        BottomAction(Icons.AutoMirrored.Filled.ShowChart, "chart", appNavigator::navigateToChart),
         BottomAction(Icons.Filled.Analytics, "statics", appNavigator::navigateToStatics)
     )
     BottomAppBar(actions = {
@@ -30,5 +30,4 @@ fun CustomBottomAppBar (appNavigator: AppNavigator, floatingActionButton: @Compo
         }
     },  floatingActionButton = floatingActionButton)
 }
-//data class BottomAction (val route: String, val icon: ImageVector, val description: String = "")
 data class BottomAction (val icon: ImageVector, val description: String = "", val navigate: () -> Unit = {})

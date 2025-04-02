@@ -16,13 +16,13 @@ data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
     val lower: Int? get() = diastolic
     //val isValid: Boolean get() = upper != null && lower != null
     fun toDisplayString(meGap: Int? = null, showUnit: Boolean = true) =
-            bloodPressureFormatted(upper, lower, meGap, showUnit)
+            bloodPressureFormatted(upper, lower, showUnit)
     fun htnCategory()= BloodPressureCategory.getCategory(upper, lower)
 //    fun toAnnotatedString(): AnnotatedString {
 //        return bloodPressureFormatted(upper, lower)
 //    }
 }
-fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null, showUnit: Boolean = true): AnnotatedString {
+fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, showUnit: Boolean = true): AnnotatedString {
     return buildAnnotatedString {
         fun appendBp(value: Int?, isSbp: Boolean) {
             if (value != null) {
@@ -37,13 +37,13 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null, sho
         append("/")
         appendBp(bpLower, false)
 
-        meGap?.let {
-            append(" (")
-            pushStyle(SpanStyle(color = if (it > 20) Color.Red else Color.Unspecified))
-            append(it.toString())
-            pop()
-            append(")")
-        }
+//        meGap?.let {
+//            append(" (")
+//            pushStyle(SpanStyle(color = if (it > 20) Color.Red else Color.Unspecified))
+//            append(it.toString())
+//            pop()
+//            append(")")
+//        }
         if (showUnit){
             pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
             append("mmHg")
@@ -58,15 +58,15 @@ sealed class BloodPressureCategory(
     val dbpRange: IntRange,
     val color: Color,
 ) {
-    data object Invalid: BloodPressureCategory("Normal", 0..90, 0..59, Color.Gray)
-    data object Normal : BloodPressureCategory("Normal", 90..119, 60..79, Color.Unspecified)
+    data object Invalid: BloodPressureCategory("Normal", 0..90, 0..39, Color.Gray)
+    data object Normal : BloodPressureCategory("Normal", 40..119, 40..79, Color.Unspecified)
     data object Elevated : BloodPressureCategory("Elevated", 120..129, 60..79, Color.Unspecified)
     data object HypertensionStage1 : BloodPressureCategory("HTN Stage 1", 130..139, 80..89, Color(0xFFF57C00)) // dark orange
     data object HypertensionStage2 : BloodPressureCategory("HTN Stage 2", 140..179, 90..119, Color.Red)
     data object HypertensiveCrisis : BloodPressureCategory("HTN Crisis",180..Int.MAX_VALUE,120..Int.MAX_VALUE,Color.Magenta)
 
     companion object {
-        private val categories = listOf(Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
+        private val categories = listOf(Invalid, Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
 
         fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
             return categories.firstOrNull { bpUpper in it.sbpRange && bpLower in it.dbpRange }

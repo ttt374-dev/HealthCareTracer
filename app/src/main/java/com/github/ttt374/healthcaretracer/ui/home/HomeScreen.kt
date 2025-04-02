@@ -130,7 +130,10 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
         //Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
         Text(dailyItem.avgPulse?.toInt().toPulseString(),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
-            textAlign = TextAlign.End )
+            textAlign = TextAlign.End, fontWeight = FontWeight.Bold )
+        Text(dailyItem.avgBodyWeight.toBodyWeightString(),
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            textAlign = TextAlign.End, fontWeight = FontWeight.Bold )
 
     }
     dailyItem.items.forEach { item ->

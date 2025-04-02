@@ -2,11 +2,13 @@ package com.github.ttt374.healthcaretracer.ui.calendar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,13 +60,8 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
     //val datePickerState = rememberDatePickerState()
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
-    //var selectedItem by remember { mutableStateOf<DailyItem?>(null)}
 
-//    val navigateToEntry = {date: LocalDate ->
-//        navController.navigate("${Screen.Entry.route}/$selectedDate")
-//    }
     Scaffold(topBar = { CustomTopAppBar("Chart") },
-
         bottomBar = {
             CustomBottomAppBar(
                 appNavigator = appNavigator,
@@ -74,10 +72,9 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
                     }
                 })
         }) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(modifier = Modifier.padding(innerPadding)){
             LazyColumn {
                 item {
-                    //DatePicker(datePickerState)
                     val currentMonth = remember { YearMonth.now() }
                     val startMonth = remember { currentMonth.minusMonths(100) } // Adjust as needed
                     val endMonth = remember { currentMonth.plusMonths(100) } // Adjust as needed
@@ -89,7 +86,6 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
                         firstVisibleMonth = currentMonth,
                         firstDayOfWeek = firstDayOfWeek
                     )
-
                     HorizontalCalendar(
                         state = state,
                         dayContent = { cday ->
@@ -111,7 +107,6 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
                     selectedItem?.let { dailyItem ->
                         DailyItemRow(dailyItem, navigateToEdit = appNavigator::navigateToEdit)
                     }
-
 //                    Button(onClick = {
 //                        //val selectedDate = datePickerState.selectedDateMillis
 //                        Log.d("SelectedDate", "選択した日付: $selectedDate")

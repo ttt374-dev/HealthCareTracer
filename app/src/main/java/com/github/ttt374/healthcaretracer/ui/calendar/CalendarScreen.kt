@@ -31,13 +31,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
+import com.github.ttt374.healthcaretracer.ui.chart.BloodPressureChart
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
 import com.github.ttt374.healthcaretracer.ui.home.DailyItemRow
 import com.github.ttt374.healthcaretracer.ui.home.ItemsViewModel
+import com.github.ttt374.healthcaretracer.ui.home.toDisplayString
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -48,6 +52,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,7 +131,7 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
 fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = false, onClick: (CalendarDay) -> Unit = {}) {
     Box(
         modifier = Modifier
-            .aspectRatio(1f) // This is important for square sizing!
+            .aspectRatio(.8f) // This is important for square sizing!
             .clip(CircleShape)
             .background(color = if (isSelected) Color.Green else Color.Transparent)
             .clickable(
@@ -135,10 +140,18 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
             ),
         contentAlignment = Alignment.TopCenter
     ) {
-        Column {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.date.dayOfMonth.toString())
             if (dailyItem != null){
-                Text("[${dailyItem.items.size}]")
+                //Text("${dailyItem.avgBpUpper?.toInt()}/${dailyItem.avgBpLower?.toInt()}", fontSize = 10.sp)
+                Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(),null, false),
+                    fontSize = 10.sp)
+                val format = "%.0f"
+//                Text(dailyItem.avgBpUpper.toDisplayString(format) + "/"
+//                        + dailyItem.avgBpLower.toDisplayString(format),
+//                    fontSize=10.sp)
+                //Text(dailyItem.avgPulse?.toInt().toString(), fontSize=10.sp)
+                //Text(dailyItem.avgPulse.toDisplayString(format), fontSize = 10.sp)
             }
         }
     }

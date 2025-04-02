@@ -1,11 +1,8 @@
 package com.github.ttt374.healthcaretracer.data
 
 import androidx.room.Transaction
-import com.github.ttt374.healthcaretracer.ui.home.DailyItem
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.time.Instant
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton

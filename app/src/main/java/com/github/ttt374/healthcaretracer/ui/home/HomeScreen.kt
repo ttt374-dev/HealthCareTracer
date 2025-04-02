@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -121,7 +122,7 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
-        Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.items.gapME()?.toInt()))
+        Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.items.gapME()?.toInt()), fontWeight = FontWeight.Bold)
         Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.End )
@@ -152,12 +153,11 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
 
             Spacer(modifier = Modifier.width(16.dp))
             //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
-            Text(bloodPressureFormatted(item.bpUpper, item.bpLower))
+            Text(bloodPressureFormatted(item.bpUpper, item.bpLower), fontWeight = FontWeight.Bold)
             //Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
             Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.bodyWeight.toBodyWeightString())
-
         }
 
         Row {

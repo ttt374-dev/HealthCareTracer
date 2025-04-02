@@ -19,11 +19,11 @@ import java.time.ZoneId
 ////        return bloodPressureFormatted(upper, lower)
 ////    }
 //}
-fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null): AnnotatedString {
+fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null, showUnit: Boolean = true): AnnotatedString {
     return buildAnnotatedString {
         fun appendBp(value: Int?, isSbp: Boolean) {
             if (value != null) {
-                pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = BloodPressureCategory.getCategory(value, isSbp).color))
+                pushStyle(SpanStyle(color = BloodPressureCategory.getCategory(value, isSbp).color))
                 append(value.toString())
                 pop()
             } else {
@@ -36,15 +36,16 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, meGap: Int? = null): An
 
         meGap?.let {
             append(" (")
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold, color = if (it > 20) Color.Red else Color.Unspecified))
+            pushStyle(SpanStyle(color = if (it > 20) Color.Red else Color.Unspecified))
             append(it.toString())
             pop()
             append(")")
         }
-
-        pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
-        append("mmHg")
-        pop() // 明示的に `pop()` を追加
+        if (showUnit){
+            pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
+            append("mmHg")
+            pop() // 明示的に `pop()` を追加
+        }
     }
 }
 

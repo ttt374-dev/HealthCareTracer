@@ -8,12 +8,14 @@ import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.github.ttt374.healthcaretracer.data.averageOrNull
 import com.github.ttt374.healthcaretracer.data.gapME
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.Instant
@@ -24,15 +26,22 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) : ViewModel(){
-    val items = itemRepository.getAllItemsFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
     private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
     val selectedRange: StateFlow<TimeRange> = _selectedRange
 
-    val filteredItems = combine(items, selectedRange) { items, range ->
-        val cutoffDate = Instant.now().minus(range.days, ChronoUnit.DAYS)
-        items.filter { it.measuredAt.isAfter(cutoffDate) }
+    //val items = itemRepository.getAllItemsFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    //val filteredItems = itemRepository.getRecentItemsFlow(selectedRange.value.days.toInt()).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val filteredItems = selectedRange.flatMapLatest { range ->
+        itemRepository.getRecentItemsFlow(range.days.toInt())
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+//
+//
+//    val filteredItems = combine(items, selectedRange) { items, range ->
+//        val cutoffDate = Instant.now().minus(range.days, ChronoUnit.DAYS)
+//        items.filter { it.measuredAt.isAfter(cutoffDate) }
+//    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun setSelectedRange(range: TimeRange) {
         _selectedRange.value = range

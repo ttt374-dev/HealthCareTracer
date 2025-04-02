@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
 
 @Dao
 interface ItemDao {
@@ -32,6 +33,9 @@ interface ItemDao {
     // query
     @Query("SELECT * FROM items ORDER by measuredAt ASC")
     fun getAllItemsFlow(): Flow<List<Item>>
+
+    @Query("SELECT * FROM items WHERE measuredAt > :threshold ORDER by measuredAt ASC")
+    fun getItemsFromFlow(threshold: Instant): Flow<List<Item>>
 
     @Query("SELECT * FROM items WHERE id = :id")
     fun getItemFlow(id: Long): Flow<Item?>

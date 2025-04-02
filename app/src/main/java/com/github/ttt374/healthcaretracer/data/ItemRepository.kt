@@ -4,7 +4,9 @@ import androidx.room.Transaction
 import com.github.ttt374.healthcaretracer.ui.home.DailyItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,11 +28,15 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
         itemDao.insertItems(items)
     }
     // query
-    fun retrieveItemsFlow() = itemDao.getAllItemsFlow()
+    //fun retrieveItemsFlow() = itemDao.getAllItemsFlow()
     fun getItemFlow(itemId: Long) = itemDao.getItemFlow(itemId)
     fun getAllLocationsFlow() = itemDao.getAllLocationsFlow()
 
     fun getAllItemsFlow() = itemDao.getAllItemsFlow()
+    fun getRecentItemsFlow(days: Int): Flow<List<Item>> {
+        val from = Instant.now().minus(days.toLong(), ChronoUnit.DAYS)
+        return itemDao.getItemsFromFlow(from)
+    }
 
 //    fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
 //        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }

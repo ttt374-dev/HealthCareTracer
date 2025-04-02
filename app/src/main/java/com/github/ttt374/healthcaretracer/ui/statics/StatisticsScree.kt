@@ -49,8 +49,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         topBar = { CustomTopAppBar("Statistics") },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-
+        Column(modifier = Modifier.padding(innerPadding)){
             Box(modifier = Modifier.padding(16.dp)) {
                 Column {
                     TimeRangeDropdown(selectedRange) { viewModel.setSelectedRange(it) }
@@ -58,10 +57,8 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                     Text("# of data: " + filteredItems.size)
                 }
             }
-
             HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
             StatisticsHeadersRow()
-
             StatisticsItemRow("average",
                 statistics.avgBpUpper,
                 statistics.avgBpLower,

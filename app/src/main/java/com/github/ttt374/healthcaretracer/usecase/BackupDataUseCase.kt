@@ -34,7 +34,7 @@ class ExportDataUseCase(private val itemRepository: ItemRepository) {
         val file = File(downloadFolder, finalFilename)
         Log.d("download CSV to", file.absolutePath)
 
-        val items = itemRepository.retrieveItemsFlow().firstOrNull()
+        val items = itemRepository.getAllItemsFlow().firstOrNull()
         withContext(Dispatchers.IO) {
             CSVWriter(FileWriter(file)).use { writer ->
                 writer.writeNext(arrayOf("id", "measuredAt", "BP upper", "BP lower", "pulse", "body weight", "location", "memo"))

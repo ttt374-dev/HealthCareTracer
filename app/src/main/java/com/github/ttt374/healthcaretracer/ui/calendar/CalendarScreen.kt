@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -54,14 +55,12 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){ // (chartViewModel: ChartViewModel = hiltViewModel(), navController: NavController) {
-    //val datePickerState = rememberDatePickerState()
+fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
 
-    Scaffold(topBar = { CustomTopAppBar("Chart") },
+    Scaffold(topBar = { CustomTopAppBar("Calendar") },
         bottomBar = {
             CustomBottomAppBar(
                 appNavigator = appNavigator,
@@ -96,7 +95,7 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
                         },
                          monthHeader = { month ->
                              val daysOfWeek = month.weekDays.first().map { it.date.dayOfWeek }
-                             Text(month.yearMonth.toString())
+                             Text(month.yearMonth.toString(), Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally))
                              DaysOfWeekTitle(daysOfWeek = daysOfWeek)
                          }
                     )
@@ -107,12 +106,6 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
                     selectedItem?.let { dailyItem ->
                         DailyItemRow(dailyItem, navigateToEdit = appNavigator::navigateToEdit)
                     }
-//                    Button(onClick = {
-//                        //val selectedDate = datePickerState.selectedDateMillis
-//                        Log.d("SelectedDate", "選択した日付: $selectedDate")
-//                    }) {
-//                        Text("選択")
-//                    }
                 }
             }
         }
@@ -121,13 +114,11 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
 
 @Composable
 fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = false, onClick: (CalendarDay) -> Unit = {}) {
-    Box(
-        modifier = Modifier
+    Box(modifier = Modifier
             .aspectRatio(.8f) // This is important for square sizing!
             .clip(CircleShape)
             .background(color = if (isSelected) Color.Green else Color.Transparent)
             .clickable(
-                //enabled = day.position == DayPosition.MonthDate,
                 onClick = { onClick(day) }
             ),
         contentAlignment = Alignment.TopCenter
@@ -135,17 +126,8 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.date.dayOfMonth.toString())
             if (dailyItem != null){
-                //Text("${dailyItem.avgBpUpper?.toInt()}/${dailyItem.avgBpLower?.toInt()}", fontSize = 10.sp)
                 val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-                Text(bp.toDisplayString(showUnit = false),
-                //Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(),null, false),
-                    fontSize = 10.sp)
-                val format = "%.0f"
-//                Text(dailyItem.avgBpUpper.toDisplayString(format) + "/"
-//                        + dailyItem.avgBpLower.toDisplayString(format),
-//                    fontSize=10.sp)
-                //Text(dailyItem.avgPulse?.toInt().toString(), fontSize=10.sp)
-                //Text(dailyItem.avgPulse.toDisplayString(format), fontSize = 10.sp)
+                Text(bp.toDisplayString(showUnit = false), fontSize = 10.sp)
             }
         }
     }

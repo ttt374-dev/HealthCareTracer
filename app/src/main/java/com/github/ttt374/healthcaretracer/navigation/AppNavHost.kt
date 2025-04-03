@@ -12,6 +12,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
+import com.github.ttt374.healthcaretracer.ui.settings.SettingsScreen
 import com.github.ttt374.healthcaretracer.ui.statics.StatisticsScreen
 import java.time.LocalDate
 
@@ -22,7 +23,8 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object Edit : Screen("edit", "edit/{itemId}")
     data object Chart: Screen("chart")
     data object Calendar: Screen("calendar")
-    data object Statics: Screen("statics")
+    data object Statistics: Screen("statistics")
+    data object Settings: Screen("settings")
 }
 
 @Composable
@@ -40,7 +42,8 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
-        composable(Screen.Statics.route) { StatisticsScreen(appNavigator=appNavigator)}
+        composable(Screen.Statistics.route) { StatisticsScreen(appNavigator=appNavigator)}
+        composable(Screen.Settings.route) { SettingsScreen(appNavigator=appNavigator)}
     }
 }
 class AppNavigator(private val navController: NavHostController){
@@ -53,5 +56,6 @@ class AppNavigator(private val navController: NavHostController){
     fun navigateToEdit(itemId: Long) = navigateTo("${Screen.Edit.route}/$itemId")
     fun navigateToChart() = navigateTo(Screen.Chart.route)
     fun navigateToCalendar() = navigateTo(Screen.Calendar.route)
-    fun navigateToStatics() = navigateTo(Screen.Statics.route)
+    fun navigateToStatistics() = navigateTo(Screen.Statistics.route)
+    fun navigateToSettings() = navigateTo(Screen.Settings.route)
 }

@@ -44,6 +44,9 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
 
     val bpUpperEntries by chartViewModel.bpUpperEntries.collectAsState()
     val bpLowerEntries by chartViewModel.bpLowerEntries.collectAsState()
+    val bpUpperTargetEntries by chartViewModel.bpUpperTargetEntries.collectAsState()
+    val bpLowerTargetEntries by chartViewModel.bpLowerTargetEntries.collectAsState()
+
     val pulseEntries by chartViewModel.pulseEntries.collectAsState()
     val bodyWeightEntries by chartViewModel.bodyWeightEntries.collectAsState()
 
@@ -66,7 +69,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             }
             // 選択されたタブに応じて異なるグラフを表示
             when (selectedTabIndex) {
-                0 -> BloodPressureChart(bpUpperEntries, bpLowerEntries)
+                0 -> BloodPressureChart(bpUpperEntries, bpLowerEntries, bpUpperTargetEntries, bpLowerTargetEntries)
                 1 -> PulseChart(pulseEntries)
                 2 -> BodyWeightChart(bodyWeightEntries)
             }
@@ -100,7 +103,12 @@ private fun LineDataSet.applyStyle(color: Int) = apply {
     lineWidth = 2f
     circleRadius = 4f
 }
-
+private fun LineDataSet.applyTargetStyle(color: Int) = apply {
+    this.color = color
+    enableDashedLine(10f, 5f, 0f)
+    lineWidth = 1f
+    circleRadius = 1f
+}
 fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Double?): List<Entry> {
     return mapNotNull { dailyItem ->
         takeValue(dailyItem)?.toFloat()?.let { value ->
@@ -118,11 +126,14 @@ fun HealthChart(update: (LineChart) -> Unit){
     )
 }
 @Composable
-fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>){
+fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>, bpUpperTargetEntries: List<Entry>, bpLowerTargetEntries: List<Entry>){
     HealthChart(){ chart ->
-        val bpHighDataSet = LineDataSet(bpUpperEntries, "BP High").applyStyle(Color.BLUE)
-        val bpLowDataSet = LineDataSet(bpLowerEntries, "BP Low").applyStyle(Color.GREEN)
-        chart.data = LineData(bpHighDataSet, bpLowDataSet)
+
+        val bpUpperDataSet = LineDataSet(bpUpperEntries, "BP Upper").applyStyle(Color.BLUE)
+        val bpLowDataSet = LineDataSet(bpLowerEntries, "BP Lower").applyStyle(Color.GREEN)
+        val bpUpperTargetDataSet = LineDataSet(bpUpperTargetEntries, "BP Upper Target").applyTargetStyle(Color.BLUE)
+        val bpLowerTargetDataSet = LineDataSet(bpLowerTargetEntries, "BP Lower Target").applyTargetStyle(Color.GREEN)
+        chart.data = LineData(bpUpperDataSet, bpLowDataSet, bpUpperTargetDataSet, bpLowerTargetDataSet)
         chart.invalidate()
     }
 }

@@ -11,32 +11,48 @@ data class BloodPressureCategory(
 
 
 /** ガイドラインごとの血圧カテゴリリスト */
-sealed class BloodPressureGuideline(val categories: List<BloodPressureCategory>) {
-    data object JSH : BloodPressureGuideline (listOf(
+sealed class BloodPressureGuideline(val name: String, // val categories: List<BloodPressureCategory>,
+    val normal: BloodPressureCategory,
+    val elevated: BloodPressureCategory,
+    val htn1: BloodPressureCategory,
+    val htn2: BloodPressureCategory,
+    val htn3: BloodPressureCategory,
+    ) {
+    data object JSH : BloodPressureGuideline ("JSH",
         BloodPressureCategory("Normal", 0..119, 0..79, Color.Unspecified),
         BloodPressureCategory("Elevated", 120..139, 80..89, Color.Unspecified),
         BloodPressureCategory("HTN Stage 1", 140..159, 90..99, Color.Red),
         BloodPressureCategory("HTN Stage 2", 160..179, 100..109, Color.Red),
         BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
-    ))
-    data object WHO : BloodPressureGuideline (listOf(
+    )
+    data object WHO : BloodPressureGuideline ("WHO",
         BloodPressureCategory("Normal", 0..129, 0..84, Color.Unspecified),
         BloodPressureCategory("Elevated", 130..139, 85..89, Color.Unspecified),
         BloodPressureCategory("HTN Stage 1", 140..159, 90..99, Color.Red),
         BloodPressureCategory("HTN Stage 2", 160..179, 100..109, Color.Red),
         BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
-    ))
-    companion object {
-        private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+    )
+    val categories: List<BloodPressureCategory> get() = listOf(normal, elevated, htn1, htn2, htn3)
+    private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
 
-        fun getCategory(bpUpper: Int?, bpLower: Int?, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
-            return guideline.categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
-                    guideline.categories.firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
-        }
-        fun getCategory(value: Int, isUpper: Boolean, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
-            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
-        }
+    fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
+        return categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
+                categories.firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
     }
+    fun getCategory(value: Int, isUpper: Boolean): BloodPressureCategory {
+        return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
+    }
+//    companion object {
+//        private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+//
+//        fun getCategory(bpUpper: Int?, bpLower: Int?, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
+//            return guideline.categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
+//                    guideline.categories.firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
+//        }
+//        fun getCategory(value: Int, isUpper: Boolean, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
+//            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
+//        }
+//    }
 }
 /** 現在のガイドラインを選択（デフォルトは AHA） */
 var selectedGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO

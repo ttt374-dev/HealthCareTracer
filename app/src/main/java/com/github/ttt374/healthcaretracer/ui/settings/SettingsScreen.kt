@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.github.mikephil.charting.BuildConfig
+import com.github.ttt374.healthcaretracer.data.selectedGuideline
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -20,7 +21,7 @@ fun SettingsScreen(appNavigator: AppNavigator) {
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
         Column (Modifier.padding(innerPadding).padding(16.dp)){
-            SettingsRow("HTN Category Type") { Text("WHO") }
+            SettingsRow("HTN Category Type") { Text(selectedGuideline.name) }
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
     }

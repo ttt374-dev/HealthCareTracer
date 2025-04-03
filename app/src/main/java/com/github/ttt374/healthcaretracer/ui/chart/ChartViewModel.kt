@@ -2,8 +2,8 @@ package com.github.ttt374.healthcaretracer.ui.chart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.ItemRepository
+import com.github.ttt374.healthcaretracer.data.selectedGuideline
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,11 +47,11 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository) : ViewM
     fun setSelectedRange(range: TimeRange) {
         _selectedRange.value = range
     }
-    val upperTarget = BloodPressureCategory.Normal.sbpRange.last
-    val lowerTarget = BloodPressureCategory.Normal.dbpRange.last
-    val bpUpperTargetEntries = dailyItems.map { it.toEntries { upperTarget.toDouble() }}
+    val upperTarget = selectedGuideline.normal.upperRange.last
+    val lowerTarget = selectedGuideline.normal.lowerRange.last
+    val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    val bpLowerTargetEntries = dailyItems.map { it.toEntries { lowerTarget.toDouble() }}
+    val targetBpLowerEntries = dailyItems.map { it.toEntries { lowerTarget.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 }

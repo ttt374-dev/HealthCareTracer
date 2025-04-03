@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 
 //const val MIN_PULSE = 30
@@ -54,11 +55,22 @@ data class DailyItem (
 }
 
 fun Instant.isMorning(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-    val hour = this.atZone(zoneId).hour
-    return hour in 4..11
+    val start = LocalTime.of(4, 0)
+    val last = LocalTime.of(11, 59)
+    return this.atZone(zoneId).toLocalTime() in start..last
+//    val hour = this.atZone(zoneId).hour
+//    return hour in 4..11
 }
 
 fun Instant.isEvening(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-    val hour = this.atZone(zoneId).hour
-    return hour in 17..23 || hour in 0..2
+    val start = LocalTime.of(17, 0)
+    val last = LocalTime.of(3, 59)
+    val localTime = this.atZone(zoneId).toLocalTime()
+    return localTime in start..LocalTime.MAX || localTime in LocalTime.MIN..last
+//    return when {
+//        start < last -> localTime in start..last
+//        else -> localTime >= start || localTime <= last
+//    }
+//    val hour = this.atZone(zoneId).hour
+//    return hour in 17..23 || hour in 0..2
 }

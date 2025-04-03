@@ -33,11 +33,11 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
     )
     val categories: List<BloodPressureCategory> get() = listOf(normal, elevated, htn1, htn2, htn3)
-    private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+    val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
 
     fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
-        return categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
-                categories.firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
+        return categories.reversed().firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
+                categories.reversed().firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
     }
     fun getCategory(value: Int, isUpper: Boolean): BloodPressureCategory {
         return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory

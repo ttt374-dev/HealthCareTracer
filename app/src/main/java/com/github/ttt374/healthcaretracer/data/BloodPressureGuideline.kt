@@ -1,0 +1,64 @@
+package com.github.ttt374.healthcaretracer.data
+
+import androidx.compose.ui.graphics.Color
+
+data class BloodPressureCategory(
+    val name: String,
+    val upperRange: IntRange,
+    val lowerRange: IntRange,
+    val color: Color
+)
+
+
+/** ガイドラインごとの血圧カテゴリリスト */
+sealed class BloodPressureGuideline(val categories: List<BloodPressureCategory>) {
+    data object WHO : BloodPressureGuideline (listOf(
+        BloodPressureCategory("Normal", 0..90, 0..79, Color.Unspecified),
+        BloodPressureCategory("HTN 1", 90..180, 80..179, Color.Red),
+        BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 180..Int.MAX_VALUE, Color.Red)
+    ))
+    companion object {
+        fun getCategory(bpUpper: Int?, bpLower: Int?, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
+            return guideline.categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange }
+                ?: guideline.categories.first() // 見つからない場合は Invalid を返す
+        }
+        private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+        fun getCategory(value: Int, isUpper: Boolean, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
+            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
+        }
+
+    }
+}
+/** 現在のガイドラインを選択（デフォルトは AHA） */
+var selectedGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO
+
+
+//
+//sealed class BloodPressureCategory(
+//    val name: String,
+//    val sbpRange: IntRange,
+//    val dbpRange: IntRange,
+//    val color: Color,
+//) {
+//    data object Invalid: BloodPressureCategory("Normal", 0..90, 0..39, Color.Gray)
+//    data object Normal : BloodPressureCategory("Normal", 40..119, 40..79, Color.Unspecified)
+//    data object Elevated : BloodPressureCategory("Elevated", 120..129, 60..79, Color.Unspecified)
+//    data object HypertensionStage1 : BloodPressureCategory("HTN Stage 1", 130..139, 80..89, Color(0xFFF57C00)) // dark orange
+//    data object HypertensionStage2 : BloodPressureCategory("HTN Stage 2", 140..179, 90..119, Color.Red)
+//    data object HypertensiveCrisis : BloodPressureCategory("HTN Crisis",180..Int.MAX_VALUE,120..Int.MAX_VALUE,
+//        Color.Magenta)
+//
+//    companion object {
+//        private val categories = listOf(Invalid, Normal, Elevated, HypertensionStage1, HypertensionStage2, HypertensiveCrisis).reversed()
+//
+//        fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
+//            return categories.firstOrNull { bpUpper in it.sbpRange && bpLower in it.dbpRange }
+//                ?: categories.firstOrNull { bpUpper in it.sbpRange || bpLower in it.dbpRange }
+//                ?: Normal
+//        }
+//
+//        fun getCategory(value: Int, isSbp: Boolean): BloodPressureCategory {
+//            return categories.firstOrNull { if (isSbp) value in it.sbpRange else value in it.dbpRange } ?: Normal
+//        }
+//    }
+//}

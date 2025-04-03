@@ -35,15 +35,30 @@ data class DailyItem (
 
 ){
     fun meGap(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
-        with(items){
-            val (morning, evening) = this
-                .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
-                .partition { (instant, _) -> instant.isMorning(zoneId) }
+        val morningAvg = items.filter { it.measuredAt.isMorning(zoneId) }.map { it.bpUpper }.averageOrNull()
+        val eveningAvg = items.filter { it.measuredAt.isEvening(zoneId) }.map { it.bpUpper }.averageOrNull()
 
-            val morningAvg = morning.map { it.second }.averageOrNull()
-            val eveningAvg = evening.map { it.second }.averageOrNull()
+        return morningAvg?.let { m -> eveningAvg?.let { m - it }}
 
-            return morningAvg?.let { m -> eveningAvg?.let { m - it } }
-        }
+//        with(items){
+//            val (morning, evening) = this
+//                .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
+//                .partition { (instant, _) -> instant.isMorning(zoneId) }
+//
+//            val morningAvg = morning.map { it.second }.averageOrNull()
+//            val eveningAvg = evening.map { it.second }.averageOrNull()
+//
+//            return morningAvg?.let { m -> eveningAvg?.let { m - it } }
+//        }
     }
+}
+
+fun Instant.isMorning(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
+    val hour = this.atZone(zoneId).hour
+    return hour in 4..11
+}
+
+fun Instant.isEvening(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
+    val hour = this.atZone(zoneId).hour
+    return hour in 17..23 || hour in 0..2
 }

@@ -125,8 +125,16 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
         //Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.meGap()?.toInt()), fontWeight = FontWeight.Bold)
-        Text(bp.toDisplayString(meGap = dailyItem.meGap()?.toInt()),
+        Text(bp.toDisplayString(),
             color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
+//        val meGap = dailyItem.meGap()
+//        if (meGap != null){
+//            Text("(${meGap.toDisplayString().withSubscript("mmHg")})")
+//        }
+        dailyItem.meGap() ?.let {
+            Text(it.toDisplayString("%.0f").withSubscript("mmHg"),
+                color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
+        }
         //Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
         Text(dailyItem.avgPulse?.toInt().toPulseString(),
             color = MaterialTheme.colorScheme.onSecondaryContainer,

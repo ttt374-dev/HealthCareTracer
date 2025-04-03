@@ -1,14 +1,10 @@
 package com.github.ttt374.healthcaretracer.data
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
-import java.time.Instant
-import java.time.ZoneId
 
 
 data class BloodPressure(val systolic: Int?, val diastolic: Int?) {

@@ -46,10 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.BloodPressure
-import com.github.ttt374.healthcaretracer.data.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.DailyItem
 import com.github.ttt374.healthcaretracer.data.Item
-import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
 import com.github.ttt374.healthcaretracer.data.isEvening
 import com.github.ttt374.healthcaretracer.data.isMorning
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator

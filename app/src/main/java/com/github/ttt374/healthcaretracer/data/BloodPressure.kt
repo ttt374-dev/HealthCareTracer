@@ -1,23 +1,19 @@
 package com.github.ttt374.healthcaretracer.data
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
-import java.time.Instant
-import java.time.ZoneId
 
 
 data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
     val upper: Int? get() = systolic
     val lower: Int? get() = diastolic
     //val isValid: Boolean get() = upper != null && lower != null
-    fun toDisplayString(meGap: Int? = null, showUnit: Boolean = true) =
+    fun toDisplayString(showUnit: Boolean = true) =
             bloodPressureFormatted(upper, lower, showUnit)
-    fun htnCategory()= BloodPressureCategory.getCategory(upper, lower)
+    fun htnCategory()= BloodPressureGuideline.getCategory(upper, lower)
 //    fun toAnnotatedString(): AnnotatedString {
 //        return bloodPressureFormatted(upper, lower)
 //    }
@@ -26,7 +22,7 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, showUnit: Boolean = tru
     return buildAnnotatedString {
         fun appendBp(value: Int?, isSbp: Boolean) {
             if (value != null) {
-                pushStyle(SpanStyle(color = BloodPressureCategory.getCategory(value, isSbp).color))
+                pushStyle(SpanStyle(color = BloodPressureGuideline.getCategory(value, isSbp).color))
                 append(value.toString())
                 pop()
             } else {

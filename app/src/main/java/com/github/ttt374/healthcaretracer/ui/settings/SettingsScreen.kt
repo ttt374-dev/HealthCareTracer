@@ -34,26 +34,24 @@ fun TextFieldDialog(initialValue: String, onConfirm: (String) -> Unit, onCancel:
 }
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
-    //val uiState by viewModel.settingsUiState.collectAsState()
     val config by viewModel.config.collectAsState()
 
     // dialogs
     val bpGuidelineState = rememberDialogState()
-
     val targetBpUpperState = rememberDialogState()
     if (targetBpUpperState.isOpen){
-        TextFieldDialog(config.targetBpUpper.toString(), onConfirm = {
-            viewModel.saveConfig(config.copy(targetBpUpper =  it.toInt()))
-            //viewModel.updateSetting(uiState.copy(targetBpUpper = it ))
-                                                           },
+        TextFieldDialog(
+            config.targetBpUpper.toString(),
+            onConfirm = {
+                viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
+            },
             closeDialog = { targetBpUpperState.close() })
     }
     val targetBpLowerState = rememberDialogState()
     if (targetBpLowerState.isOpen){
         TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
             viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
-            //viewModel.updateSetting(uiState.copy(targetBpLower = it ))
-                                                           },
+        },
             closeDialog = { targetBpLowerState.close() })
     }
     ///
@@ -61,15 +59,13 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
         topBar = { CustomTopAppBar("Settings") },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
-        Column (Modifier.padding(innerPadding).padding(16.dp)){
+        Column (
+            Modifier.padding(innerPadding).padding(16.dp)){
             SettingsRow("HTN Guideline Type", onClick = { bpGuidelineState.open() }) {
-                //Text(uiState.bloodPressureGuidelineName)
                 Text(config.bloodPressureGuideline.name)
-                //if (bpGuidelineState.isOpen){
                     BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
                         Log.d("dropdown", selected)
                         val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.WHO
-                        //viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.bloodPressureGuidelines[it] ?: BloodPressureGuideline.WHO))
                         viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
                         bpGuidelineState.close()
                     }, onDismissRequest = { bpGuidelineState.close() })
@@ -82,10 +78,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 Text(config.targetBpLower.toString())
                 //Text(uiState.targetBpLower)
             }
-            SettingsRow("Target Body Weight"){ Text("XX kg")}
-
-            SettingsRow("Morning Range"){ Text("am-am")}
-            SettingsRow("Evening Range"){ Text("pm-pm")}
+//            SettingsRow("Target Body Weight"){ Text("XX kg")}
+//
+//            SettingsRow("Morning Range"){ Text("am-am")}
+//            SettingsRow("Evening Range"){ Text("pm-pm")}
 
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
@@ -93,7 +89,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 }
 @Composable
 fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit ){
-    Row(modifier=Modifier.padding(4.dp).clickable(onClick != null) { onClick?.invoke() }) {
+    Row(modifier= Modifier
+        .padding(4.dp)
+        .clickable(onClick != null) { onClick?.invoke() }) {
         Text(label, Modifier.weight(1f))
         content()
      }

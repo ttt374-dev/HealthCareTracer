@@ -56,21 +56,21 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import com.github.ttt374.healthcaretracer.ui.settings.ConfigViewModel
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
     dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
-    configViewModel: ConfigViewModel = hiltViewModel(),
-    importExportViewModel: BackupDataViewModel = hiltViewModel(),
+    //configViewModel: ConfigViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    //importExportViewModel: BackupDataViewModel = hiltViewModel(),
     appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     //val dailyItemsReversed = remember { dailyItems.reversed()}
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
-    val config by configViewModel.config.collectAsState()
+    val config by homeViewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline //   selectedGuideline
 
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -78,7 +78,7 @@ fun HomeScreen(
         onResult = { uri: Uri? ->
             selectedFileUri = uri
             Log.d("ImportScreen", "Selected file: $uri")
-            selectedFileUri?.let { importExportViewModel.importData(it) }
+            selectedFileUri?.let { homeViewModel.importData(it) }
             filePickerDialogState.close()
         }
     )
@@ -91,11 +91,8 @@ fun HomeScreen(
         CustomTopAppBar(
             "Home",
             menuItems = listOf(
-                MenuItem("export", onClick = { importExportViewModel.exportData() }),
-                MenuItem("import", onClick = {
-                    filePickerDialogState.open()
-                    //filePickerLauncher.launch(arrayOf("*/*"))
-                })
+                MenuItem("export", onClick = { homeViewModel.exportData() }),
+                MenuItem("import", onClick = { filePickerDialogState.open() })
             )
         )
     },

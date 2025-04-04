@@ -30,7 +30,6 @@ import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
-import com.github.ttt374.healthcaretracer.ui.settings.ConfigViewModel
 import java.time.Instant
 import java.time.ZoneId
 

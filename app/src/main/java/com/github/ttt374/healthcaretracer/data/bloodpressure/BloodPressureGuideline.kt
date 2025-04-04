@@ -1,8 +1,6 @@
 package com.github.ttt374.healthcaretracer.data.bloodpressure
 
 import androidx.compose.ui.graphics.Color
-import com.github.ttt374.healthcaretracer.data.BloodPressureGuidelineSerializer
-import kotlinx.serialization.Serializable
 
 data class BloodPressureCategory(
     val name: String,
@@ -12,7 +10,6 @@ data class BloodPressureCategory(
 )
 
 /** ガイドラインごとの血圧カテゴリリスト */
-@Serializable(with = BloodPressureGuidelineSerializer::class)
 sealed class BloodPressureGuideline(val name: String, // val categories: List<BloodPressureCategory>,
                                     val normal: BloodPressureCategory,
                                     val elevated: BloodPressureCategory,

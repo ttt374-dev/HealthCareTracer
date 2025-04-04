@@ -1,7 +1,6 @@
 package com.github.ttt374.healthcaretracer
 
 import android.util.Log
-import com.github.ttt374.healthcaretracer.data.BloodPressureGuidelineSerializer
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.item.isEvening
 import com.github.ttt374.healthcaretracer.data.item.isMorning
@@ -20,7 +19,7 @@ import java.time.ZoneId
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 
-@Serializable(with = BloodPressureGuidelineSerializer::class)
+
 data class ConfigWrapper(val guideline: BloodPressureGuideline)
 
 class SerializeTest(){

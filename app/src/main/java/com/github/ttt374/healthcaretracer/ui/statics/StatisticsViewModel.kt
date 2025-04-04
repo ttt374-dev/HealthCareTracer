@@ -3,6 +3,8 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.datastore.Config
+import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.data.item.averageOrNull
@@ -19,7 +21,8 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
-class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) : ViewModel(){
+class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository) : ViewModel(){
+    val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
     private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
     val selectedRange: StateFlow<TimeRange> = _selectedRange
 

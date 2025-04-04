@@ -24,16 +24,14 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.home.toDisplayString
-import com.github.ttt374.healthcaretracer.ui.settings.ConfigViewModel
 
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(),
-                     configViewModel: ConfigViewModel = hiltViewModel(),
                      appNavigator: AppNavigator) {
     val selectedRange by viewModel.selectedRange.collectAsState()
     val statistics by viewModel.statistics.collectAsState()
-    val config by configViewModel.config.collectAsState()
+    val config by viewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline //  selectedGuideline
 
     Scaffold(

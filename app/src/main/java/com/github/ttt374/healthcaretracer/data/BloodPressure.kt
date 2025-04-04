@@ -30,9 +30,9 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
             }
         }
 
-        appendBp(bpUpper, bpUpper?.let { guideline?.getCategoryByUpper(bpUpper)?.color } ?: Color.Unspecified)
+        appendBp(bpUpper, bpUpper?.let { guideline?.getCategory(bpUpper, true)?.color } ?: Color.Unspecified)
         append("/")
-        appendBp(bpLower, bpLower?.let { guideline?.getCategoryByLower(bpLower)?.color } ?: Color.Unspecified)
+        appendBp(bpLower, bpLower?.let { guideline?.getCategory(bpLower, false)?.color } ?: Color.Unspecified)
 
 //        meGap?.let {
 //            append(" (")

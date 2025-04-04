@@ -42,17 +42,17 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
     fun getCategory(value: Int, isUpper: Boolean): BloodPressureCategory {
         return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
     }
-//    companion object {
-//        private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
-//
-//        fun getCategory(bpUpper: Int?, bpLower: Int?, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
-//            return guideline.categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
-//                    guideline.categories.firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
-//        }
-//        fun getCategory(value: Int, isUpper: Boolean, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
-//            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
-//        }
-//    }
+    companion object {
+        private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+
+        fun getCategory(bpUpper: Int?, bpLower: Int?, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
+            return guideline.categories.firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
+                    guideline.categories.firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: invalidCategory
+        }
+        fun getCategory(value: Int, isUpper: Boolean, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
+            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
+        }
+    }
 }
 /** 現在のガイドラインを選択（デフォルトは AHA） */
 var selectedGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO

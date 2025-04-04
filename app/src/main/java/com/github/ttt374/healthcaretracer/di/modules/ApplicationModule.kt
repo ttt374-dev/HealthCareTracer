@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.di.modules
 
 import android.content.Context
+import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
@@ -22,15 +23,19 @@ object ApplicationModule {
     fun provideItemRepository(itemDao: ItemDao) =
         ItemRepository(itemDao)
 
+    @Singleton
     @Provides
-    fun provideItemDao(itemDatabase: ItemDatabase): ItemDao =
-        itemDatabase.itemDao()
+    fun provideConfigRepository(@ApplicationContext context: Context) = ConfigRepository(context)
+
     @Provides
-    fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase =
-        ItemDatabase.getDatabase(context)
+    fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()
+
+    @Provides
+    fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase = ItemDatabase.getDatabase(context)
 
     @Provides
     fun provideExportDataUseCase(itemRepository: ItemRepository) = ExportDataUseCase(itemRepository)
+
     @Provides
     fun provideImportDataUseCase(@ApplicationContext context: Context, itemRepository: ItemRepository) = ImportDataUseCase(context, itemRepository)
 }

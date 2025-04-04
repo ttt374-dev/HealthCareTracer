@@ -51,25 +51,27 @@ import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.isEvening
 import com.github.ttt374.healthcaretracer.data.item.isMorning
-import com.github.ttt374.healthcaretracer.data.bloodpressure.selectedGuideline
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import com.github.ttt374.healthcaretracer.ui.settings.ConfigViewModel
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
     dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
+    configViewModel: ConfigViewModel = hiltViewModel(),
     importExportViewModel: BackupDataViewModel = hiltViewModel(),
     appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     //val dailyItemsReversed = remember { dailyItems.reversed()}
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
-    val guideline = selectedGuideline
+    val config by configViewModel.config.collectAsState()
+    val guideline = config.bloodPressureGuideline //   selectedGuideline
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),

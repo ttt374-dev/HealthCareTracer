@@ -14,6 +14,6 @@ import javax.inject.Singleton
 @Singleton
 class ConfigRepository(context: Context) :DataStoreRepository<Config> by DataStoreRepositoryImpl (
     context = context,
-    fileName = "hoge", // AppConst.DataStoreFilename.CONFIG.filename,
+    fileName = "config", // AppConst.DataStoreFilename.CONFIG.filename,
     serializer = GenericSerializer(serializer = Config.serializer(), default = Config())
 )

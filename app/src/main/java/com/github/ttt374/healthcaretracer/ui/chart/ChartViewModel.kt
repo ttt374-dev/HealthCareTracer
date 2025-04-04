@@ -1,7 +1,11 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.datastore.Config
+import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate
@@ -13,10 +17,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ChartViewModel @Inject constructor(itemRepository: ItemRepository) : ViewModel() {
+class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configRepository: ConfigRepository) : ViewModel() {
     private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
     val selectedRange: StateFlow<TimeRange> = _selectedRange
 
@@ -24,6 +29,18 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository) : ViewM
     val dailyItems = selectedRange.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    private val configFlow = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
+
+    private val upperTarget = mutableIntStateOf(140)
+    private val lowerTarget = mutableIntStateOf(90)
+    init {
+        viewModelScope.launch {
+            configFlow.collect {
+                upperTarget.intValue = it.targetBpUpper
+                lowerTarget.intValue = it.targetBpLower
+            }
+        }
+    }
 
 //    val dailyItems = itemRepository.getRecentItemsFlow(selectedRange.value.days.toInt()).map { items ->items.groupByDate() }
 //        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -46,11 +63,10 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository) : ViewM
     fun setSelectedRange(range: TimeRange) {
         _selectedRange.value = range
     }
-    val upperTarget = 140
-    val lowerTarget = 90
-    val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.toDouble() }}
+
+    val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.intValue.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    val targetBpLowerEntries = dailyItems.map { it.toEntries { lowerTarget.toDouble() }}
+    val targetBpLowerEntries = dailyItems.map { it.toEntries { lowerTarget.intValue.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 }

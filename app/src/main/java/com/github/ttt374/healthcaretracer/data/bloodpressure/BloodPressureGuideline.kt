@@ -2,7 +2,6 @@ package com.github.ttt374.healthcaretracer.data.bloodpressure
 
 import androidx.compose.ui.graphics.Color
 import com.github.ttt374.healthcaretracer.data.BloodPressureGuidelineSerializer
-import com.github.ttt374.healthcaretracer.data.LocalTimeRangeSerializer
 import kotlinx.serialization.Serializable
 
 data class BloodPressureCategory(
@@ -58,10 +57,9 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
 //        fun getCategory(value: Int, isUpper: Boolean, guideline: BloodPressureGuideline = selectedGuideline): BloodPressureCategory {
 //            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
 //        }
-
 }
-/** 現在のガイドラインを選択（デフォルトは AHA） */
-var selectedGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO
+/** 現在のガイドラインを選択（デフォルトは WHO） */
+//var selectedGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO
 
 
 //

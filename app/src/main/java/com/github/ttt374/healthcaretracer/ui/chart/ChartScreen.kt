@@ -30,12 +30,15 @@ import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
+import com.github.ttt374.healthcaretracer.ui.settings.ConfigViewModel
 import java.time.Instant
 import java.time.ZoneId
 
 @Composable
-fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
+fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewModel: ConfigViewModel = hiltViewModel(),
+                appNavigator: AppNavigator){
     val selectedRange by chartViewModel.selectedRange.collectAsState()
+    //val config by configViewModel.config.collectAsState()
 //    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
 //    val cutoffDate = Instant.now().minus(selectedRange.days, ChronoUnit.DAYS)
 

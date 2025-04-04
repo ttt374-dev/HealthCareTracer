@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.BloodPressure
 import com.github.ttt374.healthcaretracer.data.DailyItem
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
@@ -33,25 +34,36 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
         itemRepository.getRecentItemsFlow(range.days)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-//
-//
-//    val filteredItems = combine(items, selectedRange) { items, range ->
-//        val cutoffDate = Instant.now().minus(range.days, ChronoUnit.DAYS)
-//        items.filter { it.measuredAt.isAfter(cutoffDate) }
-//    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
     fun setSelectedRange(range: TimeRange) {
         if (_selectedRange.value != range) {
             _selectedRange.value = range
         }
     }
+//
+//    val statistics = filteredItems.map { items -> getStatisticData(items) }
+//        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
+//    val statisticsMorning = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isMorning()}) }
+//        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
+//    val statisticsEvening = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isEvening()}) }
+//        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
 
-    val statistics = filteredItems.map { items -> getStatisticData(items) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
-    val statisticsMorning = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isMorning()}) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
-    val statisticsEvening = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isEvening()}) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
+    val bpUpperStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 })}
+        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+    val bpLowerStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 })}
+        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+    val pulseStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 })}
+        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+
+    fun getStatValue(list: List<Double>): StatValue {
+        return StatValue(avg = list.averageOrNull(), max = list.maxOrNull(), min = list.minOrNull())
+    }
+    fun getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> Double): StatTimeOfDay {
+        val allList = items.map { takeValue(it) }
+        val morningList = items.filter { it.measuredAt.isMorning()}.map { takeValue(it) }
+        val eveningList = items.filter { it.measuredAt.isEvening()}.map { takeValue(it)}
+
+        return StatTimeOfDay(all = getStatValue(allList), morning = getStatValue(morningList), evening = getStatValue(eveningList))
+    }
 
     private fun getStatisticData(items: List<Item>): StatisticsData {
         val bpUpperList = items.mapNotNull { it.bpUpper?.toDouble() }
@@ -99,12 +111,12 @@ data class StatisticsData(
     val bodyWeight: StatValue = StatValue(),
     val meGap: StatValue = StatValue(),
 )
-data class StatTimeDay (
-    val all: StatValue,
-    val morning: StatValue,
-    val afternoon: StatValue,
-    val evening: StatValue,
-    val night: StatValue,
+data class StatTimeOfDay (
+    val all: StatValue = StatValue(),
+    val morning: StatValue = StatValue(),
+    val afternoon: StatValue = StatValue(),
+    val evening: StatValue = StatValue(),
+    val night: StatValue = StatValue(),
 
 )
 data class StatValue(

@@ -1,15 +1,26 @@
 package com.github.ttt374.healthcaretracer.data.bloodpressure
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.*
 
+@Serializable
 data class BloodPressureCategory(
     val name: String,
+    @Serializable(with = IntRangeSerializer::class)
     val upperRange: IntRange,
+    @Serializable(with = IntRangeSerializer::class)
     val lowerRange: IntRange,
+    @Serializable(with = ColorSerializer::class)
     val color: Color
 )
 
 /** ガイドラインごとの血圧カテゴリリスト */
+@Serializable
 sealed class BloodPressureGuideline(val name: String, // val categories: List<BloodPressureCategory>,
                                     val normal: BloodPressureCategory,
                                     val elevated: BloodPressureCategory,
@@ -17,6 +28,8 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
                                     val htn2: BloodPressureCategory,
                                     val htn3: BloodPressureCategory,
     ) {
+    @Serializable
+    @SerialName("JSH")
     data object JSH : BloodPressureGuideline("JSH",
         BloodPressureCategory("Normal", 0..119, 0..79, Color.Unspecified),
         BloodPressureCategory("Elevated", 120..139, 80..89, Color.Unspecified),
@@ -24,6 +37,8 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         BloodPressureCategory("HTN Stage 2", 160..179, 100..109, Color.Red),
         BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
     )
+    @Serializable
+    @SerialName("WHO")
     data object WHO : BloodPressureGuideline("WHO",
         BloodPressureCategory("Normal", 0..129, 0..84, Color.Unspecified),
         BloodPressureCategory("Elevated", 130..139, 85..89, Color.Unspecified),
@@ -55,6 +70,58 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
 //            return guideline.categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
 //        }
 }
+
+
+object IntRangeSerializer : KSerializer<IntRange> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("IntRange") {
+        element<Int>("start")
+        element<Int>("endInclusive")
+    }
+
+    override fun serialize(encoder: Encoder, value: IntRange) {
+        val composite = encoder.beginStructure(descriptor)
+        composite.encodeIntElement(descriptor, 0, value.first)
+        composite.encodeIntElement(descriptor, 1, value.last)
+        composite.endStructure(descriptor)
+    }
+
+    override fun deserialize(decoder: Decoder): IntRange {
+        val dec = decoder.beginStructure(descriptor)
+        var start = 0
+        var endInclusive = 0
+
+        loop@ while (true) {
+            when (val index = dec.decodeElementIndex(descriptor)) {
+                0 -> start = dec.decodeIntElement(descriptor, 0)
+                1 -> endInclusive = dec.decodeIntElement(descriptor, 1)
+                CompositeDecoder.DECODE_DONE -> break@loop
+                else -> throw SerializationException("Unexpected index: $index")
+            }
+        }
+
+        dec.endStructure(descriptor)
+        return start..endInclusive
+    }
+}
+
+object ColorSerializer : KSerializer<Color> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Color", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Color) {
+        // ARGB を hex 表現 "#AARRGGBB" で保存
+        val argb = value.value.toULong().toString(16).padStart(8, '0')
+        encoder.encodeString("#${argb.uppercase()}")
+    }
+
+    override fun deserialize(decoder: Decoder): Color {
+        val hex = decoder.decodeString().removePrefix("#")
+        val value = hex.toULong(16)
+        return Color(value)
+    }
+}
+
+
 /** 現在のガイドラインを選択（デフォルトは WHO） */
 //var selectedGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO
 

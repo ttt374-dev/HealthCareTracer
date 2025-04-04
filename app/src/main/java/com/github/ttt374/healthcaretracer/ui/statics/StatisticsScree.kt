@@ -20,7 +20,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.data.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodPressureFormatted
+import com.github.ttt374.healthcaretracer.data.selectedGuideline
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -32,6 +34,7 @@ import com.github.ttt374.healthcaretracer.ui.home.toDisplayString
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val selectedRange by viewModel.selectedRange.collectAsState()
     val statistics by viewModel.statistics.collectAsState()
+    val guideline = selectedGuideline
 
     Scaffold(
         topBar = { CustomTopAppBar("Statistics") },
@@ -48,21 +51,24 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 statistics.bpLower.avg,
                 statistics.meGap.avg,
                 statistics.pulse.avg,
-                statistics.bodyWeight.avg
+                statistics.bodyWeight.avg,
+                guideline
             )
             StatisticsItemRow("max",
                 statistics.bpUpper.max,
                 statistics.bpLower.max,
                 statistics.meGap.max,
                 statistics.pulse.max,
-                statistics.bodyWeight.max
+                statistics.bodyWeight.max,
+                guideline
             )
             StatisticsItemRow("min",
                 statistics.bpUpper.min,
                 statistics.bpLower.min,
                 statistics.meGap.min,
                 statistics.pulse.min,
-                statistics.bodyWeight.min
+                statistics.bodyWeight.min,
+                guideline
             )
         }
     }
@@ -96,10 +102,11 @@ fun StatisticsHeaderField(name: String, unit: String, modifier: Modifier = Modif
 //    }
 
 @Composable
-fun StatisticsItemRow(label: String, bpUpper: Double?, bpLower: Double?, meGap: Double?, pulse: Double?, bodyWeight: Double?){
+fun StatisticsItemRow(label: String, bpUpper: Double?, bpLower: Double?, meGap: Double?, pulse: Double?, bodyWeight: Double?,
+                      guideline: BloodPressureGuideline? = null){
     Row(horizontalArrangement = Arrangement.Center) {
         Text(label, Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpper?.toInt(), bpLower?.toInt(), false), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpper?.toInt(), bpLower?.toInt(), showUnit =false, guideline = guideline), Modifier.weight(1f))
         Text(meGap.toDisplayString("%.0f"), Modifier.weight(1f))
         Text(pulse.toDisplayString("%.0f"), Modifier.weight(1f))
         Text(bodyWeight.toDisplayString("%.1f"), Modifier.weight(1f))

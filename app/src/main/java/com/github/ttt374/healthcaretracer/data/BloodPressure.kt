@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.data
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -11,27 +12,27 @@ data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
     val upper: Int? get() = systolic
     val lower: Int? get() = diastolic
     //val isValid: Boolean get() = upper != null && lower != null
-    fun toDisplayString(showUnit: Boolean = true) =
-            bloodPressureFormatted(upper, lower, showUnit)
-    fun htnCategory()= selectedGuideline.getCategory(upper, lower)
-//    fun toAnnotatedString(): AnnotatedString {
-//        return bloodPressureFormatted(upper, lower)
-//    }
+    fun toDisplayString(showUnit: Boolean = true, guideline: BloodPressureGuideline? = null) : AnnotatedString {
+        return bloodPressureFormatted(upper, lower, showUnit, guideline)
+    }
 }
-fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?, showUnit: Boolean = true): AnnotatedString {
+fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
+                           showUnit: Boolean = true,
+                           guideline: BloodPressureGuideline? = null): AnnotatedString {
     return buildAnnotatedString {
-        fun appendBp(value: Int?, isSbp: Boolean) {
+        fun appendBp(value: Int?, color: Color) {
             if (value != null) {
-                pushStyle(SpanStyle(color = selectedGuideline.getCategory(value, isSbp).color))
+                pushStyle(SpanStyle(color = color))
                 append(value.toString())
                 pop()
             } else {
                 append("-")
             }
         }
-        appendBp(bpUpper, true)
+
+        appendBp(bpUpper, bpUpper?.let { guideline?.getCategoryByUpper(bpUpper)?.color } ?: Color.Unspecified)
         append("/")
-        appendBp(bpLower, false)
+        appendBp(bpLower, bpLower?.let { guideline?.getCategoryByLower(bpLower)?.color } ?: Color.Unspecified)
 
 //        meGap?.let {
 //            append(" (")

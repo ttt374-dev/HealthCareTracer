@@ -46,10 +46,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.BloodPressure
+import com.github.ttt374.healthcaretracer.data.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.DailyItem
 import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.isEvening
 import com.github.ttt374.healthcaretracer.data.isMorning
+import com.github.ttt374.healthcaretracer.data.selectedGuideline
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -67,6 +69,7 @@ fun HomeScreen(
     //val dailyItemsReversed = remember { dailyItems.reversed()}
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+    val guideline = selectedGuideline
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -107,14 +110,14 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn { // (reverseLayout = true) {
                 items(dailyItems.reversed()) { dailyItem ->
-                    DailyItemRow(dailyItem, appNavigator::navigateToEdit)
+                    DailyItemRow(dailyItem, guideline, appNavigator::navigateToEdit)
                 }
             }
         }
     }
 }
 @Composable
-fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
+fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null, navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
@@ -143,11 +146,11 @@ fun DailyItemRow(dailyItem: DailyItem, navigateToEdit: (Long) -> Unit = {}){
 
     }
     dailyItem.items.forEach { item ->
-        ItemRow(item, navigateToEdit)
+        ItemRow(item, guideline, navigateToEdit)
     }
 }
 @Composable
-fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
+fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null, navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     val bp = BloodPressure(item.bpUpper, item.bpLower)
 
@@ -169,7 +172,7 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
             Spacer(modifier = Modifier.width(16.dp))
             //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
             //Text(bloodPressureFormatted(item.bpUpper, item.bpLower), fontWeight = FontWeight.Bold)
-            Text(bp.toDisplayString())
+            Text(bp.toDisplayString(guideline = guideline))
             //Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
             Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
@@ -181,8 +184,9 @@ fun ItemRow(item: Item, navigateToEdit: (Long) -> Unit = {}){
                 Text("-")
             } else {
                 //val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)
-                with (bp.htnCategory()){
-                    Text(name, color=color)
+                //with (bp.htnCategory()){
+                guideline?.getCategory(bp.upper, bp.lower)?.let {
+                    Text(it.name, color=it.color)
                 }
             }
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る

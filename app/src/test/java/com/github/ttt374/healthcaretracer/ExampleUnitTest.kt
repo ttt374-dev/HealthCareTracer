@@ -25,9 +25,10 @@ class BloodPressureCategoryTest() {
         assertEquals(guideline.getCategory(145, 65), guideline.htn1)
         assertEquals(guideline.getCategory(200, 75), guideline.htn3)
         assertEquals(guideline.getCategory(null, null), guideline.invalidCategory)
+        assertEquals(guideline.getCategory(165, true), guideline.htn2)
+        assertEquals(guideline.getCategory(87, false), guideline.elevated)
     }
 }
-
 class MorningEveningTest {
     @Test
     fun isMorningTest() {

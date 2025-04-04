@@ -3,7 +3,6 @@ package com.github.ttt374.healthcaretracer.ui.chart
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.ItemRepository
-import com.github.ttt374.healthcaretracer.data.selectedGuideline
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,8 +46,8 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository) : ViewM
     fun setSelectedRange(range: TimeRange) {
         _selectedRange.value = range
     }
-    val upperTarget = selectedGuideline.normal.upperRange.last
-    val lowerTarget = selectedGuideline.normal.lowerRange.last
+    val upperTarget = 140
+    val lowerTarget = 90
     val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val targetBpLowerEntries = dailyItems.map { it.toEntries { lowerTarget.toDouble() }}

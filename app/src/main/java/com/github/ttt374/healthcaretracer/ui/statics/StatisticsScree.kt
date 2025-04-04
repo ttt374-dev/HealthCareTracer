@@ -76,24 +76,37 @@ fun StatisticsTable(){
 fun StatisticsBpTable(bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay){
     Column {
         StatisticsHeadersRow()
-        Row {
-            Text("All", Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.all.avg?.toInt(), bpLowerStat.all.avg?.toInt(), false), Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.all.max?.toInt(), bpLowerStat.all.max?.toInt(), false), Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.all.min?.toInt(), bpLowerStat.all.min?.toInt(), false), Modifier.weight(1f))
-        }
-        Row {
-            Text("Morning", Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.morning.avg?.toInt(), bpLowerStat.morning.avg?.toInt(), false), Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.morning.max?.toInt(), bpLowerStat.morning.max?.toInt(), false), Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.morning.min?.toInt(), bpLowerStat.morning.min?.toInt(), false), Modifier.weight(1f))
-        }
-        Row {
-            Text("Evening", Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.evening.avg?.toInt(), bpLowerStat.evening.avg?.toInt(), false), Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.evening.max?.toInt(), bpLowerStat.evening.max?.toInt(), false), Modifier.weight(1f))
-            Text(bloodPressureFormatted(bpUpperStat.evening.min?.toInt(), bpLowerStat.evening.min?.toInt(), false), Modifier.weight(1f))
-        }
+        StatisticsBpRow("All", bpUpperStat.all, bpLowerStat.all)
+        StatisticsBpRow("Morning", bpUpperStat.morning, bpLowerStat.morning)
+        StatisticsBpRow("Evening", bpUpperStat.evening, bpLowerStat.evening)
+//        Row {
+//            Text("All", Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.all.avg?.toInt(), bpLowerStat.all.avg?.toInt(), false), Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.all.max?.toInt(), bpLowerStat.all.max?.toInt(), false), Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.all.min?.toInt(), bpLowerStat.all.min?.toInt(), false), Modifier.weight(1f))
+//        }
+//        Row {
+//            Text("Morning", Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.morning.avg?.toInt(), bpLowerStat.morning.avg?.toInt(), false), Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.morning.max?.toInt(), bpLowerStat.morning.max?.toInt(), false), Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.morning.min?.toInt(), bpLowerStat.morning.min?.toInt(), false), Modifier.weight(1f))
+//        }
+//        Row {
+//            Text("Evening", Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.evening.avg?.toInt(), bpLowerStat.evening.avg?.toInt(), false), Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.evening.max?.toInt(), bpLowerStat.evening.max?.toInt(), false), Modifier.weight(1f))
+//            Text(bloodPressureFormatted(bpUpperStat.evening.min?.toInt(), bpLowerStat.evening.min?.toInt(), false), Modifier.weight(1f))
+//        }
+    }
+
+}
+@Composable
+fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue: StatValue ){
+    Row {
+        Text(label, Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false), Modifier.weight(1f))
     }
 }
 

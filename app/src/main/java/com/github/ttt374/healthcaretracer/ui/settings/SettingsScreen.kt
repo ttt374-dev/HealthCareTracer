@@ -1,20 +1,12 @@
 package com.github.ttt374.healthcaretracer.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,19 +16,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.datastore.Config
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import com.github.ttt374.healthcaretracer.ui.common.rememberExpandState
 
 @Composable
 fun TextFieldDialog(initialValue: String, onConfirm: (String) -> Unit, onCancel: () -> Unit = {}, closeDialog: () -> Unit = {}){
@@ -45,16 +34,26 @@ fun TextFieldDialog(initialValue: String, onConfirm: (String) -> Unit, onCancel:
 }
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
-    val uiState by viewModel.settingsUiState.collectAsState()
+    //val uiState by viewModel.settingsUiState.collectAsState()
+    val config by viewModel.config.collectAsState()
+
     // dialogs
+    val bpGuidelineState = rememberDialogState()
+
     val targetBpUpperState = rememberDialogState()
     if (targetBpUpperState.isOpen){
-        TextFieldDialog(uiState.targetBpUpper, onConfirm = { viewModel.updateSetting(uiState.copy(targetBpUpper = it )) },
+        TextFieldDialog(config.targetBpUpper.toString(), onConfirm = {
+            viewModel.saveConfig(config.copy(targetBpUpper =  it.toInt()))
+            //viewModel.updateSetting(uiState.copy(targetBpUpper = it ))
+                                                           },
             closeDialog = { targetBpUpperState.close() })
     }
     val targetBpLowerState = rememberDialogState()
     if (targetBpLowerState.isOpen){
-        TextFieldDialog(uiState.targetBpLower, onConfirm = { viewModel.updateSetting(uiState.copy(targetBpLower = it )) },
+        TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
+            viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
+            //viewModel.updateSetting(uiState.copy(targetBpLower = it ))
+                                                           },
             closeDialog = { targetBpLowerState.close() })
     }
     ///
@@ -63,16 +62,35 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
         Column (Modifier.padding(innerPadding).padding(16.dp)){
-            SettingsRow("HTN Guideline Type") {
-                val guidelineList = listOf("WHO", "JST")
-                val expandState = rememberExpandState()
-                Text(uiState.bloodPressureGuidelineName)
+            SettingsRow("HTN Guideline Type", onClick = { bpGuidelineState.open() }) {
+                //Text(uiState.bloodPressureGuidelineName)
+                Text(config.bloodPressureGuideline.name)
+                //if (bpGuidelineState.isOpen){
+                    BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
+                        Log.d("dropdown", selected)
+                        val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.WHO
+                        //viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.bloodPressureGuidelines[it] ?: BloodPressureGuideline.WHO))
+                        viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.WHO))
+                        bpGuidelineState.close()
+                    }, onDismissRequest = { bpGuidelineState.close() })
+//                    val guidelineList = BloodPressureGuideline.bloodPressureGuidelines.keys
+//                    DropdownMenu(bpGuidelineState.isOpen, onDismissRequest = { bpGuidelineState.close() }){
+//                        guidelineList.forEach {
+//                            DropdownMenuItem({Text(it)}, {
+//                                viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.bloodPressureGuidelines[it] ?: BloodPressureGuideline.WHO))
+//                                //viewModel.updateSetting(uiState.copy(bloodPressureGuidelineName = it));
+//                                bpGuidelineState.close()})
+//                        }
+//                    }
+                //}
             }
             SettingsRow("Target Bp Upper", onClick = { targetBpUpperState.open()}){
-                Text(uiState.targetBpUpper)
+                Text(config.targetBpUpper.toString())
+                //Text(uiState.targetBpUpper)
             }
             SettingsRow("Target Bp Lower", onClick = { targetBpLowerState.open() }){
-                Text(uiState.targetBpLower)
+                Text(config.targetBpLower.toString())
+                //Text(uiState.targetBpLower)
             }
             SettingsRow("Target Body Weight"){ Text("XX kg")}
 
@@ -89,4 +107,15 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
         Text(label, Modifier.weight(1f))
         content()
      }
+}
+@Composable
+fun BpGuidelineDropMenu(expanded: Boolean, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){
+    val guidelineList = BloodPressureGuideline.bloodPressureGuidelines.keys
+    DropdownMenu(expanded, onDismissRequest = onDismissRequest){
+        guidelineList.forEach {
+            DropdownMenuItem({Text(it)}, onClick = {
+                onSelected(it)
+            })
+        }
+    }
 }

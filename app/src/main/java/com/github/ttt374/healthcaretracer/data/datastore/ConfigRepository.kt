@@ -3,7 +3,6 @@ package com.github.ttt374.healthcaretracer.data.datastore
 import android.content.Context
 import javax.inject.Singleton
 
-
 //////////////////////////////////////////////////////////////
 /**
  *  [ConfigRepository]
@@ -14,6 +13,6 @@ import javax.inject.Singleton
 @Singleton
 class ConfigRepository(context: Context) :DataStoreRepository<Config> by DataStoreRepositoryImpl (
     context = context,
-    fileName = "config", // AppConst.DataStoreFilename.CONFIG.filename,
+    fileName = "config2", // AppConst.DataStoreFilename.CONFIG.filename,
     serializer = GenericSerializer(serializer = Config.serializer(), default = Config())
 )

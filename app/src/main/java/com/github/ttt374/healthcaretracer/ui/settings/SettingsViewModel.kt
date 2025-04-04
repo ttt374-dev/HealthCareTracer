@@ -15,29 +15,34 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(val configRepository: ConfigRepository) : ViewModel(){
+class SettingsViewModel @Inject constructor(private val configRepository: ConfigRepository) : ViewModel(){
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
-    private val _settingsUiState = MutableStateFlow(SettingsUiState())
-    val settingsUiState: StateFlow<SettingsUiState> = _settingsUiState
-
-    init {
+//    private val _settingsUiState = MutableStateFlow(SettingsUiState())
+//    val settingsUiState: StateFlow<SettingsUiState> = _settingsUiState
+//
+//    init {
+//        viewModelScope.launch {
+//            configRepository.dataFlow.collect { config ->
+//                _settingsUiState.update {
+//                    config.toSettingsUiState()
+//                }
+//            }
+//        }
+//    }
+//
+//    //fun updateSetting(update: SettingsUiState.() -> SettingsUiState) {
+//    fun updateSetting(uiState: SettingsUiState){
+//        _settingsUiState.value = uiState
+//            //_isModified.update { true }
+//    }
+//    fun savePreferences() {
+//        viewModelScope.launch {
+//            configRepository.updateData(_settingsUiState.value.toConfig())
+//        }
+//    }
+    fun saveConfig(config: Config){
         viewModelScope.launch {
-            configRepository.dataFlow.collect { config ->
-                _settingsUiState.update {
-                    config.toSettingsUiState()
-                }
-            }
-        }
-    }
-
-    //fun updateSetting(update: SettingsUiState.() -> SettingsUiState) {
-    fun updateSetting(uiState: SettingsUiState){
-        _settingsUiState.value = uiState
-            //_isModified.update { true }
-    }
-    fun savePreferences() {
-        viewModelScope.launch {
-            configRepository.updateData(_settingsUiState.value.toConfig())
+            configRepository.updateData(config)
         }
     }
 }

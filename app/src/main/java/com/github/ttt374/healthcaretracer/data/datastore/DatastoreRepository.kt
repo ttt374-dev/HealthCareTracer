@@ -27,7 +27,7 @@ class GenericSerializer<T : Any>(
     override suspend fun readFrom(input: InputStream): T {
         return try {
             val jsonString = input.readBytes().decodeToString()
-            json.decodeFromString(serializer, jsonString)
+             json.decodeFromString(serializer, jsonString)
         } catch (e: Exception) {
             defaultValue
         }

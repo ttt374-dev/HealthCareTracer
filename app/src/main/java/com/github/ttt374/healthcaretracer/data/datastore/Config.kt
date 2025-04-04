@@ -1,11 +1,12 @@
 package com.github.ttt374.healthcaretracer.data.datastore
 
+import com.github.ttt374.healthcaretracer.data.ConfigSerializer
 import com.github.ttt374.healthcaretracer.data.LocalTimeRangeSerializer
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import kotlinx.serialization.Serializable
 import java.time.LocalTime
 
-@Serializable
+@Serializable(with = ConfigSerializer::class)
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO,
     val morningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(4, 0), LocalTime.of(11,59)),
@@ -15,7 +16,6 @@ data class Config (
     val targetBpLower: Int = 80,
     val targetBodyWeight: Double = 60.0,
 )
-
 
 @Serializable(with = LocalTimeRangeSerializer::class)
 data class LocalTimeRange(

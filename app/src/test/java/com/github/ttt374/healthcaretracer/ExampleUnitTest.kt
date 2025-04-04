@@ -1,8 +1,13 @@
 package com.github.ttt374.healthcaretracer
 
+import android.util.Log
+import com.github.ttt374.healthcaretracer.data.BloodPressureGuidelineSerializer
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.item.isEvening
 import com.github.ttt374.healthcaretracer.data.item.isMorning
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -15,6 +20,24 @@ import java.time.ZoneId
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 
+@Serializable(with = BloodPressureGuidelineSerializer::class)
+data class ConfigWrapper(val guideline: BloodPressureGuideline)
+
+class SerializeTest(){
+
+    private val json = Json { encodeDefaults = true }
+
+    @Test
+    fun guidelineSerializeTest(){
+        val config = ConfigWrapper(BloodPressureGuideline.JSH)
+
+
+        val jsonString = json.encodeToString(config)
+        Log.d("test", jsonString)
+        assertEquals("""{"guideline":"JSH"}""", jsonString)
+
+    }
+}
 class BloodPressureCategoryTest() {
     private val guideline = BloodPressureGuideline.WHO
 

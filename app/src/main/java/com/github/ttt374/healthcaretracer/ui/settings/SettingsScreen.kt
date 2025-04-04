@@ -70,19 +70,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                         Log.d("dropdown", selected)
                         val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.WHO
                         //viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.bloodPressureGuidelines[it] ?: BloodPressureGuideline.WHO))
-                        viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.WHO))
+                        viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
                         bpGuidelineState.close()
                     }, onDismissRequest = { bpGuidelineState.close() })
-//                    val guidelineList = BloodPressureGuideline.bloodPressureGuidelines.keys
-//                    DropdownMenu(bpGuidelineState.isOpen, onDismissRequest = { bpGuidelineState.close() }){
-//                        guidelineList.forEach {
-//                            DropdownMenuItem({Text(it)}, {
-//                                viewModel.saveConfig(config.copy(bloodPressureGuideline = BloodPressureGuideline.bloodPressureGuidelines[it] ?: BloodPressureGuideline.WHO))
-//                                //viewModel.updateSetting(uiState.copy(bloodPressureGuidelineName = it));
-//                                bpGuidelineState.close()})
-//                        }
-//                    }
-                //}
             }
             SettingsRow("Target Bp Upper", onClick = { targetBpUpperState.open()}){
                 Text(config.targetBpUpper.toString())

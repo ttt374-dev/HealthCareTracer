@@ -3,9 +3,9 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.DailyItem
-import com.github.ttt374.healthcaretracer.data.ItemRepository
-import com.github.ttt374.healthcaretracer.data.averageOrNull
+import com.github.ttt374.healthcaretracer.data.item.DailyItem
+import com.github.ttt374.healthcaretracer.data.item.ItemRepository
+import com.github.ttt374.healthcaretracer.data.item.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

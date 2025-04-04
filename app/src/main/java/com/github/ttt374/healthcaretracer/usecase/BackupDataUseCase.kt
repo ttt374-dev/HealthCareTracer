@@ -4,8 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
-import com.github.ttt374.healthcaretracer.data.Item
-import com.github.ttt374.healthcaretracer.data.ItemRepository
+import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.opencsv.CSVReader
 import com.opencsv.CSVWriter
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -61,7 +61,8 @@ class ExportDataUseCase(private val itemRepository: ItemRepository) {
 ////////////////
 class ImportDataUseCase(
     @ApplicationContext private val context: Context,
-    private val itemRepository: ItemRepository) {
+    private val itemRepository: ItemRepository
+) {
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         Log.d("import data", uri.toString())
 

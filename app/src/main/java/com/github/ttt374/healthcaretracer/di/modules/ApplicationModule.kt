@@ -1,9 +1,9 @@
 package com.github.ttt374.healthcaretracer.di.modules
 
 import android.content.Context
-import com.github.ttt374.healthcaretracer.data.ItemDao
-import com.github.ttt374.healthcaretracer.data.ItemDatabase
-import com.github.ttt374.healthcaretracer.data.ItemRepository
+import com.github.ttt374.healthcaretracer.data.item.ItemDao
+import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
+import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import dagger.Module

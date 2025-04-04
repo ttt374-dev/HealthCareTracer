@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.data
+package com.github.ttt374.healthcaretracer.data.bloodpressure
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString

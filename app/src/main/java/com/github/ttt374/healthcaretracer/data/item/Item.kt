@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.data
+package com.github.ttt374.healthcaretracer.data.item
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -34,7 +34,7 @@ data class DailyItem (
     val avgBodyWeight: Double? = null,
     val items: List<Item> = emptyList(),
 
-){
+    ){
     fun meGap(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
         val morningAvg = items.filter { it.measuredAt.isMorning(zoneId) }.map { it.bpUpper }.averageOrNull()
         val eveningAvg = items.filter { it.measuredAt.isEvening(zoneId) }.map { it.bpUpper }.averageOrNull()

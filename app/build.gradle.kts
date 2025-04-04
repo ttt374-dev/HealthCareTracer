@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
+    kotlin("plugin.serialization") version "1.9.20"
 }
 
 android {
@@ -95,4 +96,5 @@ dependencies {
     //implementation(libs.compose.calendar)
     implementation("com.kizitonwose.calendar:compose:2.6.2")
     implementation("androidx.datastore:datastore-preferences:1.1.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }

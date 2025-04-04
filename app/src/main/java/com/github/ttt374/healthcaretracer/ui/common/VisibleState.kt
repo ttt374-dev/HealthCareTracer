@@ -4,7 +4,7 @@ package com.github.ttt374.healthcaretracer.ui.common
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import com.github.ttt374.healthcaretracer.data.Item
+import com.github.ttt374.healthcaretracer.data.item.Item
 
 interface VisibleState {
     val visible: Boolean

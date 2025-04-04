@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.data
+package com.github.ttt374.healthcaretracer.data.item
 
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow

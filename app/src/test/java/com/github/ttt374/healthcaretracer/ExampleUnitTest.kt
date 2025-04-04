@@ -1,14 +1,13 @@
 package com.github.ttt374.healthcaretracer
 
-import com.github.ttt374.healthcaretracer.data.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.isEvening
-import com.github.ttt374.healthcaretracer.data.isMorning
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.item.isEvening
+import com.github.ttt374.healthcaretracer.data.item.isMorning
 import org.junit.Test
 
 import org.junit.Assert.*
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 /**
  * Example local unit test, which will execute on the development machine (host).

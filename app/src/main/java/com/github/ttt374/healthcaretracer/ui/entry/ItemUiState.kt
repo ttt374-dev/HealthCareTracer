@@ -1,6 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
-import com.github.ttt374.healthcaretracer.data.Item
+import com.github.ttt374.healthcaretracer.data.item.Item
 import java.time.Instant
 
 data class ItemUiState (

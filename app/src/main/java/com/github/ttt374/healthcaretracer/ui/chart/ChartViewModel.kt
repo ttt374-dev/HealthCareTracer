@@ -49,9 +49,12 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository) : ViewM
     }
     val upperTarget = selectedGuideline.normal.upperRange.last
     val lowerTarget = selectedGuideline.normal.lowerRange.last
+    val targetBodyWeight = 60.0
     val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val targetBpLowerEntries = dailyItems.map { it.toEntries { lowerTarget.toDouble() }}
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val targetBodyWeightEntries = dailyItems.map { it.toEntries { targetBodyWeight }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
 }

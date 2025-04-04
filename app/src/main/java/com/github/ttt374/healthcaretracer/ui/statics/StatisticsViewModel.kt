@@ -4,8 +4,11 @@ package com.github.ttt374.healthcaretracer.ui.statics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.DailyItem
+import com.github.ttt374.healthcaretracer.data.Item
 import com.github.ttt374.healthcaretracer.data.ItemRepository
 import com.github.ttt374.healthcaretracer.data.averageOrNull
+import com.github.ttt374.healthcaretracer.data.isEvening
+import com.github.ttt374.healthcaretracer.data.isMorning
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,7 +46,14 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
         }
     }
 
-    val statistics = filteredItems.map { items ->
+    val statistics = filteredItems.map { items -> getStatisticData(items) }
+        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
+    val statisticsMorning = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isMorning()}) }
+        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
+    val statisticsEvening = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isEvening()}) }
+        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
+
+    private fun getStatisticData(items: List<Item>): StatisticsData {
         val bpUpperList = items.mapNotNull { it.bpUpper?.toDouble() }
         val bpLowerList = items.mapNotNull { it.bpLower?.toDouble() }
         val pulseList = items.mapNotNull { it.pulse?.toDouble() }
@@ -51,7 +61,8 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
         val meGapList = items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) -> DailyItem(date=date, items=dailyItems).meGap() }.filterNotNull()
 
-        StatisticsData(
+
+        return StatisticsData(
             bpUpper = StatValue(
                 avg = bpUpperList.averageOrNull(),
                 max = bpUpperList.maxOrNull(),
@@ -78,9 +89,9 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository) :
                 min = bodyWeightList.minOrNull()
             ),
         )
-    }.stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
-
+    }
 }
+
 data class StatisticsData(
     val bpUpper: StatValue = StatValue(),
     val bpLower: StatValue = StatValue(),
@@ -88,7 +99,14 @@ data class StatisticsData(
     val bodyWeight: StatValue = StatValue(),
     val meGap: StatValue = StatValue(),
 )
+data class StatTimeDay (
+    val all: StatValue,
+    val morning: StatValue,
+    val afternoon: StatValue,
+    val evening: StatValue,
+    val night: StatValue,
 
+)
 data class StatValue(
     val avg: Double? = null,
     val max: Double? = null,

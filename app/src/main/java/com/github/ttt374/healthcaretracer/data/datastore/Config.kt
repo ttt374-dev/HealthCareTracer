@@ -11,5 +11,5 @@ data class Config (
 
     val targetBpUpper: Int = 120,
     val targetBpLower: Int = 80,
-//    val targetBodyWeight: Double = 60.0,
+    val targetBodyWeight: Double = 60.0,
 )

@@ -48,37 +48,6 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         topBar = { CustomTopAppBar("Statistics") },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)){
-            Box(modifier = Modifier.padding(4.dp)) {
-                TimeRangeDropdown(selectedRange) { viewModel.setSelectedRange(it) }
-            }
-            HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
-            StatisticsHeadersRow()
-            StatisticsItemRow("average",
-                statistics.bpUpper.avg,
-                statistics.bpLower.avg,
-                statistics.meGap.avg,
-                statistics.pulse.avg,
-                statistics.bodyWeight.avg,
-                guideline
-            )
-            StatisticsItemRow("max",
-                statistics.bpUpper.max,
-                statistics.bpLower.max,
-                statistics.meGap.max,
-                statistics.pulse.max,
-                statistics.bodyWeight.max,
-                guideline
-            )
-            StatisticsItemRow("min",
-                statistics.bpUpper.min,
-                statistics.bpLower.min,
-                statistics.meGap.min,
-                statistics.pulse.min,
-                statistics.bodyWeight.min,
-                guideline
-            )
-        }
         LazyColumn(modifier = Modifier.padding(innerPadding)){
             item {
                 Box(modifier = Modifier.padding(4.dp)) {
@@ -228,23 +197,6 @@ fun StatisticsHeaderField(name: String, unit: String, modifier: Modifier = Modif
 //        }
 //    }
 
-@Composable
-fun StatisticsItemRow(label: String, bpUpper: Double?, bpLower: Double?, meGap: Double?, pulse: Double?, bodyWeight: Double?,
-                      guideline: BloodPressureGuideline? = null){
-fun StatisticsItemRow(label: String, bpUpper: Double?, bpLower: Double?, pulse: Double?, bodyWeight: Double?){
-    Row(horizontalArrangement = Arrangement.Center) {
-        Text(label, Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpper?.toInt(), bpLower?.toInt(), showUnit =false, guideline = guideline), Modifier.weight(1f))
-        Text(meGap.toDisplayString("%.0f"), Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpper?.toInt(), bpLower?.toInt(), false), Modifier.weight(1f))
-        //Text(meGap.toDisplayString("%.0f"), Modifier.weight(1f))
-        Text(pulse.toDisplayString("%.0f"), Modifier.weight(1f))
-        Text(bodyWeight.toDisplayString("%.1f"), Modifier.weight(1f))
-        //Text(pulse?.toInt().toPulseString(), Modifier.weight(1f))
-        //Text(bodyWeight.toBodyWeightString(), Modifier.weight(1f))
-    }
-    HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
-}
 
 //fun List<Item>.filterByRange(range: TimeRange): List<Item> {
 //    val cutoffDate = Instant.now().minus(range.days.toLong(), ChronoUnit.DAYS)

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.datastore.Config
 import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
+import com.github.ttt374.healthcaretracer.data.datastore.Preferences
+import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
@@ -14,31 +16,37 @@ import com.github.ttt374.healthcaretracer.data.item.isMorning
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
-class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository) : ViewModel(){
+class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository, val preferencesRepository: PreferencesRepository) : ViewModel(){
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
-    private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
-    val selectedRange: StateFlow<TimeRange> = _selectedRange
+    private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
+
+    // TimeRange だけを切り出して StateFlow として公開
+    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRange }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
+
+//    private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
+//    val selectedRange: StateFlow<TimeRange> = _selectedRange
 
     //val items = itemRepository.getAllItemsFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     //val filteredItems = itemRepository.getRecentItemsFlow(selectedRange.value.days.toInt()).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     @OptIn(ExperimentalCoroutinesApi::class)
-    val filteredItems = selectedRange.flatMapLatest { range ->
+    val filteredItems = timeRange.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun setSelectedRange(range: TimeRange) {
-        if (_selectedRange.value != range) {
-            _selectedRange.value = range
+        viewModelScope.launch {
+            preferencesRepository.updateData(pref.value.copy(timeRange = range))
         }
     }
 

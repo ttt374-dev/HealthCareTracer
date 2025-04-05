@@ -125,7 +125,7 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.weight(1f))
         //Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.meGap()?.toInt()), fontWeight = FontWeight.Bold)
-        Text(bp.toDisplayString(),
+        Text(bp.toDisplayString(guideline = guideline),
             color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
 //        val meGap = dailyItem.meGap()
 //        if (meGap != null){

@@ -8,6 +8,7 @@ import javax.inject.Singleton
 @Serializable
 data class Preferences(
     val timeRange: TimeRange = TimeRange.Default,
+//    val timeRangeStatistics: TimeRange = TimeRange.Default,
 )
 
 @Singleton

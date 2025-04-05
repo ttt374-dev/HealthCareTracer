@@ -31,14 +31,15 @@ import com.github.ttt374.healthcaretracer.ui.home.toDisplayString
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
-    val selectedRange by viewModel.selectedRange.collectAsState()
+    val selectedRange by viewModel.timeRange.collectAsState()
 
     val bpUpperStat by viewModel.bpUpperStatistics.collectAsState()
     val bpLowerStat by viewModel.bpLowerStatistics.collectAsState()
     val pulseStat by viewModel.pulseStatistics.collectAsState()
     val bodyWeightStat by viewModel.bodyWeightStatistics.collectAsState()
     val meGapList by viewModel.meGapList.collectAsState()
-
+    val conf by viewModel.config.collectAsState()
+    val guideline = conf.bloodPressureGuideline
 
     Scaffold(
         topBar = { CustomTopAppBar("Statistics") },
@@ -54,7 +55,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
                 Text("Blood Pressure", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsBpTable(bpUpperStat, bpLowerStat)
+                StatisticsBpTable(bpUpperStat, bpLowerStat, guideline)
                 Text("ME Gap: ${meGapList.maxOrNull()}")
                 //StatisticsBpTable(statistics, statisticsMorning, statisticsEvening)
                 //StatisticsTable(statistics)
@@ -75,21 +76,21 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
 }
 
 @Composable
-fun StatisticsBpTable(bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay){
+fun StatisticsBpTable(bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay, guideline: BloodPressureGuideline){
     Column {
         StatisticsHeadersRow()
-        StatisticsBpRow("All", bpUpperStat.all, bpLowerStat.all)
-        StatisticsBpRow("Morning", bpUpperStat.morning, bpLowerStat.morning)
-        StatisticsBpRow("Evening", bpUpperStat.evening, bpLowerStat.evening)
+        StatisticsBpRow("All", bpUpperStat.all, bpLowerStat.all, guideline)
+        StatisticsBpRow("Morning", bpUpperStat.morning, bpLowerStat.morning, guideline)
+        StatisticsBpRow("Evening", bpUpperStat.evening, bpLowerStat.evening, guideline )
     }
 }
 @Composable
-fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue: StatValue ){
+fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue: StatValue , guideline: BloodPressureGuideline){
     Row {
         Text(label, Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false), Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false), Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false, guideline), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false, guideline), Modifier.weight(1f))
+        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false, guideline), Modifier.weight(1f))
     }
 }
 

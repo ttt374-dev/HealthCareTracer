@@ -50,6 +50,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
     val bodyWeightEntries by chartViewModel.bodyWeightEntries.collectAsState()
     val targetBpUpperEntries by chartViewModel.targetBpUpperEntries.collectAsState()
     val targetBpLowerEntries by chartViewModel.targetBpLowerEntries.collectAsState()
+    val targetBodyWeightEntries by chartViewModel.targetBodyWeightEntries.collectAsState()
 
     Scaffold(topBar = { CustomTopAppBar("Chart") },
         bottomBar = {
@@ -72,7 +73,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
             when (selectedTabIndex) {
                 0 -> BloodPressureChart(bpUpperEntries, bpLowerEntries, targetBpUpperEntries, targetBpLowerEntries)
                 1 -> PulseChart(pulseEntries)
-                2 -> BodyWeightChart(bodyWeightEntries)
+                2 -> BodyWeightChart(bodyWeightEntries, targetBodyWeightEntries)
             }
         }
     }
@@ -144,17 +145,18 @@ fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>,
 }
 
 @Composable
-fun PulseChart(pulseEntries: List<Entry>){
+fun PulseChart(pulseEntries: List<Entry>,){
     HealthChart(){ chart ->val pulseDataSet = LineDataSet(pulseEntries, "Pulse").applyStyle(Color.RED)
         chart.data = LineData(pulseDataSet)
         chart.invalidate()
     }
 }
 @Composable
-fun BodyWeightChart(bodyWeightEntries: List<Entry>){
+fun BodyWeightChart(bodyWeightEntries: List<Entry>, targetBodyWeightEntries: List<Entry>){
     HealthChart(){ chart ->
         val bodyWeightDataSet = LineDataSet(bodyWeightEntries, "Body Weight").applyStyle(Color.GREEN)
-        chart.data = LineData(bodyWeightDataSet)
+        val targetBodyWeightDataSet = LineDataSet(targetBodyWeightEntries, "Target Body Weight").applyTargetStyle(Color.GREEN)
+        chart.data = LineData(bodyWeightDataSet, targetBodyWeightDataSet)
         chart.invalidate()
     }
 }

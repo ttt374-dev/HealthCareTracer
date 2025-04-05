@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO,
     val morningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(4, 0), LocalTime.of(11,59)),
-    val eveningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(7, 0), LocalTime.of(2, 59)),
+    val eveningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(17, 0), LocalTime.of(2, 59)),
 
     val targetBpUpper: Int = 120,
     val targetBpLower: Int = 80,

@@ -12,7 +12,6 @@ import androidx.compose.ui.window.DialogProperties
  */
 @Composable
 fun ConfirmDialog(
-    isOpen: Boolean = false,
     title: @Composable () ->  Unit = {},
     text: @Composable () -> Unit = {},
     onConfirm: () -> Unit,
@@ -21,23 +20,23 @@ fun ConfirmDialog(
     dismissButtonLabel: String = "Cancel",
     closeDialog: () -> Unit = {},
 ){
-    if (isOpen){
-        AlertDialog(onDismissRequest = onCancel,
-            confirmButton =  {
-                OutlinedButton(onClick = { onConfirm(); closeDialog() }) {
-                    Text(confirmButtonLabel)
-                }
-            },
-            dismissButton = {
-                OutlinedButton( onClick = { onCancel(); closeDialog() }) {
-                    Text(dismissButtonLabel)
-                }
-            },
-            //title = { Text(titleString) },
-            //text = { Text(text,style= TextStyle(fontSize = 16.sp, lineHeight = 20.sp)) } ,
-            title = title,
-            text = text,
-            properties = DialogProperties(dismissOnClickOutside = true) // 画面外タップでキャンセル
-        )
-    }
+
+    AlertDialog(onDismissRequest = onCancel,
+        confirmButton =  {
+            OutlinedButton(onClick = { onConfirm(); closeDialog() }) {
+                Text(confirmButtonLabel)
+            }
+        },
+        dismissButton = {
+            OutlinedButton( onClick = { onCancel(); closeDialog() }) {
+                Text(dismissButtonLabel)
+            }
+        },
+        //title = { Text(titleString) },
+        //text = { Text(text,style= TextStyle(fontSize = 16.sp, lineHeight = 20.sp)) } ,
+        title = title,
+        text = text,
+        properties = DialogProperties(dismissOnClickOutside = true) // 画面外タップでキャンセル
+    )
+
 }

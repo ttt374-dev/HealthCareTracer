@@ -8,21 +8,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TimePicker
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,15 +21,14 @@ import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import com.github.ttt374.healthcaretracer.ui.entry.EditMode
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -76,18 +66,30 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     val morningRangeStartState = rememberDialogState()
     if (morningRangeStartState.isOpen){
-        TimePickerDialog(config.morningRange.start.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant(),
-            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = LocalTimeRange(it.atZone(
-                ZoneId.systemDefault()).toLocalTime(), config.morningRange.endInclusive)))},
+        LocalTimeRangeDialog(config.morningRange, true,
+            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = it))},
             onDismiss = { morningRangeStartState.close()})
     }
     val morningRangeEndState = rememberDialogState()
     if (morningRangeEndState.isOpen){
-        TimePickerDialog(config.morningRange.endInclusive.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant(),
-            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = LocalTimeRange(config.morningRange.start,
-                it.atZone(ZoneId.systemDefault()).toLocalTime())))},
+        LocalTimeRangeDialog(config.morningRange, false,
+            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = it))},
             onDismiss = { morningRangeEndState.close()})
     }
+    val eveningRangeStartState = rememberDialogState()
+    if (eveningRangeStartState.isOpen){
+        LocalTimeRangeDialog(config.eveningRange, true,
+            onTimeSelected = { viewModel.saveConfig(config.copy(eveningRange = it))},
+            onDismiss = { eveningRangeStartState.close()})
+    }
+    val eveningRangeEndState = rememberDialogState()
+    if (eveningRangeEndState.isOpen){
+        LocalTimeRangeDialog(config.eveningRange, false,
+            onTimeSelected = { viewModel.saveConfig(config.copy(eveningRange = it))},
+            onDismiss = { eveningRangeEndState.close()})
+    }
+
+    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
 
     ///
     Scaffold(
@@ -118,15 +120,17 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 //Text(uiState.targetBpLower)
             }
             SettingsRow("Morning Start", onClick = { morningRangeStartState.open()}){
-                Text(config.morningRange.start.toString())
+                Text(config.morningRange.start.format(localTimeFormat))
             }
-            SettingsRow("         End", onClick = { morningRangeEndState.open()}){
-                Text(config.morningRange.endInclusive.toString())
+            SettingsRow("Morning End", onClick = { morningRangeEndState.open()}){
+                Text(config.morningRange.endInclusive.format(localTimeFormat))
             }
-//            SettingsRow("Target Body Weight"){ Text("XX kg")}
-//
-//            SettingsRow("Morning Range"){ Text("am-am")}
-//            SettingsRow("Evening Range"){ Text("pm-pm")}
+            SettingsRow("Evening Start", onClick = { eveningRangeStartState.open()}){
+                Text(config.eveningRange.start.format(localTimeFormat))
+            }
+            SettingsRow("Evening End", onClick = { eveningRangeEndState.open()}){
+                Text(config.eveningRange.endInclusive.format(localTimeFormat))
+            }
 
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
@@ -150,5 +154,18 @@ fun BpGuidelineDropMenu(expanded: Boolean, onSelected: (String) -> Unit, onDismi
                 onSelected(it)
             })
         }
+    }
+}
+@Composable
+fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected: (LocalTimeRange) -> Unit, onDismiss: () -> Unit){
+    val zone = ZoneId.systemDefault()
+    if (isStart){
+        TimePickerDialog(range.start.atDate(LocalDate.now()).atZone(zone).toInstant(),
+            onTimeSelected = { onTimeSelected(range.copy(start = it.atZone(zone).toLocalTime()))},
+            onDismiss = onDismiss)
+    } else {
+        TimePickerDialog(range.endInclusive.atDate(LocalDate.now()).atZone(zone).toInstant(),
+            onTimeSelected = { onTimeSelected(range.copy(endInclusive = it.atZone(zone).toLocalTime()))},
+            onDismiss = onDismiss)
     }
 }

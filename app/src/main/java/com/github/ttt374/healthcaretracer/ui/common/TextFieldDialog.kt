@@ -17,12 +17,14 @@ fun TextFieldDialog(isOpen: Boolean = false, initialValue: String, onConfirm: (S
                     keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
     var text by remember { mutableStateOf(initialValue) }
 
-    ConfirmDialog(isOpen, {
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(isOpen){
-            focusRequester.requestFocus()
-        }
-        OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
-        onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
+    if (isOpen){
+        ConfirmDialog({
+            val focusRequester = remember { FocusRequester() }
+            LaunchedEffect(isOpen){
+                focusRequester.requestFocus()
+            }
+            OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
+            onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
+    }
 
 }

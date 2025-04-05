@@ -1,11 +1,11 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.datastore.Config
 import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
+import com.github.ttt374.healthcaretracer.data.datastore.Preferences
+import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate
@@ -21,31 +21,21 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configRepository: ConfigRepository) : ViewModel() {
-    private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
-    val selectedRange: StateFlow<TimeRange> = _selectedRange
+class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configRepository: ConfigRepository, private val preferencesRepository: PreferencesRepository) : ViewModel() {
+    private val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
+    private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
+
+    // TimeRange だけを切り出して StateFlow として公開
+    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRange }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
+
+//    private val _selectedRange = MutableStateFlow(pref.value.timeRange)
+//    val selectedRange: StateFlow<TimeRange> = _selectedRange
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val dailyItems = selectedRange.flatMapLatest { range ->
+     val dailyItems = timeRange.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    private val configFlow = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
-
-    private val upperTarget = mutableIntStateOf(140)
-    private val lowerTarget = mutableIntStateOf(90)
-    init {
-        viewModelScope.launch {
-            configFlow.collect {
-                upperTarget.intValue = it.targetBpUpper
-                lowerTarget.intValue = it.targetBpLower
-            }
-        }
-    }
-
-//    val dailyItems = itemRepository.getRecentItemsFlow(selectedRange.value.days.toInt()).map { items ->items.groupByDate() }
-//        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    //val dailyItems = itemRepository.getDailyItemsFlow()
-    //    .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     // 各グラフ用の Entry リスト
     val bpUpperEntries = dailyItems.map { it.toEntries { it.avgBpUpper } }
@@ -61,17 +51,14 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configR
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun setSelectedRange(range: TimeRange) {
-        _selectedRange.value = range
+        viewModelScope.launch {
+            preferencesRepository.updateData(pref.value.copy(timeRange = range))
+        }
     }
-
-    //val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.intValue.toDouble() }}
-//    val upperTarget = selectedGuideline.normal.upperRange.last
-//    val lowerTarget = selectedGuideline.normal.lowerRange.last
-    val targetBodyWeight = 60.0
-    val targetBpUpperEntries = dailyItems.map { it.toEntries { upperTarget.intValue.toDouble() }}
+    val targetBpUpperEntries = dailyItems.map { it.toEntries { config.value.targetBpUpper.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    val targetBpLowerEntries = dailyItems.map { it.toEntries { lowerTarget.intValue.toDouble() }}
+    val targetBpLowerEntries = dailyItems.map { it.toEntries { config.value.targetBpLower.toDouble() }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    val targetBodyWeightEntries = dailyItems.map { it.toEntries { targetBodyWeight }}
+    val targetBodyWeightEntries = dailyItems.map { it.toEntries { config.value.targetBodyWeight }}
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 }

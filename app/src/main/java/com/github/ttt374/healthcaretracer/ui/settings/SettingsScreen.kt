@@ -41,11 +41,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     val bpGuidelineState = rememberDialogState()
 
-    BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
-        val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.Default
-        viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
-        bpGuidelineState.close()
-    }, onDismissRequest = { bpGuidelineState.close() })
     val targetBpUpperState = rememberDialogState()
     if (targetBpUpperState.isOpen)
         TextFieldDialog(config.targetBpUpper.toString(),
@@ -108,6 +103,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             Modifier.padding(innerPadding).padding(16.dp)){
             SettingsRow("HTN Guideline Type", onClick = { bpGuidelineState.open() }) {
                 Text(config.bloodPressureGuideline.name)
+                BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
+                    val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.Default
+                    viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
+                    bpGuidelineState.close()
+                }, onDismissRequest = { bpGuidelineState.close() })
             }
             SettingsRow("Target Bp Upper", onClick = { targetBpUpperState.open()}){
                 Text(config.targetBpUpper.toString())

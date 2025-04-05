@@ -36,7 +36,10 @@ import java.time.ZoneId
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewModel: ConfigViewModel = hiltViewModel(),
                 appNavigator: AppNavigator){
-    val selectedRange by chartViewModel.selectedRange.collectAsState()
+    //val selectedRange by chartViewModel.selectedRange.collectAsState()
+    //val pref by chartViewModel.pref.collectAsState()
+    val timeRange by chartViewModel.timeRange.collectAsState()
+
     //val config by configViewModel.config.collectAsState()
 //    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
 //    val cutoffDate = Instant.now().minus(selectedRange.days, ChronoUnit.DAYS)
@@ -58,7 +61,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
         }) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Box(modifier = Modifier.padding(4.dp)) {
-                TimeRangeDropdown(selectedRange) { chartViewModel.setSelectedRange(it) }
+                TimeRangeDropdown(timeRange) { chartViewModel.setSelectedRange(it) }
             }
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->

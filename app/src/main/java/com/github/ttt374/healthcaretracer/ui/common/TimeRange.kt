@@ -43,5 +43,9 @@ enum class TimeRange(val days: Long?, val label: String) {
     ONE_MONTH(30, "1 Month"),
     SIX_MONTHS(180, "6 Months"),
     ONE_YEAR(365, "1 Year"),
-    FULL(null, "Full Range")
+    FULL(null, "Full Range");
+
+    companion object {
+        val Default = ONE_MONTH
+    }
 }

@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.di.modules
 
 import android.content.Context
 import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
+import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
@@ -26,6 +27,10 @@ object ApplicationModule {
     @Singleton
     @Provides
     fun provideConfigRepository(@ApplicationContext context: Context) = ConfigRepository(context)
+
+    @Singleton
+    @Provides
+    fun providePreferencesRepository(@ApplicationContext context: Context) = PreferencesRepository(context)
 
     @Provides
     fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()

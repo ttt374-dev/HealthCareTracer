@@ -32,10 +32,6 @@ import com.github.ttt374.healthcaretracer.ui.home.toDisplayString
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val selectedRange by viewModel.selectedRange.collectAsState()
-//    val statistics by viewModel.statistics.collectAsState()
-//    val statisticsMorning by viewModel.statisticsMorning.collectAsState()
-//    val statisticsEvening by viewModel.statisticsEvening.collectAsState()
-
 
     val bpUpperStat by viewModel.bpUpperStatistics.collectAsState()
     val bpLowerStat by viewModel.bpLowerStatistics.collectAsState()
@@ -181,14 +177,14 @@ fun StatisticsHeadersRow(){
     }
     HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
 }
-@Composable
-fun StatisticsHeaderField(name: String, unit: String, modifier: Modifier = Modifier){
-    val unitFontSize = 12.sp
-    Column(modifier = modifier) {
-        Text(name)
-        Text("($unit)", fontSize = unitFontSize)
-    }
-}
+//@Composable
+//fun StatisticsHeaderField(name: String, unit: String, modifier: Modifier = Modifier){
+//    val unitFontSize = 12.sp
+//    Column(modifier = modifier) {
+//        Text(name)
+//        Text("($unit)", fontSize = unitFontSize)
+//    }
+//}
 //fun String.withUnit(unit: String, unitFontSize: TextUnit = 12.sp) =
 //    buildAnnotatedString {
 //        append(this@withUnit)

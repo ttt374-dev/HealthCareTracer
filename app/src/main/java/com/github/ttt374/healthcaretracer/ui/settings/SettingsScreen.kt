@@ -11,6 +11,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,25 +28,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
+import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.entry.EditMode
+import java.time.LocalDate
+import java.time.ZoneId
 
-@Composable
-fun TextFieldDialog(initialValue: String, onConfirm: (String) -> Unit, onCancel: () -> Unit = {}, closeDialog: () -> Unit = {},
-                    keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
-    var text by remember { mutableStateOf(initialValue) }
-    val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit){
-        focusRequester.requestFocus()
-    }
-    ConfirmDialog({
-        OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester))},
-        onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
-}
+
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val config by viewModel.config.collectAsState()
@@ -56,32 +51,42 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
 
-    if (targetBpUpperState.isOpen){
-        TextFieldDialog(
-            config.targetBpUpper.toString(),
-            onConfirm = {
-                viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
-            },
-            closeDialog = { targetBpUpperState.close() },
-            keyboardOptions = numberKeyboardOptions,
+    TextFieldDialog(targetBpUpperState.isOpen,
+        config.targetBpUpper.toString(),
+        onConfirm = {
+            viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
+        },
+        closeDialog = { targetBpUpperState.close() },
+        keyboardOptions = numberKeyboardOptions,
+    )
 
-        )
-    }
     val targetBpLowerState = rememberDialogState()
-    if (targetBpLowerState.isOpen){
-        TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
-            viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
-        },
-            closeDialog = { targetBpLowerState.close() },
-            keyboardOptions = numberKeyboardOptions)
-    }
+    TextFieldDialog(targetBpLowerState.isOpen, config.targetBpLower.toString(), onConfirm = {
+        viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
+    },
+        closeDialog = { targetBpLowerState.close() },
+        keyboardOptions = numberKeyboardOptions)
+
     val targetBodyWeightState = rememberDialogState()
-    if (targetBodyWeightState.isOpen){
-        TextFieldDialog(config.targetBodyWeight.toString(), onConfirm = {
-            viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
-        },
-            closeDialog = { targetBodyWeightState.close() },
-            keyboardOptions = decimalKeyboardOptions)
+    TextFieldDialog(targetBodyWeightState.isOpen, config.targetBodyWeight.toString(), onConfirm = {
+        viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
+    },
+        closeDialog = { targetBodyWeightState.close() },
+        keyboardOptions = decimalKeyboardOptions)
+
+    val morningRangeStartState = rememberDialogState()
+    if (morningRangeStartState.isOpen){
+        TimePickerDialog(config.morningRange.start.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant(),
+            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = LocalTimeRange(it.atZone(
+                ZoneId.systemDefault()).toLocalTime(), config.morningRange.endInclusive)))},
+            onDismiss = { morningRangeStartState.close()})
+    }
+    val morningRangeEndState = rememberDialogState()
+    if (morningRangeEndState.isOpen){
+        TimePickerDialog(config.morningRange.endInclusive.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant(),
+            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = LocalTimeRange(config.morningRange.start,
+                it.atZone(ZoneId.systemDefault()).toLocalTime())))},
+            onDismiss = { morningRangeEndState.close()})
     }
 
     ///
@@ -111,6 +116,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             SettingsRow("Target Body Weight", onClick = { targetBodyWeightState.open() }){
                 Text(config.targetBodyWeight.toString())
                 //Text(uiState.targetBpLower)
+            }
+            SettingsRow("Morning Start", onClick = { morningRangeStartState.open()}){
+                Text(config.morningRange.start.toString())
+            }
+            SettingsRow("         End", onClick = { morningRangeEndState.open()}){
+                Text(config.morningRange.endInclusive.toString())
             }
 //            SettingsRow("Target Body Weight"){ Text("XX kg")}
 //

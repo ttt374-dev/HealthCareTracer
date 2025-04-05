@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +41,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     val bpUpperStat by viewModel.bpUpperStatistics.collectAsState()
     val bpLowerStat by viewModel.bpLowerStatistics.collectAsState()
     val pulseStat by viewModel.pulseStatistics.collectAsState()
+    val bodyWeightStat by viewModel.bodyWeightStatistics.collectAsState()
+    val meGapList by viewModel.meGapList.collectAsState()
+
 
     Scaffold(
         topBar = { CustomTopAppBar("Statistics") },
@@ -53,23 +57,26 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             }
 
             item {
-                Text("Blood Pressure", Modifier.padding(16.dp))
+                HorizontalDivider(thickness = 2.dp, color = Color.Gray)
+                Text("Blood Pressure", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 StatisticsBpTable(bpUpperStat, bpLowerStat)
+                Text("ME Gap: ${meGapList.maxOrNull()}")
                 //StatisticsBpTable(statistics, statisticsMorning, statisticsEvening)
                 //StatisticsTable(statistics)
             }
             item {
-                Text("Pulse", Modifier.padding(16.dp))
-                //StatisticsPulseTable(statistics, statisticsMorning, statisticsEvening)
-                StatisticsPulseTable(pulseStat)
+                HorizontalDivider(thickness = 2.dp, color = Color.Gray)
+                Text("Pulse", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                StatisticsTable(pulseStat, takeValue = { v: Double? -> v.toDisplayString("%.0f")})
+            }
+            item {
+                HorizontalDivider(thickness = 2.dp, color = Color.Gray)
+                Text("Body Weight", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                StatisticsTable(bodyWeightStat, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
             }
 
         }
     }
-}
-@Composable
-fun StatisticsTable(){
-
 }
 
 @Composable
@@ -79,26 +86,7 @@ fun StatisticsBpTable(bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay){
         StatisticsBpRow("All", bpUpperStat.all, bpLowerStat.all)
         StatisticsBpRow("Morning", bpUpperStat.morning, bpLowerStat.morning)
         StatisticsBpRow("Evening", bpUpperStat.evening, bpLowerStat.evening)
-//        Row {
-//            Text("All", Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.all.avg?.toInt(), bpLowerStat.all.avg?.toInt(), false), Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.all.max?.toInt(), bpLowerStat.all.max?.toInt(), false), Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.all.min?.toInt(), bpLowerStat.all.min?.toInt(), false), Modifier.weight(1f))
-//        }
-//        Row {
-//            Text("Morning", Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.morning.avg?.toInt(), bpLowerStat.morning.avg?.toInt(), false), Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.morning.max?.toInt(), bpLowerStat.morning.max?.toInt(), false), Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.morning.min?.toInt(), bpLowerStat.morning.min?.toInt(), false), Modifier.weight(1f))
-//        }
-//        Row {
-//            Text("Evening", Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.evening.avg?.toInt(), bpLowerStat.evening.avg?.toInt(), false), Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.evening.max?.toInt(), bpLowerStat.evening.max?.toInt(), false), Modifier.weight(1f))
-//            Text(bloodPressureFormatted(bpUpperStat.evening.min?.toInt(), bpLowerStat.evening.min?.toInt(), false), Modifier.weight(1f))
-//        }
     }
-
 }
 @Composable
 fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue: StatValue ){
@@ -111,25 +99,22 @@ fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue
 }
 
 @Composable
-fun StatisticsPulseTable(stat: StatTimeOfDay){
+fun StatisticsTable(stat: StatTimeOfDay, takeValue: (Double?) -> String){
     Column {
         StatisticsHeadersRow()
-        val takeValue = { v: Double? -> v.toDisplayString("%.0f")}
+
         StatisticsRow("All", stat.all, takeValue)
         StatisticsRow("Morning", stat.morning, takeValue)
         StatisticsRow("Evening", stat.evening, takeValue)
     }
 }
 @Composable
-fun StatisticsRow(label: String, statValue: StatValue, takeValue: (Double?) -> String = { it.toDisplayString() }){
+fun StatisticsRow(label: String, statValue: StatValue, takeValue: (Double?) -> String){
     Row {
         Text(label, Modifier.weight(1f))
         Text(takeValue(statValue.avg), Modifier.weight(1f))
         Text(takeValue(statValue.max), Modifier.weight(1f))
         Text(takeValue(statValue.min), Modifier.weight(1f))
-//        Text(statValue.avg.toDisplayString(format), Modifier.weight(1f))
-//        Text(statValue.max.toDisplayString(format), Modifier.weight(1f))
-//        Text(statValue.min.toDisplayString(format), Modifier.weight(1f))
     }
 }
 //@Composable

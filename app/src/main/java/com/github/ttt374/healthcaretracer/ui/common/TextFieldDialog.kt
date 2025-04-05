@@ -13,18 +13,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 
 @Composable
-fun TextFieldDialog(isOpen: Boolean = false, initialValue: String, onConfirm: (String) -> Unit, onCancel: () -> Unit = {}, closeDialog: () -> Unit = {},
+fun TextFieldDialog(initialValue: String, onConfirm: (String) -> Unit, onCancel: () -> Unit = {}, closeDialog: () -> Unit = {},
                     keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
     var text by remember { mutableStateOf(initialValue) }
 
-    if (isOpen){
-        ConfirmDialog({
-            val focusRequester = remember { FocusRequester() }
-            LaunchedEffect(isOpen){
-                focusRequester.requestFocus()
-            }
-            OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
-            onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit){
+        focusRequester.requestFocus()
     }
-
+    ConfirmDialog({ OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
+        onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
 }

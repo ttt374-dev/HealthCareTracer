@@ -36,33 +36,41 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     val config by viewModel.config.collectAsState()
 
     // dialogs
-    val bpGuidelineState = rememberDialogState()
-    val targetBpUpperState = rememberDialogState()
     val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
 
-    TextFieldDialog(targetBpUpperState.isOpen,
-        config.targetBpUpper.toString(),
-        onConfirm = {
-            viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
-        },
-        closeDialog = { targetBpUpperState.close() },
-        keyboardOptions = numberKeyboardOptions,
-    )
+    val bpGuidelineState = rememberDialogState()
+
+    BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
+        val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.Default
+        viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
+        bpGuidelineState.close()
+    }, onDismissRequest = { bpGuidelineState.close() })
+    val targetBpUpperState = rememberDialogState()
+    if (targetBpUpperState.isOpen)
+        TextFieldDialog(config.targetBpUpper.toString(),
+            onConfirm = {
+                viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
+            },
+            closeDialog = { targetBpUpperState.close() },
+            keyboardOptions = numberKeyboardOptions,
+        )
 
     val targetBpLowerState = rememberDialogState()
-    TextFieldDialog(targetBpLowerState.isOpen, config.targetBpLower.toString(), onConfirm = {
-        viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
-    },
-        closeDialog = { targetBpLowerState.close() },
-        keyboardOptions = numberKeyboardOptions)
+    if (targetBpLowerState.isOpen)
+        TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
+            viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
+        },
+            closeDialog = { targetBpLowerState.close() },
+            keyboardOptions = numberKeyboardOptions)
 
     val targetBodyWeightState = rememberDialogState()
-    TextFieldDialog(targetBodyWeightState.isOpen, config.targetBodyWeight.toString(), onConfirm = {
-        viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
-    },
-        closeDialog = { targetBodyWeightState.close() },
-        keyboardOptions = decimalKeyboardOptions)
+    if (targetBodyWeightState.isOpen)
+        TextFieldDialog(config.targetBodyWeight.toString(), onConfirm = {
+            viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
+        },
+            closeDialog = { targetBodyWeightState.close() },
+            keyboardOptions = decimalKeyboardOptions)
 
     val morningRangeStartState = rememberDialogState()
     if (morningRangeStartState.isOpen){
@@ -100,12 +108,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             Modifier.padding(innerPadding).padding(16.dp)){
             SettingsRow("HTN Guideline Type", onClick = { bpGuidelineState.open() }) {
                 Text(config.bloodPressureGuideline.name)
-                    BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
-                        Log.d("dropdown", selected)
-                        val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.WHO
-                        viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
-                        bpGuidelineState.close()
-                    }, onDismissRequest = { bpGuidelineState.close() })
             }
             SettingsRow("Target Bp Upper", onClick = { targetBpUpperState.open()}){
                 Text(config.targetBpUpper.toString())

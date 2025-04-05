@@ -131,10 +131,10 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null
 //        if (meGap != null){
 //            Text("(${meGap.toDisplayString().withSubscript("mmHg")})")
 //        }
-        dailyItem.meGap() ?.let {
-            Text(it.toDisplayString("%.0f").withSubscript("mmHg"),
-                color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
-        }
+//        dailyItem.meGap() ?.let {
+//            Text(it.toDisplayString("%.0f").withSubscript("mmHg"),
+//                color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
+//        }
         //Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
         Text(dailyItem.avgPulse?.toInt().toPulseString(),
             color = MaterialTheme.colorScheme.onSecondaryContainer,

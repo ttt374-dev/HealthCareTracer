@@ -46,6 +46,7 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         BloodPressureCategory("HTN Stage 2", 160..179, 100..109, Color.Red),
         BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
     )
+
     val categories: List<BloodPressureCategory> get() = listOf(normal, elevated, htn1, htn2, htn3)
     val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
 
@@ -57,6 +58,7 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
     }
     companion object {
+        val Default = WHO
         val bloodPressureGuidelines = mapOf("WHO" to BloodPressureGuideline.WHO, "JST" to BloodPressureGuideline.JSH)
     }
 //    companion object {

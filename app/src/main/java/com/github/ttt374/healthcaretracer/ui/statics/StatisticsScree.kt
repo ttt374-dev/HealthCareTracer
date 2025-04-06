@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.ui.statics
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,10 +14,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.bloodPressureFormatted
@@ -57,8 +54,6 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 Text("Blood Pressure", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 StatisticsBpTable(bpUpperStat, bpLowerStat, guideline)
                 Text("ME Gap: ${meGapList.maxOrNull()}")
-                //StatisticsBpTable(statistics, statisticsMorning, statisticsEvening)
-                //StatisticsTable(statistics)
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
@@ -113,57 +108,6 @@ fun StatisticsRow(label: String, statValue: StatValue, takeValue: (Double?) -> S
         Text(takeValue(statValue.min), Modifier.weight(1f))
     }
 }
-//@Composable
-//fun StatisticsPulseTable(statistics: StatisticsData, statisticsMorning: StatisticsData, statisticsEvening: StatisticsData){
-//    Column {
-//        StatisticsHeadersRow()
-//        Row {
-//            Text("All", Modifier.weight(1f))
-//            Text(statistics.pulse.avg.toDisplayString("%.0f"), Modifier.weight(1f))
-//            Text(statistics.pulse.max.toDisplayString("%.0f"), Modifier.weight(1f))
-//            Text(statistics.pulse.min.toDisplayString("%.0f"), Modifier.weight(1f))
-//        }
-//        Row {
-//            Text("Morning", Modifier.weight(1f))
-//            Text(statisticsMorning.pulse.avg.toDisplayString("%.0f"), Modifier.weight(1f))
-//            Text(statisticsMorning.pulse.max.toDisplayString("%.0f"), Modifier.weight(1f))
-//            Text(statisticsMorning.pulse.min.toDisplayString("%.0f"), Modifier.weight(1f))
-//        }
-//        Row {
-//            Text("Evening", Modifier.weight(1f))
-//            Text(statisticsEvening.pulse.avg.toDisplayString("%.0f"), Modifier.weight(1f))
-//            Text(statisticsEvening.pulse.max.toDisplayString("%.0f"), Modifier.weight(1f))
-//            Text(statisticsEvening.pulse.min.toDisplayString("%.0f"), Modifier.weight(1f))
-//        }
-//    }
-//}
-//@Composable
-//fun StatisticsTable(statistics: StatisticsData){
-//    HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
-//    StatisticsHeadersRow()
-//    StatisticsItemRow("average",
-//        statistics.bpUpper.avg,
-//        statistics.bpLower.avg,
-//        //statistics.meGap.avg,
-//        statistics.pulse.avg,
-//        statistics.bodyWeight.avg
-//    )
-//    StatisticsItemRow("max",
-//        statistics.bpUpper.max,
-//        statistics.bpLower.max,
-//        //statistics.meGap.max,
-//        statistics.pulse.max,
-//        statistics.bodyWeight.max
-//    )
-//    StatisticsItemRow("min",
-//        statistics.bpUpper.min,
-//        statistics.bpLower.min,
-//        //statistics.meGap.min,
-//        statistics.pulse.min,
-//        statistics.bodyWeight.min
-//    )
-//}
-
 @Composable
 fun StatisticsHeadersRow(){
     Row {
@@ -171,32 +115,6 @@ fun StatisticsHeadersRow(){
         Text("avg", Modifier.weight(1f))
         Text("max", Modifier.weight(1f))
         Text("min", Modifier.weight(1f))
-//        StatisticsHeaderField ("Blood Pressure", "mmHg", modifier = Modifier.weight(1f))
-//        //StatisticsHeaderField ("ME Gap", "mmHg", modifier = Modifier.weight(1f))
-//        StatisticsHeaderField ("Pulse", "bpm", modifier = Modifier.weight(1f))
-//        StatisticsHeaderField ("Body Weight", "Kg", modifier = Modifier.weight(1f))
     }
     HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
 }
-//@Composable
-//fun StatisticsHeaderField(name: String, unit: String, modifier: Modifier = Modifier){
-//    val unitFontSize = 12.sp
-//    Column(modifier = modifier) {
-//        Text(name)
-//        Text("($unit)", fontSize = unitFontSize)
-//    }
-//}
-//fun String.withUnit(unit: String, unitFontSize: TextUnit = 12.sp) =
-//    buildAnnotatedString {
-//        append(this@withUnit)
-//        withStyle(SpanStyle(fontSize = unitFontSize)) {
-//            append(unit)
-//        }
-//    }
-
-
-//fun List<Item>.filterByRange(range: TimeRange): List<Item> {
-//    val cutoffDate = Instant.now().minus(range.days.toLong(), ChronoUnit.DAYS)
-//    return filter { it.measuredAt.isAfter(cutoffDate) }
-//}
-

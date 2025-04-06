@@ -26,19 +26,22 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
-class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository, val preferencesRepository: PreferencesRepository) : ViewModel(){
-    val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
-    private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
+class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository, val preferencesRepository: PreferencesRepository) : ViewModel() {
+    val config = configRepository.dataFlow.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        Config()
+    )
+    private val pref = preferencesRepository.dataFlow.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        Preferences()
+    )
 
     // TimeRange だけを切り出して StateFlow として公開
     val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRange }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
 
-//    private val _selectedRange = MutableStateFlow(TimeRange.ONE_WEEK)
-//    val selectedRange: StateFlow<TimeRange> = _selectedRange
-
-    //val items = itemRepository.getAllItemsFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    //val filteredItems = itemRepository.getRecentItemsFlow(selectedRange.value.days.toInt()).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     @OptIn(ExperimentalCoroutinesApi::class)
     val filteredItems = timeRange.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days)
@@ -50,83 +53,45 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         }
     }
 
-//    val statistics = filteredItems.map { items -> getStatisticData(items) }
-//        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
-//    val statisticsMorning = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isMorning()}) }
-//        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
-//    val statisticsEvening = filteredItems.map { items -> getStatisticData(items.filter { it.measuredAt.isEvening()}) }
-//        .stateIn(viewModelScope, SharingStarted.Lazily, StatisticsData())
-
-    val bpUpperStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 })}
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val bpLowerStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 })}
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val pulseStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 })}
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val bodyWeightStatistics = filteredItems.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() })}
-        .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+    val bpUpperStatistics =
+        filteredItems.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 }) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+    val bpLowerStatistics =
+        filteredItems.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 }) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+    val pulseStatistics =
+        filteredItems.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 }) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
+    val bodyWeightStatistics =
+        filteredItems.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() }) }
+            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
     val meGapList: StateFlow<List<Double>> = filteredItems.map { items ->
         items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-            .map { (date, dailyItems) -> DailyItem(date=date, items=dailyItems).meGap() ?: 0.0 } }
+            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap() ?: 0.0 }
+    }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun getStatValue(list: List<Double?>): StatValue {
-        return StatValue(avg = list.averageOrNull(), max = list.filterNotNull().maxOrNull(), min = list.filterNotNull().minOrNull())
+    private fun getStatValue(list: List<Double?>): StatValue {
+        return StatValue(
+            avg = list.averageOrNull(),
+            max = list.filterNotNull().maxOrNull(),
+            min = list.filterNotNull().minOrNull()
+        )
     }
-    fun getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> Double?): StatTimeOfDay {
+
+    private fun getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> Double?): StatTimeOfDay {
         val allList = items.map { takeValue(it) }
-        val morningList = items.filter { it.measuredAt.isMorning()}.map { takeValue(it) }
-        val eveningList = items.filter { it.measuredAt.isEvening()}.map { takeValue(it)}
+        val morningList = items.filter { it.measuredAt.isMorning() }.map { takeValue(it) }
+        val eveningList = items.filter { it.measuredAt.isEvening() }.map { takeValue(it) }
 
-        return StatTimeOfDay(all = getStatValue(allList), morning = getStatValue(morningList), evening = getStatValue(eveningList))
+        return StatTimeOfDay(
+            all = getStatValue(allList),
+            morning = getStatValue(morningList),
+            evening = getStatValue(eveningList)
+        )
     }
-
-//    private fun getStatisticData(items: List<Item>): StatisticsData {
-//        val bpUpperList = items.mapNotNull { it.bpUpper?.toDouble() }
-//        val bpLowerList = items.mapNotNull { it.bpLower?.toDouble() }
-//        val pulseList = items.mapNotNull { it.pulse?.toDouble() }
-//        val bodyWeightList = items.mapNotNull { it.bodyWeight?.toDouble() }
-//        val meGapList = items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-//            .map { (date, dailyItems) -> DailyItem(date=date, items=dailyItems).meGap() }.filterNotNull()
-//
-//
-//        return StatisticsData(
-//            bpUpper = StatValue(
-//                avg = bpUpperList.averageOrNull(),
-//                max = bpUpperList.maxOrNull(),
-//                min = bpUpperList.minOrNull()
-//            ),
-//            bpLower = StatValue(
-//                avg = bpLowerList.averageOrNull(),
-//                max = bpLowerList.maxOrNull(),
-//                min = bpLowerList.minOrNull()
-//            ),
-//            meGap = StatValue(
-//                avg = meGapList.averageOrNull(),
-//                max = meGapList.maxOrNull(),
-//                min = meGapList.minOrNull()
-//            ),
-//            pulse = StatValue(
-//                avg = pulseList.averageOrNull(),
-//                max = pulseList.maxOrNull(),
-//                min = pulseList.minOrNull()
-//            ),
-//            bodyWeight = StatValue(
-//                avg = bodyWeightList.averageOrNull(),
-//                max = bodyWeightList.maxOrNull(),
-//                min = bodyWeightList.minOrNull()
-//            ),
-//        )
-//    }
 }
 
-//data class StatisticsData(
-//    val bpUpper: StatValue = StatValue(),
-//    val bpLower: StatValue = StatValue(),
-//    val pulse: StatValue = StatValue(),
-//    val bodyWeight: StatValue = StatValue(),
-//    val meGap: StatValue = StatValue(),
-//)
 data class StatTimeOfDay (
     val all: StatValue = StatValue(),
     val morning: StatValue = StatValue(),
@@ -141,9 +106,3 @@ data class StatValue(
     val min: Double? = null
 
 )
-fun List<Double>.toStatValue() = StatValue(
-            avg = this.averageOrNull(),
-            max = this.maxOrNull(),
-            min = this.minOrNull(),
-        )
-

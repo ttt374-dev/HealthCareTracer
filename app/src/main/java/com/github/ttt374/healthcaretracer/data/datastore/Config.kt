@@ -28,11 +28,9 @@ data class LocalTimeRange(
 ) {
     operator fun contains(time: LocalTime): Boolean {
         return if (start <= endInclusive) {
-            // 普通の範囲
-            time in start..endInclusive
+            time in start..endInclusive  // 普通の範囲
         } else {
-            // 0時をまたぐ場合（例: 22:00〜02:00）
-            time >= start || time <= endInclusive
+            time >= start || time <= endInclusive  // 0時をまたぐ場合（例: 22:00〜02:00）
         }
     }
 

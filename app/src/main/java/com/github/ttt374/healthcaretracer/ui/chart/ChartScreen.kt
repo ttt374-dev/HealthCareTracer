@@ -95,19 +95,20 @@ private fun LineChart.setupChart() {
     axisRight.isEnabled = false
 }
 
-private fun LineDataSet.applyStyle(color: Int) = apply {
+private fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circuleRadius: Float = 4f) = apply {
     this.color = color
     setCircleColor(color)
     valueTextColor = color
-    lineWidth = 2f
-    circleRadius = 4f
+    this.lineWidth = lineWidth
+    this.circleRadius = circuleRadius
 }
 private fun LineDataSet.applyTargetStyle(color: Int) = apply {
-    this.color = color
-    setCircleColor(color)
+    this.applyStyle(color, 1f, 1f)
+//    this.color = color
+//    setCircleColor(color)
     //valueTextColor = color
-    lineWidth = 1f
-    circleRadius = 1f
+//    lineWidth = 1f
+//    circleRadius = 1f
     enableDashedLine(15f, 10f, 0f)
     setDrawValues(false)
 }

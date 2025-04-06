@@ -33,18 +33,6 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         SharingStarted.WhileSubscribed(5000),
         Config()
     )
-    private val pref = preferencesRepository.dataFlow.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        Preferences()
-    )
-    init {
-        viewModelScope.launch {
-            preferencesRepository.dataFlow.collect {
-                Log.d("pref dataflow", it.toString())
-            }
-        }
-    }
 
     // TimeRange だけを切り出して StateFlow として公開
     val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRangeStatistics }

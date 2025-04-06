@@ -64,19 +64,5 @@ class DataStoreRepositoryImpl<T>(context: Context, fileName: String, private val
 
     override val dataFlow: Flow<T> = dataStore.data
     override suspend fun updateData(transform: suspend (t: T) -> T): T = dataStore.updateData(transform)
-        //dataStore::updateData
-    //}
-//    override suspend fun updateData(newData: T): Result<Unit> = runCatching {
-//        dataStore.updateData { newData }
-//        //update(newData)
-//        Unit
-//    }
-//    override suspend fun updateDataWithReturn(newData: T): Result<T> = runCatching {
-//        update(newData)
-//    }
-//    private suspend fun update(newData: T): T{
-//        return dataStore.updateData { newData }
-//    }
-
     //override suspend fun clearData() = updateData(serializer.defaultValue)
 }

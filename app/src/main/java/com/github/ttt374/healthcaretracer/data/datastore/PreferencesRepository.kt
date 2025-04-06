@@ -17,11 +17,4 @@ class PreferencesRepository(context: Context) :DataStoreRepository<Preferences> 
     context = context,
     fileName = "preferences", // AppConst.DataStoreFilename.CONFIG.filename,
     serializer = GenericSerializer(serializer = Preferences.serializer(), default = Preferences())
-){
-//    suspend fun updateTimeRangeChart(range: TimeRange){
-//        updateData(dataFlow.first().copy(timeRangeChart = range))
-//    }
-//    suspend fun updateTimeRangeStatistics(range: TimeRange){
-//        updateData(dataFlow.first().copy(timeRangeStatistics = range))
-//    }
-}
+)

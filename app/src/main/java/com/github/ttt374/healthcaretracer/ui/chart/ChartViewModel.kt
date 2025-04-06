@@ -25,7 +25,7 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configR
     private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
 
     // TimeRange だけを切り出して StateFlow として公開
-    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRange }
+    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRangeChart }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
 
 //    private val _selectedRange = MutableStateFlow(pref.value.timeRange)
@@ -51,7 +51,8 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configR
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
-            preferencesRepository.updateData(pref.value.copy(timeRange = range))
+            //preferencesRepository.updateData(pref.value.copy(timeRange = range))
+            preferencesRepository.updateTimeRangeChart(range)
         }
     }
     val targetBpUpperEntries = dailyItems.map { it.toEntries { config.value.targetBpUpper.toDouble() }}

@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.statics
 
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.datastore.Config
@@ -37,9 +38,16 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         SharingStarted.WhileSubscribed(5000),
         Preferences()
     )
+    init {
+        viewModelScope.launch {
+            preferencesRepository.dataFlow.collect {
+                Log.d("pref dataflow", it.toString())
+            }
+        }
+    }
 
     // TimeRange だけを切り出して StateFlow として公開
-    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRange }
+    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRangeStatistics }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -49,7 +57,8 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
-            preferencesRepository.updateData(pref.value.copy(timeRange = range))
+            //preferencesRepository.updateData(pref.value.copy(timeRangeStatistics = range))
+            preferencesRepository.updateTimeRangeStatistics(range)
         }
     }
 

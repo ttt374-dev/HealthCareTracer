@@ -72,5 +72,6 @@ class DataStoreRepositoryImpl<T>(context: Context, fileName: String, private val
     private suspend fun update(newData: T): T{
         return dataStore.updateData { newData }
     }
+
     //override suspend fun clearData() = updateData(serializer.defaultValue)
 }

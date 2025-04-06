@@ -2,13 +2,14 @@ package com.github.ttt374.healthcaretracer.data.datastore
 
 import android.content.Context
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import javax.inject.Singleton
 
 @Serializable
 data class Preferences(
-    val timeRange: TimeRange = TimeRange.Default,
-//    val timeRangeStatistics: TimeRange = TimeRange.Default,
+    val timeRangeChart: TimeRange = TimeRange.Default,
+    val timeRangeStatistics: TimeRange = TimeRange.Default,
 )
 
 @Singleton
@@ -16,4 +17,11 @@ class PreferencesRepository(context: Context) :DataStoreRepository<Preferences> 
     context = context,
     fileName = "preferences", // AppConst.DataStoreFilename.CONFIG.filename,
     serializer = GenericSerializer(serializer = Preferences.serializer(), default = Preferences())
-)
+){
+    suspend fun updateTimeRangeChart(range: TimeRange){
+        updateData(dataFlow.first().copy(timeRangeChart = range))
+    }
+    suspend fun updateTimeRangeStatistics(range: TimeRange){
+        updateData(dataFlow.first().copy(timeRangeStatistics = range))
+    }
+}

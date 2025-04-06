@@ -1,12 +1,11 @@
 package com.github.ttt374.healthcaretracer.ui.statics
 
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.datastore.Config
 import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
-import com.github.ttt374.healthcaretracer.data.datastore.Preferences
 import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
@@ -16,7 +15,9 @@ import com.github.ttt374.healthcaretracer.data.item.isEvening
 import com.github.ttt374.healthcaretracer.data.item.isMorning
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -28,47 +29,27 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository, val preferencesRepository: PreferencesRepository) : ViewModel() {
-    val config = configRepository.dataFlow.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        Config()
-    )
+    val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 
     // TimeRange だけを切り出して StateFlow として公開
     val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRangeStatistics }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val filteredItems = timeRange.flatMapLatest { range ->
-        itemRepository.getRecentItemsFlow(range.days)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val recentItemsFlow = timeRange.flatMapLatest { range -> itemRepository.getRecentItemsFlow(range.days)}
 
-    fun setSelectedRange(range: TimeRange) {
-        viewModelScope.launch {
-            //preferencesRepository.updateData(pref.value.copy(timeRangeStatistics = range))
-            preferencesRepository.updateData {
-                it.copy(timeRangeStatistics = range)
-            }
-        }
-    }
-
-    val bpUpperStatistics =
-        filteredItems.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 }) }
-            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val bpLowerStatistics =
-        filteredItems.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 }) }
-            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val pulseStatistics =
-        filteredItems.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 }) }
-            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val bodyWeightStatistics =
-        filteredItems.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() }) }
-            .stateIn(viewModelScope, SharingStarted.Lazily, StatTimeOfDay())
-    val meGapList: StateFlow<List<Double>> = filteredItems.map { items ->
+    val bpUpperStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 }) }
+            .stateInStat(viewModelScope)
+    val bpLowerStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 }) }
+            .stateInStat(viewModelScope)
+    val pulseStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 }) }
+            .stateInStat(viewModelScope)
+    val bodyWeightStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() }) }
+            .stateInStat(viewModelScope)
+    val meGapList: StateFlow<List<Double>> = recentItemsFlow.map { items ->
         items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap() ?: 0.0 }
-    }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private fun getStatValue(list: List<Double?>): StatValue {
         return StatValue(
@@ -88,6 +69,22 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
             morning = getStatValue(morningList),
             evening = getStatValue(eveningList)
         )
+    }
+    private fun Flow<StatTimeOfDay>.stateInStat(
+        scope: CoroutineScope,
+        defaultValue: StatTimeOfDay = StatTimeOfDay(),
+        sharingStarted: SharingStarted = SharingStarted.WhileSubscribed(5000)
+    ): StateFlow<StatTimeOfDay> {
+        return this.stateIn(scope, sharingStarted, defaultValue)
+    }
+
+    fun setSelectedRange(range: TimeRange) {
+        viewModelScope.launch {
+            //preferencesRepository.updateData(pref.value.copy(timeRangeStatistics = range))
+            preferencesRepository.updateData {
+                it.copy(timeRangeStatistics = range)
+            }
+        }
     }
 }
 

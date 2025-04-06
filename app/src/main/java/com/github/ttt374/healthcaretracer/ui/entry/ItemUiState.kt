@@ -17,9 +17,6 @@ data class ItemUiState (
         id = id?: 0,
         bpUpper = bpUpper.toIntOrNull(),
         bpLower = bpLower.toIntOrNull(),
-        //bp = BloodPressure(bpUpper.toIntOrNull() ?: 0, bpLower.toIntOrNull() ?: 0),
-        //bpHigh = bpHigh.toIntOrNull() ?: 0,
-        //bpLow = bpLow.toIntOrNull() ?:0,
         pulse = pulse.toIntOrNull(),
         bodyWeight = bodyWeight.toFloatOrNull(),
         memo = memo, location = location, measuredAt = measuredAt)

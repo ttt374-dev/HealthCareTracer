@@ -20,7 +20,7 @@ class SettingsViewModel @Inject constructor(private val configRepository: Config
 
     fun saveConfig(config: Config){
         viewModelScope.launch {
-            configRepository.updateData(config)
+            configRepository.updateData{ config }
         }
     }
 }

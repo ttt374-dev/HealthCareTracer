@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -52,7 +53,14 @@ class ChartViewModel @Inject constructor(itemRepository: ItemRepository, configR
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
             //preferencesRepository.updateData(pref.value.copy(timeRange = range))
-            preferencesRepository.updateTimeRangeChart(range)
+//            val value = preferencesRepository.dataFlow.first()
+//            preferencesRepository.updateData(value.copy(timeRangeChart = range))
+            preferencesRepository.updateData {
+                it.copy(timeRangeChart = range)
+            }
+
+            //}
+            //preferencesRepository.updateTimeRangeChart(range)
         }
     }
     val targetBpUpperEntries = dailyItems.map { it.toEntries { config.value.targetBpUpper.toDouble() }}

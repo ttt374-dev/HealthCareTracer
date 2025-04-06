@@ -58,7 +58,9 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
             //preferencesRepository.updateData(pref.value.copy(timeRangeStatistics = range))
-            preferencesRepository.updateTimeRangeStatistics(range)
+            preferencesRepository.updateData {
+                it.copy(timeRangeStatistics = range)
+            }
         }
     }
 

@@ -35,43 +35,9 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
             null -> itemDao.getAllItemsFlow()
             else -> itemDao.getItemsFromFlow(Instant.now().minus(days, ChronoUnit.DAYS))
         }
-//        val from = Instant.now().minus(days, ChronoUnit.DAYS)
-//        return itemDao.getItemsFromFlow(from)
     }
-
-//    fun dailyItemsFlow(): Flow<List<DailyItem>> = itemDao.getAllItemsFlow().map { items ->
-//        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-//            .map { (date, dailyItems) ->
-//                DailyItem(
-//                    date = date,
-//                    avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
-//                    avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
-//                    avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
-//                    avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
-//                    items = dailyItems
-//                )
-//            }.sortedBy{ it.date }
-//    }
 }
 fun <T : Number> List<T?>.averageOrNull(): Double? {
     val filtered = this.filterNotNull()
     return if (filtered.isEmpty()) null else filtered.map { it.toDouble() }.average()
 }
-
-//fun List<BloodPressure>.average(): BloodPressure {
-//    if (this.isEmpty()) return BloodPressure(0, 0) // 空リストならデフォルト値を返す
-//
-//    val systolicAvg = this.sumOf { it.systolic } / this.size
-//    val diastolicAvg = this.sumOf { it.diastolic } / this.size
-//
-//    return BloodPressure(systolicAvg, diastolicAvg)
-//}
-//public fun Iterable<Byte>.average(): Double {
-//    var sum: Double = 0.0
-//    var count: Int = 0
-//    for (element in this) {
-//        sum += element
-//        checkCountOverflow(++count)
-//    }
-//    return if (count == 0) Double.NaN else sum / count
-//}

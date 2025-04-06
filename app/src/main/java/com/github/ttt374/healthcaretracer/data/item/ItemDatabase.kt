@@ -41,15 +41,3 @@ class InstantConverters {
         return instant?.toEpochMilli()
     }
 }
-//class BloodPressureConverter {
-//    @TypeConverter
-//    fun fromBloodPressure(bp: BloodPressure): String {
-//        return "${bp.systolic},${bp.diastolic}"
-//    }
-//
-//    @TypeConverter
-//    fun toBloodPressure(data: String): BloodPressure {
-//        val values = data.split(",")
-//        return BloodPressure(values[0].toInt(), values[1].toInt())
-//    }
-//}

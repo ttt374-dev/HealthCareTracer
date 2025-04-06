@@ -60,14 +60,11 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun HomeScreen(
-    dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
-    //configViewModel: ConfigViewModel = hiltViewModel(),
+fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
-    //importExportViewModel: BackupDataViewModel = hiltViewModel(),
-    appNavigator: AppNavigator){
+    appNavigator: AppNavigator
+){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
-    //val dailyItemsReversed = remember { dailyItems.reversed()}
     val filePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     val config by homeViewModel.config.collectAsState()
@@ -121,32 +118,46 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
         val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-        Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date),
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.weight(1f))
-        //Text(bloodPressureFormatted(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt(), dailyItem.meGap()?.toInt()), fontWeight = FontWeight.Bold)
-        Text(bp.toDisplayString(guideline = guideline),
-            color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
-//        val meGap = dailyItem.meGap()
-//        if (meGap != null){
-//            Text("(${meGap.toDisplayString().withSubscript("mmHg")})")
-//        }
-//        dailyItem.meGap() ?.let {
-//            Text(it.toDisplayString("%.0f").withSubscript("mmHg"),
-//                color = MaterialTheme.colorScheme.onSecondaryContainer, fontWeight = FontWeight.Bold)
-//        }
-        //Text(dailyItem.avgPulse?.toInt().toDisplayString().withSubscript("bpm"),
-        Text(dailyItem.avgPulse?.toInt().toPulseString(),
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            textAlign = TextAlign.End, fontWeight = FontWeight.Bold )
-        Text(dailyItem.avgBodyWeight.toBodyWeightString(),
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            textAlign = TextAlign.End, fontWeight = FontWeight.Bold )
-
+        CustomText(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f))
+        CustomText(bp.toDisplayString(guideline = guideline))
+        CustomText(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
+        Text(dailyItem.avgBodyWeight.toBodyWeightString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, guideline, navigateToEdit)
     }
+}
+@Composable
+fun CustomText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    fontWeight: FontWeight = FontWeight.Bold,
+    textAlign: TextAlign? = null
+) {
+    Text(
+        text = text,
+        color = color,
+        fontWeight = fontWeight,
+        modifier = modifier,
+        textAlign = textAlign
+    )
+}
+@Composable
+fun CustomText(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    fontWeight: FontWeight = FontWeight.Bold,
+    textAlign: TextAlign? = null
+) {
+    CustomText(
+        text = text.toString(),
+        color = color,
+        fontWeight = fontWeight,
+        modifier = modifier,
+        textAlign = textAlign
+    )
 }
 @Composable
 fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null, navigateToEdit: (Long) -> Unit = {}){

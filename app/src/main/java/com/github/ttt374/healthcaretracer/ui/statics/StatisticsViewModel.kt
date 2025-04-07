@@ -3,7 +3,6 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.datastore.Config
 import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
@@ -11,9 +10,8 @@ import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.data.item.averageOrNull
-import com.github.ttt374.healthcaretracer.data.item.isEvening
-import com.github.ttt374.healthcaretracer.data.item.isMorning
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
+import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,7 +46,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
             .stateInStat(viewModelScope)
     val meGapList: StateFlow<List<Double>> = recentItemsFlow.map { items ->
         items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
-            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap() ?: 0.0 }
+            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(), config.value.morningRange, config.value.eveningRange) ?: 0.0 }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private fun getStatValue(list: List<Double?>): StatValue {
@@ -61,8 +59,8 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
 
     private fun getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> Double?): StatTimeOfDay {
         val allList = items.map { takeValue(it) }
-        val morningList = items.filter { it.measuredAt.isMorning() }.map { takeValue(it) }
-        val eveningList = items.filter { it.measuredAt.isEvening() }.map { takeValue(it) }
+        val morningList = items.filter { config.value.morningRange.contains(it.measuredAt.toLocalTime()) }.map { takeValue(it) }
+        val eveningList = items.filter { config.value.eveningRange.contains(it.measuredAt.toLocalTime()) }.map { takeValue(it) }
 
         return StatTimeOfDay(
             all = getStatValue(allList),

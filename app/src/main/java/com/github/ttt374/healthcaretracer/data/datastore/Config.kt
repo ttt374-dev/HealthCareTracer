@@ -22,9 +22,9 @@ data class Config (
 @Serializable
 data class LocalTimeRange(
     @Serializable(with=LocalTimeSerializer::class)
-    val start: LocalTime,
+    val start: LocalTime = LocalTime.of(0, 0),
     @Serializable(with=LocalTimeSerializer::class)
-    val endInclusive: LocalTime
+    val endInclusive: LocalTime = LocalTime.of(23, 59)
 ) {
     operator fun contains(time: LocalTime): Boolean {
         return if (start <= endInclusive) {
@@ -33,7 +33,6 @@ data class LocalTimeRange(
             time >= start || time <= endInclusive  // 0時をまたぐ場合（例: 22:00〜02:00）
         }
     }
-
     override fun toString(): String = "$start..$endInclusive"
 }
 

@@ -47,15 +47,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
-import com.github.ttt374.healthcaretracer.data.item.isEvening
-import com.github.ttt374.healthcaretracer.data.item.isMorning
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -106,14 +106,18 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn { // (reverseLayout = true) {
                 items(dailyItems.reversed()) { dailyItem ->
-                    DailyItemRow(dailyItem, guideline, appNavigator::navigateToEdit)
+                    DailyItemRow(dailyItem, guideline,
+                        config.morningRange, config.eveningRange,
+                        appNavigator::navigateToEdit,)
                 }
             }
         }
     }
 }
 @Composable
-fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null, navigateToEdit: (Long) -> Unit = {}){
+fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null,
+                 morningTimeRange: LocalTimeRange = LocalTimeRange(), eveningTimeRange: LocalTimeRange = LocalTimeRange(),
+                 navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
@@ -124,7 +128,7 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null
         Text(dailyItem.avgBodyWeight.toBodyWeightString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
-        ItemRow(item, guideline, navigateToEdit)
+        ItemRow(item, guideline, morningTimeRange, eveningTimeRange, navigateToEdit, )
     }
 }
 @Composable
@@ -160,7 +164,9 @@ fun CustomText(
     )
 }
 @Composable
-fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null, navigateToEdit: (Long) -> Unit = {}){
+fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null,
+            morningTimeRange: LocalTimeRange, eveningTimeRange: LocalTimeRange,
+            navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     val bp = BloodPressure(item.bpUpper, item.bpLower)
 
@@ -171,10 +177,13 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null, navigateToEdi
         Row {
             //val meMark =
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
-            with(item.measuredAt) {
+
+            item.measuredAt.toLocalTime().let {
                 when {
-                    isMorning() -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
-                    isEvening() -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
+                    morningTimeRange.contains(it) -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
+                    eveningTimeRange.contains(it) -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
+//                    isMorning() -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
+//                    isEvening() -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
                     else -> Text("")
                 }
             }

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -51,7 +52,8 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNavigator: AppNavigator){
+fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
+                   appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
 
@@ -99,7 +101,7 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(), appNav
                     Spacer(modifier = Modifier.height(16.dp))
                     val selectedItem =  dailyItems.find { item -> item.date == selectedDate }
                     selectedItem?.let { dailyItem ->
-                        DailyItemRow(dailyItem, navigateToEdit = appNavigator::navigateToEdit)
+                        DailyItemRow(dailyItem,  navigateToEdit = appNavigator::navigateToEdit)
                     }
                 }
             }

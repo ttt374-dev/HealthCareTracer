@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
@@ -33,4 +34,9 @@ fun Instant.withDate(newDate: LocalDate, zone: ZoneId = ZoneId.systemDefault()):
     val currentDateTime = LocalDateTime.ofInstant(this, zone)
     val newDateTime = LocalDateTime.of(newDate, currentDateTime.toLocalTime())
     return newDateTime.atZone(zone).toInstant()
+}
+fun Instant.toLocalTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalTime {
+    return Instant.parse(this.toString())
+        .atZone(zoneId)
+        .toLocalTime()
 }

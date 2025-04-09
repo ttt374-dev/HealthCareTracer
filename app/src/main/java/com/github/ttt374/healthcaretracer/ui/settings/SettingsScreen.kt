@@ -1,20 +1,28 @@
 package com.github.ttt374.healthcaretracer.ui.settings
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
@@ -93,21 +101,32 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
 
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
-
     ///
     Scaffold(
         topBar = { CustomTopAppBar("Settings") },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
-        Column (
-            Modifier.padding(innerPadding).padding(16.dp)){
+        Column (Modifier.padding(innerPadding).padding(16.dp)){
             SettingsRow("HTN Guideline Type") {
-                Text(config.bloodPressureGuideline.name, Modifier.clickable { bpGuidelineState.open() })
-                BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
-                    val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
-                    viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
-                    bpGuidelineState.close()
-                }, onDismissRequest = { bpGuidelineState.close() })
+                Row (Modifier.clickable { bpGuidelineState.toggle() }) {
+                    Text(config.bloodPressureGuideline.name)
+                    if (bpGuidelineState.isOpen) Icon(Icons.Filled.ExpandLess, "close") else
+                        Icon(Icons.Filled.ExpandMore, "expand")
+                }
+//                BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
+//                    val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
+//                    viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
+//                    bpGuidelineState.close()
+//                }, onDismissRequest = { bpGuidelineState.close() })
+            }
+
+            if (bpGuidelineState.isOpen){
+                HorizontalSelector(BloodPressureGuideline.bloodPressureGuidelines.map { it.name }, config.bloodPressureGuideline.name,
+                    onOptionSelected = { selected ->
+                        val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
+                        viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
+                    } )
+                BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 16.dp))
             }
             SettingsRow("Target Blood Pressure"){
                 Text(config.targetBpUpper.toString(), Modifier.clickable { targetBpUpperState.open() })
@@ -141,6 +160,56 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
         content()
      }
 }
+@Composable
+fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Modifier){
+    Column (modifier=modifier) {
+//        Row {
+//            Text(guideline.name)
+//        }
+        listOf(guideline.normal, guideline.elevated, guideline.htn1, guideline.htn2, guideline.htn3).forEach { cat ->
+            Row {
+                Text(cat.name, Modifier.weight(1f))
+                Text(cat.lowerRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
+                Text(cat.upperRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
+
+            }
+        }
+
+    }
+}
+internal fun IntRange.toDisplayString(): String {
+    return if (start == 0){
+        "<$endInclusive"
+    } else if (endInclusive == Int.MAX_VALUE){
+        "$start<"
+    } else {
+        "$start - $endInclusive"
+    }
+}
+@Composable
+fun HorizontalSelector(
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    Row {
+        options.forEach { option ->
+            Text(
+                text = "[$option]",
+                modifier = Modifier
+                    .padding(4.dp)
+                    .clickable { onOptionSelected(option) }
+                    .background(
+                        if (option == selectedOption) Color.LightGray else Color.Transparent,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                color = if (option == selectedOption) Color.Black else Color.Gray
+            )
+        }
+    }
+}
+
 @Composable
 fun BpGuidelineDropMenu(expanded: Boolean, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){
     val guidelineList = BloodPressureGuideline.bloodPressureGuidelines

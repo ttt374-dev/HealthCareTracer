@@ -101,39 +101,33 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     ) { innerPadding ->
         Column (
             Modifier.padding(innerPadding).padding(16.dp)){
-            SettingsRow("HTN Guideline Type", onClick = { bpGuidelineState.open() }) {
-                Text(config.bloodPressureGuideline.name)
+            SettingsRow("HTN Guideline Type") {
+                Text(config.bloodPressureGuideline.name, Modifier.clickable { bpGuidelineState.open() })
                 BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
-                    val guideline = BloodPressureGuideline.bloodPressureGuidelines[selected] ?: BloodPressureGuideline.Default
+                    val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
                     viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
                     bpGuidelineState.close()
                 }, onDismissRequest = { bpGuidelineState.close() })
             }
-            SettingsRow("Target Bp Upper", onClick = { targetBpUpperState.open()}){
-                Text(config.targetBpUpper.toString())
-                //Text(uiState.targetBpUpper)
+            SettingsRow("Target Blood Pressure"){
+                Text(config.targetBpUpper.toString(), Modifier.clickable { targetBpUpperState.open() })
+                Text(" / ")
+                Text(config.targetBpLower.toString(), Modifier.clickable { targetBpLowerState.open() })
             }
-            SettingsRow("Target Bp Lower", onClick = { targetBpLowerState.open() }){
-                Text(config.targetBpLower.toString())
-                //Text(uiState.targetBpLower)
+            SettingsRow("Target Body Weight (Kg)"){
+                Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
             }
-            SettingsRow("Target Body Weight", onClick = { targetBodyWeightState.open() }){
-                Text(config.targetBodyWeight.toString())
-                //Text(uiState.targetBpLower)
-            }
-            SettingsRow("Morning Start", onClick = { morningRangeStartState.open()}){
-                Text(config.morningRange.start.format(localTimeFormat))
-            }
-            SettingsRow("Morning End", onClick = { morningRangeEndState.open()}){
-                Text(config.morningRange.endInclusive.format(localTimeFormat))
-            }
-            SettingsRow("Evening Start", onClick = { eveningRangeStartState.open()}){
-                Text(config.eveningRange.start.format(localTimeFormat))
-            }
-            SettingsRow("Evening End", onClick = { eveningRangeEndState.open()}){
-                Text(config.eveningRange.endInclusive.format(localTimeFormat))
+            SettingsRow("Morning Range"){
+                Text(config.morningRange.start.format(localTimeFormat), Modifier.clickable { morningRangeStartState.open()})
+                Text(" - ")
+                Text(config.morningRange.endInclusive.format(localTimeFormat), Modifier.clickable { morningRangeEndState.open() })
             }
 
+            SettingsRow("Evening Range"){
+                Text(config.eveningRange.start.format(localTimeFormat), Modifier.clickable { eveningRangeStartState.open() })
+                Text(" - ")
+                Text(config.eveningRange.endInclusive.format(localTimeFormat), Modifier.clickable { eveningRangeEndState.open() })
+            }
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
     }
@@ -149,11 +143,11 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
 }
 @Composable
 fun BpGuidelineDropMenu(expanded: Boolean, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){
-    val guidelineList = BloodPressureGuideline.bloodPressureGuidelines.keys
+    val guidelineList = BloodPressureGuideline.bloodPressureGuidelines
     DropdownMenu(expanded, onDismissRequest = onDismissRequest){
         guidelineList.forEach {
-            DropdownMenuItem({Text(it)}, onClick = {
-                onSelected(it)
+            DropdownMenuItem({Text(it.name)}, onClick = {
+                onSelected(it.name)
             })
         }
     }

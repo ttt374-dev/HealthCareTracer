@@ -29,8 +29,17 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
                                     val htn3: BloodPressureCategory,
     ) {
     @Serializable
-    @SerialName("JSH")
-    data object JSH : BloodPressureGuideline("JSH",
+    @SerialName("AHA/ACC")
+    data object AHA_ACC : BloodPressureGuideline("AHA/ACC",
+        BloodPressureCategory("Normal", 0..119, 0..79, Color.Unspecified),
+        BloodPressureCategory("Elevated", 120..129, 0..79, Color.Unspecified),
+        BloodPressureCategory("HTN Stage 1", 130..139, 80..89, Color.Red),
+        BloodPressureCategory("HTN Stage 2", 140..179, 90..119, Color.Red),
+        BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 120..Int.MAX_VALUE, Color.Red)
+    )
+    @Serializable
+    @SerialName("JSH2019")
+    data object JSH2019 : BloodPressureGuideline("JSH2019",
         BloodPressureCategory("Normal", 0..119, 0..79, Color.Unspecified),
         BloodPressureCategory("Elevated", 120..139, 80..89, Color.Unspecified),
         BloodPressureCategory("HTN Stage 1", 140..159, 90..99, Color.Red),
@@ -38,8 +47,8 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
     )
     @Serializable
-    @SerialName("WHO")
-    data object WHO : BloodPressureGuideline("WHO",
+    @SerialName("ESC/ESH")
+    data object ESC_ESH : BloodPressureGuideline("ESC/ESH",
         BloodPressureCategory("Normal", 0..129, 0..84, Color.Unspecified),
         BloodPressureCategory("Elevated", 130..139, 85..89, Color.Unspecified),
         BloodPressureCategory("HTN Stage 1", 140..159, 90..99, Color.Red),
@@ -58,8 +67,12 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: invalidCategory
     }
     companion object {
-        val Default = WHO
-        val bloodPressureGuidelines = mapOf("WHO" to BloodPressureGuideline.WHO, "JST" to BloodPressureGuideline.JSH)
+        val Default = AHA_ACC
+        val bloodPressureGuidelines = listOf(AHA_ACC, JSH2019, ESC_ESH)
+//        val bloodPressureGuidelines = mapOf(
+//            "AHA/ACC" to BloodPressureGuideline.AHA_ACC,
+//
+//            "JST" to BloodPressureGuideline.JSH)
     }
 //    companion object {
 //        private val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)

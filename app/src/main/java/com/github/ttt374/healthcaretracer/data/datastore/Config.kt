@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 
 @Serializable  // (with = ConfigSerializer::class)
 data class Config (
-    val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.WHO,
+    val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
     val morningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(4, 0), LocalTime.of(11,59)),
     val eveningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(17, 0), LocalTime.of(2, 59)),
 

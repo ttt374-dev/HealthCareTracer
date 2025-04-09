@@ -27,7 +27,7 @@ class SerializeTest(){
 
     @Test
     fun guidelineSerializeTest(){
-        val config = ConfigWrapper(BloodPressureGuideline.JSH)
+        val config = ConfigWrapper(BloodPressureGuideline.JSH2019)
 
 
         val jsonString = json.encodeToString(config)
@@ -37,16 +37,23 @@ class SerializeTest(){
     }
 }
 class BloodPressureCategoryTest() {
-    private val guideline = BloodPressureGuideline.WHO
+
 
     @Test
-    fun categoryTest() {
+    fun categoryESCESHTest() {
+        val guideline = BloodPressureGuideline.ESC_ESH
         assertEquals(guideline.getCategory(110, 65), guideline.normal)
         assertEquals(guideline.getCategory(145, 65), guideline.htn1)
         assertEquals(guideline.getCategory(200, 75), guideline.htn3)
         assertEquals(guideline.getCategory(null, null), guideline.invalidCategory)
         assertEquals(guideline.getCategory(165, true), guideline.htn2)
         assertEquals(guideline.getCategory(87, false), guideline.elevated)
+    }
+    @Test
+    fun categoryAHACCTest() {
+        val guideline = BloodPressureGuideline.AHA_ACC
+        assertEquals(guideline.getCategory(115, 75), guideline.normal)
+        assertEquals(guideline.getCategory(125, 75), guideline.elevated)
     }
 }
 class MorningEveningTest {

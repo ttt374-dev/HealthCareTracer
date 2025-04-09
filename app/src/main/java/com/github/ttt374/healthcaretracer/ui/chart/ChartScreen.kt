@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,6 +26,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -39,7 +41,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
     val timeRange by chartViewModel.timeRange.collectAsState()
 
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Blood Pressure", "Pulse", "Body Weight")
+    val tabs = listOf(stringResource(R.string.blood_pressure), stringResource(R.string.pulse), stringResource(R.string.body_weight))
 
     val bpUpperEntries by chartViewModel.bpUpperEntries.collectAsState()
     val bpLowerEntries by chartViewModel.bpLowerEntries.collectAsState()
@@ -49,7 +51,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
     val targetBpLowerEntries by chartViewModel.targetBpLowerEntries.collectAsState()
     val targetBodyWeightEntries by chartViewModel.targetBodyWeightEntries.collectAsState()
 
-    Scaffold(topBar = { CustomTopAppBar("Chart") },
+    Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
         bottomBar = {
             CustomBottomAppBar(appNavigator)
         }) { innerPadding ->
@@ -95,12 +97,12 @@ private fun LineChart.setupChart() {
     axisRight.isEnabled = false
 }
 
-private fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circuleRadius: Float = 4f) = apply {
+private fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadius: Float = 4f) = apply {
     this.color = color
     setCircleColor(color)
     valueTextColor = color
     this.lineWidth = lineWidth
-    this.circleRadius = circuleRadius
+    this.circleRadius = circleRadius
 }
 private fun LineDataSet.applyTargetStyle(color: Int) = apply {
     this.applyStyle(color, 1f, 1f)
@@ -132,11 +134,16 @@ fun HealthChart(update: (LineChart) -> Unit){
 }
 @Composable
 fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>, bpUpperTargetEntries: List<Entry>, bpLowerTargetEntries: List<Entry>){
+    val bpUpperLabel = stringResource(R.string.bpUpper)
+    val bpLowerLabel = stringResource(R.string.bpLower)
+    val targetBpUpperLabel = stringResource(R.string.targetBpUpper)
+    val targetBpLowerLabel = stringResource(R.string.targetBpLower)
+
     HealthChart(){ chart ->
-        val bpUpperDataSet = LineDataSet(bpUpperEntries, "BP Upper").applyStyle(Color.BLUE)
-        val bpLowerDataSet = LineDataSet(bpLowerEntries, "BP Lower").applyStyle(Color.GREEN)
-        val targetBpUpperDataSet = LineDataSet(bpUpperTargetEntries, "Target BP Upper").applyTargetStyle(Color.BLUE)
-        val targetBpLowerDataSet = LineDataSet(bpLowerTargetEntries, "Target BP Lower").applyTargetStyle(Color.GREEN)
+        val bpUpperDataSet = LineDataSet(bpUpperEntries, bpUpperLabel).applyStyle(Color.BLUE)
+        val bpLowerDataSet = LineDataSet(bpLowerEntries, bpLowerLabel).applyStyle(Color.GREEN)
+        val targetBpUpperDataSet = LineDataSet(bpUpperTargetEntries, targetBpUpperLabel).applyTargetStyle(Color.BLUE)
+        val targetBpLowerDataSet = LineDataSet(bpLowerTargetEntries, targetBpLowerLabel).applyTargetStyle(Color.GREEN)
         chart.data = LineData(bpUpperDataSet, bpLowerDataSet, targetBpUpperDataSet, targetBpLowerDataSet)
         chart.invalidate()
     }
@@ -144,16 +151,20 @@ fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>,
 
 @Composable
 fun PulseChart(pulseEntries: List<Entry>,){
-    HealthChart(){ chart ->val pulseDataSet = LineDataSet(pulseEntries, "Pulse").applyStyle(Color.RED)
+    val pulseLabel = stringResource(R.string.pulse)
+
+    HealthChart(){ chart ->val pulseDataSet = LineDataSet(pulseEntries, pulseLabel).applyStyle(Color.RED)
         chart.data = LineData(pulseDataSet)
         chart.invalidate()
     }
 }
 @Composable
 fun BodyWeightChart(bodyWeightEntries: List<Entry>, targetBodyWeightEntries: List<Entry>){
+    val bodyWeightLabel = stringResource(R.string.body_weight)
+    val targetBodyWeightLabel = stringResource(R.string.target_body_weight)
     HealthChart(){ chart ->
-        val bodyWeightDataSet = LineDataSet(bodyWeightEntries, "Body Weight").applyStyle(Color.GREEN)
-        val targetBodyWeightDataSet = LineDataSet(targetBodyWeightEntries, "Target Body Weight").applyTargetStyle(Color.GREEN)
+        val bodyWeightDataSet = LineDataSet(bodyWeightEntries, bodyWeightLabel).applyStyle(Color.GREEN)
+        val targetBodyWeightDataSet = LineDataSet(targetBodyWeightEntries, targetBodyWeightLabel).applyTargetStyle(Color.GREEN)
         chart.data = LineData(bodyWeightDataSet, targetBodyWeightDataSet)
         chart.invalidate()
     }

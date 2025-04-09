@@ -97,4 +97,6 @@ dependencies {
     implementation("com.kizitonwose.calendar:compose:2.6.2")
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    implementation("androidx.appcompat:appcompat:1.7.0")
 }

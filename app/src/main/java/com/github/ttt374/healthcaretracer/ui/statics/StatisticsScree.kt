@@ -14,9 +14,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.bloodPressureFormatted
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -39,7 +41,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     val guideline = conf.bloodPressureGuideline
 
     Scaffold(
-        topBar = { CustomTopAppBar("Statistics") },
+        topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)){
@@ -51,18 +53,18 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
 
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
-                Text("Blood Pressure", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.blood_pressure), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 StatisticsBpTable(bpUpperStat, bpLowerStat, guideline)
                 Text("ME Gap: ${meGapList.maxOrNull()}")
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
-                Text("Pulse", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.pulse), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 StatisticsTable(pulseStat, takeValue = { v: Double? -> v.toDisplayString("%.0f")})
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
-                Text("Body Weight", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.body_weight), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 StatisticsTable(bodyWeightStat, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
             }
 
@@ -74,9 +76,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
 fun StatisticsBpTable(bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay, guideline: BloodPressureGuideline){
     Column {
         StatisticsHeadersRow()
-        StatisticsBpRow("All", bpUpperStat.all, bpLowerStat.all, guideline)
-        StatisticsBpRow("Morning", bpUpperStat.morning, bpLowerStat.morning, guideline)
-        StatisticsBpRow("Evening", bpUpperStat.evening, bpLowerStat.evening, guideline )
+        StatisticsBpRow(stringResource(R.string.all), bpUpperStat.all, bpLowerStat.all, guideline)
+        StatisticsBpRow(stringResource(R.string.morning), bpUpperStat.morning, bpLowerStat.morning, guideline)
+        StatisticsBpRow(stringResource(R.string.evening), bpUpperStat.evening, bpLowerStat.evening, guideline )
     }
 }
 @Composable
@@ -94,9 +96,9 @@ fun StatisticsTable(stat: StatTimeOfDay, takeValue: (Double?) -> String){
     Column {
         StatisticsHeadersRow()
 
-        StatisticsRow("All", stat.all, takeValue)
-        StatisticsRow("Morning", stat.morning, takeValue)
-        StatisticsRow("Evening", stat.evening, takeValue)
+        StatisticsRow(stringResource(R.string.all), stat.all, takeValue)
+        StatisticsRow(stringResource(R.string.morning), stat.morning, takeValue)
+        StatisticsRow(stringResource(R.string.evening), stat.evening, takeValue)
     }
 }
 @Composable
@@ -112,9 +114,9 @@ fun StatisticsRow(label: String, statValue: StatValue, takeValue: (Double?) -> S
 fun StatisticsHeadersRow(){
     Row {
         Spacer(Modifier.weight(1f))
-        Text("avg", Modifier.weight(1f))
-        Text("max", Modifier.weight(1f))
-        Text("min", Modifier.weight(1f))
+        Text(stringResource(R.string.average), Modifier.weight(1f))
+        Text(stringResource(R.string.max), Modifier.weight(1f))
+        Text(stringResource(R.string.min), Modifier.weight(1f))
     }
     HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
 }

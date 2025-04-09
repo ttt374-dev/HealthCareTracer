@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HealthCareTracer</string>
+    <string name="calendar">カレンダー</string>
+    <string name="chart">チャート</string>
+
+    <string name="blood_pressure">血圧</string>
+    <string name="pulse">心拍数</string>
+    <string name="body_weight">体重</string>
+
+    <string name="bpUpper">収縮期血圧</string>
+    <string name="bpLower">拡張期血圧</string>
+    <string name="targetBpUpper">目標収縮期血圧</string>
+    <string name="targetBpLower">目標拡張期血圧</string>
+    <string name="target_body_weight">目標体重</string>
+
+    <string name="all">すべて</string>
+    <string name="morning">朝方</string>
+    <string name="evening">夕方</string>
+    <string name="me_gap">ME 差</string>
+    <string name="htn">高血圧</string>
+    <string name="guideline">ガイドライン</string>
+    <string name="range__1week">１週間</string>
+    <string name="range__1month">１ヵ月</string>
+    <string name="range__6months">６ヵ月</string>
+    <string name="range__1year">１年</string>
+    <string name="range__full_range">全期間</string>
+    <string name="statistics">統計値</string>
+    <string name="settings">設定</string>
+    <string name="htn_guideline">高血圧基準</string>
+    <string name="morning_range">朝方時間帯</string>
+    <string name="evening_range">夕方時間帯</string>
+    <string name="targetBp">目標血圧</string>
+    <string name="average">平均値</string>
+    <string name="min">最小値</string>
+    <string name="max">最大値</string>
+    <string name="bpcategory__normal">正常値</string>
+    <string name="bpcategory__elevated">正常高値</string>
+    <string name="bpcategory__htn1">高血圧ステージ１</string>
+    <string name="bpcategory__htn2">高血圧ステージ２</string>
+    <string name="bpcategory__htn3">高血圧ステージ３</string>
+
+</resources>

@@ -27,11 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -116,11 +118,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
     ///
     Scaffold(
-        topBar = { CustomTopAppBar("Settings") },
+        topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
         Column (Modifier.padding(innerPadding).padding(16.dp)){
-            SettingsRow("HTN Guideline Type") {
+            SettingsRow(stringResource(R.string.htn_guideline)) {
                 Row (Modifier.clickable { bpGuidelineState.toggle() }) {
                     Text(config.bloodPressureGuideline.name)
                     if (bpGuidelineState.isOpen) Icon(Icons.Filled.ExpandLess, "close") else
@@ -140,23 +142,23 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                     } )
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 16.dp))
             }
-            SettingsRow("Target Blood Pressure"){
+            SettingsRow(stringResource(R.string.targetBp)){
                 Text("${config.targetBpUpper} / ${config.targetBpLower}", Modifier.clickable { targetBpState.open() })
 
 //                Text(config.targetBpUpper.toString(), Modifier.clickable { targetBpUpperState.open() })
 //                Text(" / ")
 //                Text(config.targetBpLower.toString(), Modifier.clickable { targetBpLowerState.open() })
             }
-            SettingsRow("Target Body Weight (Kg)"){
+            SettingsRow("${stringResource(R.string.target_body_weight)} (Kg)"){
                 Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
             }
-            SettingsRow("Morning Range"){
+            SettingsRow(stringResource(R.string.morning_range)){
                 Text(config.morningRange.start.format(localTimeFormat), Modifier.clickable { morningRangeStartState.open()})
                 Text(" - ")
                 Text(config.morningRange.endInclusive.format(localTimeFormat), Modifier.clickable { morningRangeEndState.open() })
             }
 
-            SettingsRow("Evening Range"){
+            SettingsRow(stringResource(R.string.evening_range)){
                 Text(config.eveningRange.start.format(localTimeFormat), Modifier.clickable { eveningRangeStartState.open() })
                 Text(" - ")
                 Text(config.eveningRange.endInclusive.format(localTimeFormat), Modifier.clickable { eveningRangeEndState.open() })
@@ -179,14 +181,15 @@ fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, c
     var bpUpperString by remember { mutableStateOf(bpUpper.toString())}
     var bpLowerString by remember { mutableStateOf(bpLower.toString())}
 
-    ConfirmDialog(text = {
+    ConfirmDialog(title = { Text(stringResource(R.string.targetBp))},
+        text = {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Bp Upper", Modifier.weight(1f))
+                Text(stringResource(R.string.targetBpUpper), Modifier.weight(1f))
                 OutlinedTextField(bpUpperString, { bpUpperString = it}, modifier=Modifier.weight(2f))
             }
             Row {
-                Text("Bp Lower", Modifier.weight(1f))
+                Text(stringResource(R.string.targetBpLower), Modifier.weight(1f))
                 OutlinedTextField(bpLowerString, { bpLowerString = it}, Modifier.weight(2f))
             }
         }

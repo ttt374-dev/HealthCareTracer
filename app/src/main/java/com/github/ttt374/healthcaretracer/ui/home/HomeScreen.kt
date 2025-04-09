@@ -122,9 +122,10 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
         val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-        CustomText(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f))
-        CustomText(bp.toDisplayString(guideline = guideline))
-        CustomText(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
+        Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+        //CustomText(bp.toDisplayString(guideline = guideline))
+        Text(bp.toDisplayString(guideline = guideline), fontWeight = FontWeight.Bold)
+        Text(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
         Text(dailyItem.avgBodyWeight.toBodyWeightString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->

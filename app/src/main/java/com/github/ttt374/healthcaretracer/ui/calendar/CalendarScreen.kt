@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -111,10 +112,11 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
 
 @Composable
 fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = false, onClick: (CalendarDay) -> Unit = {}) {
+    val highlightColor = MaterialTheme.colorScheme.primaryContainer
     Box(modifier = Modifier
             .aspectRatio(.8f) // This is important for square sizing!
             .clip(CircleShape)
-            .background(color = if (isSelected) Color.Green else Color.Transparent)
+            .background(color = if (isSelected) highlightColor else Color.Transparent)
             .clickable(
                 onClick = { onClick(day) }
             ),

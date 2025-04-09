@@ -1,7 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.settings
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +14,19 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +35,7 @@ import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
+import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
@@ -49,6 +56,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     val bpGuidelineState = rememberDialogState()
 
+    val targetBpState = rememberDialogState()
+    if (targetBpState.isOpen){
+        TargetBpDialog(config.targetBpUpper, config.targetBpLower, onConfirm = { upper, lower ->
+            viewModel.saveConfig(config.copy(targetBpUpper = upper, targetBpLower = lower))
+        }, closeDialog = { targetBpState.close() })
+    }
     val targetBpUpperState = rememberDialogState()
     if (targetBpUpperState.isOpen)
         TextFieldDialog(config.targetBpUpper.toString(),
@@ -119,7 +132,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 //                    bpGuidelineState.close()
 //                }, onDismissRequest = { bpGuidelineState.close() })
             }
-
             if (bpGuidelineState.isOpen){
                 HorizontalSelector(BloodPressureGuideline.bloodPressureGuidelines.map { it.name }, config.bloodPressureGuideline.name,
                     onOptionSelected = { selected ->
@@ -129,9 +141,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 16.dp))
             }
             SettingsRow("Target Blood Pressure"){
-                Text(config.targetBpUpper.toString(), Modifier.clickable { targetBpUpperState.open() })
-                Text(" / ")
-                Text(config.targetBpLower.toString(), Modifier.clickable { targetBpLowerState.open() })
+                Text("${config.targetBpUpper} / ${config.targetBpLower}", Modifier.clickable { targetBpState.open() })
+
+//                Text(config.targetBpUpper.toString(), Modifier.clickable { targetBpUpperState.open() })
+//                Text(" / ")
+//                Text(config.targetBpLower.toString(), Modifier.clickable { targetBpLowerState.open() })
             }
             SettingsRow("Target Body Weight (Kg)"){
                 Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
@@ -161,17 +175,36 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
      }
 }
 @Composable
+fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, closeDialog: () -> Unit){
+    var bpUpperString by remember { mutableStateOf(bpUpper.toString())}
+    var bpLowerString by remember { mutableStateOf(bpLower.toString())}
+
+    ConfirmDialog(text = {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Bp Upper", Modifier.weight(1f))
+                OutlinedTextField(bpUpperString, { bpUpperString = it}, modifier=Modifier.weight(2f))
+            }
+            Row {
+                Text("Bp Lower", Modifier.weight(1f))
+                OutlinedTextField(bpLowerString, { bpLowerString = it}, Modifier.weight(2f))
+            }
+        }
+    }, onConfirm = { onConfirm(bpUpperString.toIntOrNull() ?: 0, bpLowerString.toIntOrNull() ?: 0); closeDialog() },
+        onCancel = { closeDialog() }
+        )
+}
+@Composable
 fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Modifier){
-    Column (modifier=modifier) {
+    Column (modifier=modifier.border(1.dp, Color.Black).padding(4.dp)) {
 //        Row {
 //            Text(guideline.name)
 //        }
         listOf(guideline.normal, guideline.elevated, guideline.htn1, guideline.htn2, guideline.htn3).forEach { cat ->
-            Row {
+            Row (Modifier.border(1.dp, Color.Gray.copy(alpha = 0.3f), shape = RectangleShape)){
                 Text(cat.name, Modifier.weight(1f))
-                Text(cat.lowerRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
                 Text(cat.upperRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
-
+                Text(cat.lowerRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
             }
         }
 
@@ -179,9 +212,9 @@ fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Mo
 }
 internal fun IntRange.toDisplayString(): String {
     return if (start == 0){
-        "<$endInclusive"
+        "< $endInclusive"
     } else if (endInclusive == Int.MAX_VALUE){
-        "$start<"
+        "$start <"
     } else {
         "$start - $endInclusive"
     }

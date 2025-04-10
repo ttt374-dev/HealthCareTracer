@@ -19,14 +19,15 @@ fun ConfirmDialog(
     confirmButtonLabel: String = "OK",
     dismissButtonLabel: String = "Cancel",
     closeDialog: () -> Unit = {},
+    confirmButton: @Composable () -> Unit = {
+        OutlinedButton(onClick = { onConfirm(); closeDialog() }) {
+            Text(confirmButtonLabel)
+        }
+    }
 ){
 
     AlertDialog(onDismissRequest = onCancel,
-        confirmButton =  {
-            OutlinedButton(onClick = { onConfirm(); closeDialog() }) {
-                Text(confirmButtonLabel)
-            }
-        },
+        confirmButton =  confirmButton,
         dismissButton = {
             OutlinedButton( onClick = { onCancel(); closeDialog() }) {
                 Text(dismissButtonLabel)

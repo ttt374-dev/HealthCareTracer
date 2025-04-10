@@ -33,6 +33,8 @@ import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+const val MIN_PULSE = 40
+
 @Composable
 fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: ItemViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val itemUiState by editViewModel.itemUiState.collectAsState()
@@ -55,21 +57,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
         }
     }
 }
-class FocusManager (private val focusRequesters: List<FocusRequester>, initialIndex: Int = 0) {
-    private var currentFocusIndex: Int = initialIndex
 
-    private fun shiftFocus(){
-        if (currentFocusIndex < focusRequesters.size - 1) {
-            currentFocusIndex++ // 次のフィールドに移動
-        } else {
-            currentFocusIndex = 0 // もし最後のフィールドなら最初に戻る
-        }
-        focusRequesters[currentFocusIndex].requestFocus() // 次のフィールドにフォーカスを移す
-    }
-    fun shiftFocusIf(condition: () -> Boolean){
-        if (condition()) shiftFocus()
-    }
-}
 sealed class EditMode {
     data object Entry : EditMode()
     data object Edit: EditMode()
@@ -102,7 +90,8 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
     val bpUpperFocusRequester = remember { FocusRequester() }
     val bpLowerFocusRequester = remember { FocusRequester() }
     val pulseFocusRequester = remember { FocusRequester() }
-    val focusManager = remember { FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, pulseFocusRequester)) }
+    val bodyWeightFocusRequester = remember { FocusRequester() }
+    //val focusManager = remember { FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, pulseFocusRequester)) }
 
     // dialog
     val deleteDialogState = rememberItemDialogState()
@@ -135,8 +124,9 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
         InputFieldRow("Bp Upper"){
             TextField(itemUiState.bpUpper,
                 onValueChange = {
-                     updateItemUiState(itemUiState.copy(bpUpper = it))
-                    focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
+                    updateItemUiState(itemUiState.copy(bpUpper = it))
+                    //focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
+                    if ((it.toIntOrNull() ?: 0) > MIN_BP) bpLowerFocusRequester.requestFocus()
                 },
                 label = { Text("Bp Upper")},
                 keyboardOptions = numberKeyboardOptions,
@@ -147,7 +137,8 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             TextField(itemUiState.bpLower,
                 onValueChange = {
                     updateItemUiState(itemUiState.copy(bpLower = it))
-                    focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
+                    if ((it.toIntOrNull() ?: 0) > MIN_BP) pulseFocusRequester.requestFocus()
+                    //focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
                 },
                 label = { Text("Bp Lower")},
                 keyboardOptions = numberKeyboardOptions,
@@ -158,6 +149,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             TextField(itemUiState.pulse,
                 onValueChange = {
                     updateItemUiState(itemUiState.copy(pulse = it))
+                    if ((it.toIntOrNull() ?: 0) > MIN_PULSE) bodyWeightFocusRequester.requestFocus()
                 },
                 label = { Text("Pulse")},
                 keyboardOptions = numberKeyboardOptions,
@@ -173,6 +165,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             TextField(itemUiState.bodyWeight,
                 onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
                 keyboardOptions = decimalKeyboardOptions,
+                modifier = modifier.focusRequester(bodyWeightFocusRequester),
                 label = { Text("Body Weight")})
         }
         InputFieldRow("Location") {
@@ -200,3 +193,18 @@ fun InputFieldRow(label: String, inputField: @Composable () -> Unit){
         inputField()
     }
 }
+//class FocusManager (private val focusRequesters: List<FocusRequester>, initialIndex: Int = 0) {
+//    private var currentFocusIndex: Int = initialIndex
+//
+//    private fun shiftFocus(){
+//        if (currentFocusIndex < focusRequesters.size - 1) {
+//            currentFocusIndex++ // 次のフィールドに移動
+//        } else {
+//            currentFocusIndex = 0 // もし最後のフィールドなら最初に戻る
+//        }
+//        focusRequesters[currentFocusIndex].requestFocus() // 次のフィールドにフォーカスを移す
+//    }
+//    fun shiftFocusIf(condition: () -> Boolean){
+//        if (condition()) shiftFocus()
+//    }
+//}

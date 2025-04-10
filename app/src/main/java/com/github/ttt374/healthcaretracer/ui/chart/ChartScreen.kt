@@ -34,6 +34,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import java.time.Instant
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewModel: ConfigViewModel = hiltViewModel(),
@@ -79,13 +80,15 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
 }
 ////////////
 private fun LineChart.setupChart() {
+    val formatter = DateTimeFormatter.ofPattern("M-dd")
+
     description.isEnabled = false
     xAxis.apply {
         position = XAxis.XAxisPosition.BOTTOM
         valueFormatter = object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return Instant.ofEpochMilli(value.toLong())
-                    .atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                    .atZone(ZoneId.systemDefault()).toLocalDate().format(formatter)
             }
         }
     }

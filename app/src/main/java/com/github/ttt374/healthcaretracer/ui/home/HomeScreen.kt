@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
@@ -86,7 +88,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     }
     Scaffold(topBar = {
         CustomTopAppBar(
-            "Home",
+            stringResource(R.string.home),
             menuItems = listOf(
                 MenuItem("export", onClick = { homeViewModel.exportData() }),
                 MenuItem("import", onClick = { filePickerDialogState.open() })
@@ -206,7 +208,8 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null,
                 //val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)
                 //with (bp.htnCategory()){
                 guideline?.getCategory(bp.upper, bp.lower)?.let {
-                    Text(it.name, color=it.color)
+                    Text(stringResource(it.nameLabel), color=it.color)
+                    //Text(it.name, color=it.color)
                 }
             }
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る

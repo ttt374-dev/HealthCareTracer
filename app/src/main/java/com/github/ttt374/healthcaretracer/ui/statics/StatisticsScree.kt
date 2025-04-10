@@ -55,7 +55,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
                 Text(stringResource(R.string.blood_pressure), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 StatisticsBpTable(bpUpperStat, bpLowerStat, guideline)
-                Text("ME Gap: ${meGapList.maxOrNull()}")
+                Text("${stringResource(R.string.me_gap)}: ${meGapList.maxOrNull()}")
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)

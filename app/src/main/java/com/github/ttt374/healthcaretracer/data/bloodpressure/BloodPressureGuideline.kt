@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.data.bloodpressure
 
 import androidx.compose.ui.graphics.Color
+import com.github.ttt374.healthcaretracer.R
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.KSerializer
@@ -8,56 +9,83 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
+
+
 @Serializable
-data class BloodPressureCategory(
+sealed class BloodPressureCategory(
     val name: String,
+    val nameLabel: Int,
     @Serializable(with = IntRangeSerializer::class)
     val upperRange: IntRange,
     @Serializable(with = IntRangeSerializer::class)
     val lowerRange: IntRange,
     @Serializable(with = ColorSerializer::class)
     val color: Color
-)
+){
+    @Serializable
+    data class Normal(
+        @Serializable(with = IntRangeSerializer::class) val bpUpperRange: IntRange,
+        @Serializable(with = IntRangeSerializer::class) val bpLowerRange: IntRange) : BloodPressureCategory("Normal", R.string.bpcategory__normal, bpUpperRange, bpLowerRange, Color.Unspecified)
+    @Serializable
+    data class Elevated(
+        @Serializable(with = IntRangeSerializer::class) val bpUpperRange: IntRange,
+        @Serializable(with = IntRangeSerializer::class) val bpLowerRange: IntRange) : BloodPressureCategory("Elevated", R.string.bpcategory__elevated, bpUpperRange, bpLowerRange, Color.Unspecified)
+    @Serializable
+    data class Htn1(
+        @Serializable(with = IntRangeSerializer::class) val bpUpperRange: IntRange,
+        @Serializable(with = IntRangeSerializer::class) val bpLowerRange: IntRange) : BloodPressureCategory("Htn1", R.string.bpcategory__htn1, bpUpperRange, bpLowerRange, Color.Unspecified)
+    @Serializable
+    data class Htn2(
+        @Serializable(with = IntRangeSerializer::class) val bpUpperRange: IntRange,
+        @Serializable(with = IntRangeSerializer::class) val bpLowerRange: IntRange) : BloodPressureCategory("Htn2", R.string.bpcategory__htn2, bpUpperRange, bpLowerRange, Color.Unspecified)
+    @Serializable
+    data class Htn3(
+        @Serializable(with = IntRangeSerializer::class) val bpUpperRange: IntRange,
+        @Serializable(with = IntRangeSerializer::class) val bpLowerRange: IntRange) : BloodPressureCategory("Htn3", R.string.bpcategory__htn3, bpUpperRange, bpLowerRange, Color.Unspecified)
+    @Serializable
+    data object Invalid : BloodPressureCategory("Normal", R.string.bpcategory__invalid, 0..0, 0..0, Color.Unspecified)
+}
 
 /** ガイドラインごとの血圧カテゴリリスト */
 @Serializable
 sealed class BloodPressureGuideline(val name: String, // val categories: List<BloodPressureCategory>,
-                                    val normal: BloodPressureCategory,
-                                    val elevated: BloodPressureCategory,
-                                    val htn1: BloodPressureCategory,
-                                    val htn2: BloodPressureCategory,
-                                    val htn3: BloodPressureCategory,
+                                    val normal: BloodPressureCategory.Normal,
+                                    val elevated: BloodPressureCategory.Elevated,
+                                    val htn1: BloodPressureCategory.Htn1,
+                                    val htn2: BloodPressureCategory.Htn2,
+                                    val htn3: BloodPressureCategory.Htn3,
     ) {
     @Serializable
     @SerialName("AHA/ACC")
     data object AHA_ACC : BloodPressureGuideline("AHA/ACC",
-        BloodPressureCategory("Normal", 0..119, 0..79, Color.Unspecified),
-        BloodPressureCategory("Elevated", 120..129, 0..79, Color.Unspecified),
-        BloodPressureCategory("HTN Stage 1", 130..139, 80..89, Color.Red),
-        BloodPressureCategory("HTN Stage 2", 140..179, 90..119, Color.Red),
-        BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 120..Int.MAX_VALUE, Color.Red)
+        BloodPressureCategory.Normal( 0..119, 0..79),
+        BloodPressureCategory.Elevated(120..129, 0..79),
+        BloodPressureCategory.Htn1(130..139, 80..89),
+        BloodPressureCategory.Htn2(140..179, 90..119),
+        BloodPressureCategory.Htn3( 180..Int.MAX_VALUE, 120..Int.MAX_VALUE)
     )
     @Serializable
     @SerialName("JSH2019")
     data object JSH2019 : BloodPressureGuideline("JSH2019",
-        BloodPressureCategory("Normal", 0..119, 0..79, Color.Unspecified),
-        BloodPressureCategory("Elevated", 120..139, 80..89, Color.Unspecified),
-        BloodPressureCategory("HTN Stage 1", 140..159, 90..99, Color.Red),
-        BloodPressureCategory("HTN Stage 2", 160..179, 100..109, Color.Red),
-        BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
+        BloodPressureCategory.Normal( 0..119, 0..79),
+        BloodPressureCategory.Elevated( 120..139, 80..89),
+        BloodPressureCategory.Htn1( 140..159, 90..99),
+        BloodPressureCategory.Htn2( 160..179, 100..109),
+        BloodPressureCategory.Htn3( 180..Int.MAX_VALUE, 110..Int.MAX_VALUE)
     )
     @Serializable
     @SerialName("ESC/ESH")
     data object ESC_ESH : BloodPressureGuideline("ESC/ESH",
-        BloodPressureCategory("Normal", 0..129, 0..84, Color.Unspecified),
-        BloodPressureCategory("Elevated", 130..139, 85..89, Color.Unspecified),
-        BloodPressureCategory("HTN Stage 1", 140..159, 90..99, Color.Red),
-        BloodPressureCategory("HTN Stage 2", 160..179, 100..109, Color.Red),
-        BloodPressureCategory("HTN Crisis", 180..Int.MAX_VALUE, 110..Int.MAX_VALUE, Color.Red)
+        BloodPressureCategory.Normal(0..129, 0..84),
+        BloodPressureCategory.Elevated( 130..139, 85..89),
+        BloodPressureCategory.Htn1( 140..159, 90..99),
+        BloodPressureCategory.Htn2( 160..179, 100..109),
+        BloodPressureCategory.Htn3( 180..Int.MAX_VALUE, 110..Int.MAX_VALUE)
     )
 
     val categories: List<BloodPressureCategory> get() = listOf(normal, elevated, htn1, htn2, htn3)
-    val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+    //val invalidCategory = BloodPressureCategory("Invalid", 0..0, 0..0, Color.Black)
+    private val invalidCategory = BloodPressureCategory.Invalid
 
     fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
         return categories.reversed().firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:

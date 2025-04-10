@@ -30,10 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
@@ -58,7 +60,7 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
 
-    Scaffold(topBar = { CustomTopAppBar("Calendar") },
+    Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.calendar)) },
         bottomBar = {
             CustomBottomAppBar(
                 appNavigator = appNavigator,

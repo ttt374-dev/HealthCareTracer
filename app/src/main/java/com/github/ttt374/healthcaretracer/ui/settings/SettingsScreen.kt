@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.settings
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,10 +14,14 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.os.LocaleListCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.R
@@ -46,6 +52,7 @@ import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 @Composable
@@ -64,23 +71,23 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             viewModel.saveConfig(config.copy(targetBpUpper = upper, targetBpLower = lower))
         }, closeDialog = { targetBpState.close() })
     }
-    val targetBpUpperState = rememberDialogState()
-    if (targetBpUpperState.isOpen)
-        TextFieldDialog(config.targetBpUpper.toString(),
-            onConfirm = {
-                viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
-            },
-            closeDialog = { targetBpUpperState.close() },
-            keyboardOptions = numberKeyboardOptions,
-        )
-
-    val targetBpLowerState = rememberDialogState()
-    if (targetBpLowerState.isOpen)
-        TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
-            viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
-        },
-            closeDialog = { targetBpLowerState.close() },
-            keyboardOptions = numberKeyboardOptions)
+//    val targetBpUpperState = rememberDialogState()
+//    if (targetBpUpperState.isOpen)
+//        TextFieldDialog(config.targetBpUpper.toString(),
+//            onConfirm = {
+//                viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
+//            },
+//            closeDialog = { targetBpUpperState.close() },
+//            keyboardOptions = numberKeyboardOptions,
+//        )
+//
+//    val targetBpLowerState = rememberDialogState()
+//    if (targetBpLowerState.isOpen)
+//        TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
+//            viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
+//        },
+//            closeDialog = { targetBpLowerState.close() },
+//            keyboardOptions = numberKeyboardOptions)
 
     val targetBodyWeightState = rememberDialogState()
     if (targetBodyWeightState.isOpen)
@@ -114,11 +121,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             onTimeSelected = { viewModel.saveConfig(config.copy(eveningRange = it))},
             onDismiss = { eveningRangeEndState.close()})
     }
+    val localeSelectorState = rememberDialogState()
 
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
     ///
     Scaffold(
-        topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
+        topBar = { CustomTopAppBar(stringResource(R.string.settings)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
         Column (Modifier.padding(innerPadding).padding(16.dp)){
@@ -140,7 +148,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                         val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
                         viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
                     } )
-                BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 16.dp))
+                BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
             }
             SettingsRow(stringResource(R.string.targetBp)){
                 Text("${config.targetBpUpper} / ${config.targetBpLower}", Modifier.clickable { targetBpState.open() })
@@ -163,6 +171,24 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 Text(" - ")
                 Text(config.eveningRange.endInclusive.format(localTimeFormat), Modifier.clickable { eveningRangeEndState.open() })
             }
+//            SettingsRow(stringResource(R.string.language)) {
+//                val locale = Locale.forLanguageTag(config.localeTag)
+//
+//                Text(locale.getDisplayLanguage(locale), Modifier.clickable { localeSelectorState.open() })
+//                if (localeSelectorState.isOpen){
+//                    LanguageDropMenu(localeSelectorState.isOpen, config.localeTag,
+//                        { newLocaleTag ->
+//                            val newLocale = Locale.forLanguageTag(newLocaleTag)
+//                            val localesChangedToDefault = AppCompatDelegate.getApplicationLocales()
+//                            val createdLocale = LocaleListCompat.create(locale)
+//                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
+//                            val listcompat = LocaleListCompat.forLanguageTags("en")
+//                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+//                            val localesChangedToDefaultChanged = AppCompatDelegate.getApplicationLocales()
+//                            viewModel.saveConfig(config.copy(localeTag = newLocaleTag )); localeSelectorState.close() },
+//                        onDismissRequest = { localeSelectorState.close()})
+//                }
+//            }
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
     }
@@ -205,7 +231,7 @@ fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Mo
 //        }
         listOf(guideline.normal, guideline.elevated, guideline.htn1, guideline.htn2, guideline.htn3).forEach { cat ->
             Row (Modifier.border(1.dp, Color.Gray.copy(alpha = 0.3f), shape = RectangleShape)){
-                Text(cat.name, Modifier.weight(1f))
+                Text(stringResource(cat.nameLabel), Modifier.weight(1f))
                 Text(cat.upperRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
                 Text(cat.lowerRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
             }
@@ -247,17 +273,6 @@ fun HorizontalSelector(
 }
 
 @Composable
-fun BpGuidelineDropMenu(expanded: Boolean, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){
-    val guidelineList = BloodPressureGuideline.bloodPressureGuidelines
-    DropdownMenu(expanded, onDismissRequest = onDismissRequest){
-        guidelineList.forEach {
-            DropdownMenuItem({Text(it.name)}, onClick = {
-                onSelected(it.name)
-            })
-        }
-    }
-}
-@Composable
 fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected: (LocalTimeRange) -> Unit, onDismiss: () -> Unit){
     val zone = ZoneId.systemDefault()
     if (isStart){
@@ -270,3 +285,17 @@ fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected
             onDismiss = onDismiss)
     }
 }
+//@Composable
+//fun LanguageDropMenu(expanded: Boolean, currentLanguageTag: String, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){
+//    val languages = listOf("en", "ja", "fr")
+//    val currentLocale = Locale.forLanguageTag(currentLanguageTag)
+//    DropdownMenu(expanded, onDismissRequest = onDismissRequest){
+//        languages.forEach { tag ->
+//            val locale = Locale.forLanguageTag(tag)
+//            val localeName = locale.getDisplayLanguage(currentLocale)
+//            DropdownMenuItem({Text(localeName)}, onClick = {
+//                onSelected(tag)
+//            })
+//        }
+//    }
+//}

@@ -1,10 +1,12 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
+import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -20,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -41,20 +44,87 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-enum class ChartType(val labelResId: Int) {
-    BloodPressure(R.string.blood_pressure),
-    Pulse(R.string.pulse),
-    BodyWeight(R.string.body_weight)
+data class ChartColorPalette(
+    val primary: Color,
+    val secondary: Color
+)
+
+enum class ChartType(@StringRes val labelResId: Int, val datasets: (Context, ChartUiState, ChartColorPalette) -> List<LineDataSet>) {
+    BloodPressure(
+        R.string.blood_pressure,
+        { context, uiState, colors ->
+            val primary = colors.primary
+            val secondary = colors.secondary
+            listOf(
+                createLineDataSet(context, uiState.actualEntries.bpUpper, R.string.bpUpper, primary),
+                createLineDataSet(context, uiState.actualEntries.bpLower, R.string.bpLower, secondary),
+                createLineDataSet(context, uiState.targetEntries.bpUpper, R.string.bpUpper, primary, true),
+                createLineDataSet(context, uiState.targetEntries.bpLower, R.string.bpLower, secondary, true),
+            )
+        }
+    ),
+    Pulse(
+        R.string.pulse,
+        { context, uiState, colors ->
+            listOf(
+                createLineDataSet(context, uiState.actualEntries.pulse, R.string.pulse, colors.primary)
+            )
+        }
+    ),
+    BodyWeight(
+        R.string.body_weight,
+        { context, uiState, colors ->
+            listOf(
+                createLineDataSet(context, uiState.actualEntries.bodyWeight, R.string.body_weight, colors.primary),
+                createLineDataSet(context, uiState.targetEntries.bodyWeight, R.string.target_body_weight, colors.primary, true)
+            )
+        }
+    )
+//    BloodPressure(R.string.blood_pressure),
+//    Pulse(R.string.pulse),
+//    BodyWeight(R.string.body_weight)
+}
+
+//fun ChartType.createDataSets(context: Context, uiState: ChartUiState, colors: ColorScheme ): List<LineDataSet> {
+//    val primaryColor = colors.primary
+//    val secondaryColor = colors.secondary
+//
+//    return when (this) {
+//        ChartType.BloodPressure -> listOf(
+//            createLineDataSet(context, uiState.actualEntries.bpUpper, R.string.bpUpper, primaryColor),
+//            createLineDataSet(context, uiState.actualEntries.bpLower, R.string.bpLower, secondaryColor),
+//            createLineDataSet(context, uiState.targetEntries.bpUpper, R.string.bpUpper, primaryColor, true),
+//            createLineDataSet(context, uiState.targetEntries.bpLower, R.string.bpLower, secondaryColor, true),
+//        )
+//        ChartType.Pulse -> listOf(
+//            createLineDataSet(context, uiState.actualEntries.pulse, R.string.pulse, primaryColor)
+//        )
+//        ChartType.BodyWeight -> listOf(
+//            createLineDataSet(context, uiState.actualEntries.bodyWeight, R.string.body_weight, primaryColor),
+//            createLineDataSet(context, uiState.targetEntries.bodyWeight, R.string.target_body_weight, primaryColor, true)
+//        )
+//    }
+//}
+
+
+private fun createLineDataSet(context: Context, entries: List<Entry>, labelRes: Int, color: Color, isTarget: Boolean = false): LineDataSet {
+    val label = context.getString(labelRes) // stringResource(labelRes)
+    val dataSet = LineDataSet(entries, label)
+    return if (isTarget) dataSet.applyTargetStyle(color.toArgb())
+    else dataSet.applyStyle(color.toArgb())
 }
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val chartTypes = ChartType.entries.toTypedArray()
-    val selectedChartType = chartTypes[selectedTabIndex]
-    val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
     val uiState by chartViewModel.uiState.collectAsState()
-
+    val selectedChartType = ChartType.entries[uiState.selectedTabIndex]
+    val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
+    val onClickTab = { index: Int -> chartViewModel.updateSelectedTabIndex(index) }
+    val context = LocalContext.current
+    val chartColors = ChartColorPalette(
+        primary = MaterialTheme.colorScheme.primary,
+        secondary = MaterialTheme.colorScheme.secondary
+    )
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
         bottomBar = { CustomBottomAppBar(appNavigator) })
     { innerPadding ->
@@ -62,40 +132,42 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             Box(modifier = Modifier.padding(4.dp)) {
                 TimeRangeDropdown(uiState.timeRange, onRangeSelected)
             }
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                chartTypes.forEachIndexed { index, type ->
+            TabRow(selectedTabIndex = uiState.selectedTabIndex) {
+                ChartType.entries.forEachIndexed { index, type ->
                     Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
+                        selected = uiState.selectedTabIndex == index,
+                        //onClick = { selectedTabIndex = index },
+                        onClick = { onClickTab(index) },
                         text = { Text(stringResource(type.labelResId)) }
                     )
                 }
             }
             // 選択されたタブに応じて異なるグラフを表示
-            val primaryColor = MaterialTheme.colorScheme.primary
-            val secondaryColor = MaterialTheme.colorScheme.tertiary
+            HealthChart(selectedChartType.datasets(context, uiState, chartColors))
+//            val primaryColor = MaterialTheme.colorScheme.primary
+//            val secondaryColor = MaterialTheme.colorScheme.tertiary
 
-            when (selectedChartType) {
-                ChartType.BloodPressure -> {
-                    HealthChart(listOf(
-                        LineDataSet(uiState.actualEntries.bpUpper, stringResource(R.string.bpUpper)).applyStyle(primaryColor.toArgb()),
-                        LineDataSet(uiState.actualEntries.bpLower, stringResource(R.string.bpLower)).applyStyle(secondaryColor.toArgb()),
-                        LineDataSet(uiState.targetEntries.bpUpper, stringResource(R.string.targetBpUpper)).applyTargetStyle(primaryColor.toArgb()),
-                        LineDataSet(uiState.targetEntries.bpLower, stringResource(R.string.targetBpLower)).applyTargetStyle(secondaryColor.toArgb()),
-                    ))
-                }
-                ChartType.Pulse -> {
-                    HealthChart(
-                        LineDataSet(uiState.actualEntries.pulse, stringResource(R.string.pulse)).applyStyle(primaryColor.toArgb())
-                    )
-                }
-                ChartType.BodyWeight -> {
-                    HealthChart(listOf(
-                        LineDataSet(uiState.actualEntries.bodyWeight, stringResource(R.string.body_weight)).applyStyle(primaryColor.toArgb()),
-                        LineDataSet(uiState.targetEntries.bodyWeight, stringResource(R.string.target_body_weight)).applyTargetStyle(primaryColor.toArgb())
-                    ))
-                }
-            }
+//            when (selectedChartType) {
+//                ChartType.BloodPressure -> {
+//                    HealthChart(listOf(
+//                        LineDataSet(uiState.actualEntries.bpUpper, stringResource(R.string.bpUpper)).applyStyle(primaryColor.toArgb()),
+//                        LineDataSet(uiState.actualEntries.bpLower, stringResource(R.string.bpLower)).applyStyle(secondaryColor.toArgb()),
+//                        LineDataSet(uiState.targetEntries.bpUpper, stringResource(R.string.targetBpUpper)).applyTargetStyle(primaryColor.toArgb()),
+//                        LineDataSet(uiState.targetEntries.bpLower, stringResource(R.string.targetBpLower)).applyTargetStyle(secondaryColor.toArgb()),
+//                    ))
+//                }
+//                ChartType.Pulse -> {
+//                    HealthChart(
+//                        LineDataSet(uiState.actualEntries.pulse, stringResource(R.string.pulse)).applyStyle(primaryColor.toArgb())
+//                    )
+//                }
+//                ChartType.BodyWeight -> {
+//                    HealthChart(listOf(
+//                        LineDataSet(uiState.actualEntries.bodyWeight, stringResource(R.string.body_weight)).applyStyle(primaryColor.toArgb()),
+//                        LineDataSet(uiState.targetEntries.bodyWeight, stringResource(R.string.target_body_weight)).applyTargetStyle(primaryColor.toArgb())
+//                    ))
+//                }
+//            }
         }
     }
 }
@@ -118,13 +190,14 @@ fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount
     val totalDays = ((end - start) / 86400000L).coerceAtLeast(1)
     val daysPerLabel = (totalDays / 10).coerceAtLeast(1)
     val granularityMillis = daysPerLabel * 86400000f
+    val labelRotationAngle = -45f
 
     xAxis.apply {
         position = XAxis.XAxisPosition.BOTTOM
         granularity = granularityMillis
         isGranularityEnabled = true
         setLabelCount(maxLabelCount, false)
-        labelRotationAngle = -45f
+        this.labelRotationAngle = labelRotationAngle
     }
 
     axisLeft.spaceTop = 40f
@@ -154,19 +227,13 @@ private fun LineDataSet.applyTargetStyle(color: Int) = apply {
 fun LineDataSet.applyColor(color: Color): LineDataSet =
     apply { this.color = color.toArgb() }
 
-fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
-    return mapNotNull { dailyItem ->
-        takeValue(dailyItem)?.toFloat()?.let { value ->
-            Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
-        }
-    }
-}
 
-@Composable
-@JvmName("HealthChartSingle")
-fun HealthChart(lineDataSet: LineDataSet){
-    HealthChart(listOf(lineDataSet))
-}
+//
+//@Composable
+//@JvmName("HealthChartSingle")
+//fun HealthChart(lineDataSet: LineDataSet){
+//    HealthChart(listOf(lineDataSet))
+//}
 
 @Composable
 fun HealthChart(lineDataSetList: List<LineDataSet>) {

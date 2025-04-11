@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.ZoneId
 import javax.inject.Inject
 
 data class ChartEntries(
@@ -39,20 +41,19 @@ data class ChartUiState (
     val targetEntries: ChartEntries = ChartEntries(),
     val timeRange: TimeRange = TimeRange.Default,
     val selectedTabIndex: Int = 0,
-
-    )
+)
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, configRepository: ConfigRepository, private val preferencesRepository: PreferencesRepository) : ViewModel() {
     private val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
-    private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
+    //private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
 
     // TimeRange だけを切り出して StateFlow として公開
-    val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
-    val timeRange: StateFlow<TimeRange> = timeRangeFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
+    private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
+//    val timeRange: StateFlow<TimeRange> = timeRangeFlow
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-     val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
+     private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
     }
 
@@ -67,10 +68,9 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
 //    }
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun getTargetEntriesFlow(takeValue: (Config) -> Number): Flow<List<Entry>> {
         return config.map { takeValue(it) }.flatMapLatest { target ->
-            getEntriesFlow( { target.toDouble()})
+            getEntriesFlow { target.toDouble() }
         }
     }
     // 各グラフ用の Entry リスト
@@ -92,20 +92,20 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
 //        targetBpLower = getTargetEntriesFlow { it.targetBpLower }.stateInListEntry(viewModelScope),
 //        targetBodyWeight = getTargetEntriesFlow { it.targetBodyWeight }.stateInListEntry(viewModelScope)
 //    )
-    val chartEntries = combine(
-        getEntriesFlow { it.avgBpUpper },
-        getEntriesFlow { it.avgBpLower },
-        getEntriesFlow { it.avgPulse },
-        getEntriesFlow { it.avgBodyWeight },
-    ){ upper, lower, pulse, bodyWeight -> ChartEntries(upper, lower, pulse, bodyWeight)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartEntries())
-
-    val chartTargetEntries = combine(
-        getTargetEntriesFlow { it.targetBpUpper },
-        getTargetEntriesFlow { it.targetBpLower },
-        getTargetEntriesFlow { it.targetBodyWeight },
-    ){ upper, lower, bodyWeight -> ChartEntries(upper, lower, emptyList(), bodyWeight)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartEntries())
+//    val chartEntries = combine(
+//        getEntriesFlow { it.avgBpUpper },
+//        getEntriesFlow { it.avgBpLower },
+//        getEntriesFlow { it.avgPulse },
+//        getEntriesFlow { it.avgBodyWeight },
+//    ){ upper, lower, pulse, bodyWeight -> ChartEntries(upper, lower, pulse, bodyWeight)
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartEntries())
+//
+//    val chartTargetEntries = combine(
+//        getTargetEntriesFlow { it.targetBpUpper },
+//        getTargetEntriesFlow { it.targetBpLower },
+//        getTargetEntriesFlow { it.targetBodyWeight },
+//    ){ upper, lower, bodyWeight -> ChartEntries(upper, lower, emptyList(), bodyWeight)
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartEntries())
 
 
     private val actualEntriesFlow = combine(
@@ -113,25 +113,30 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
         getEntriesFlow { it.avgBpLower },
         getEntriesFlow { it.avgPulse },
         getEntriesFlow { it.avgBodyWeight },
-    ){ upper, lower, pulse, bodyWeight -> ChartEntries(upper, lower, pulse, bodyWeight)
+    ){ upper, lower, pulse, bodyWeight ->
+        ChartEntries(upper, lower, pulse, bodyWeight)
     }
 
     private val targetEntriesFlow = combine(
         getTargetEntriesFlow { it.targetBpUpper },
         getTargetEntriesFlow { it.targetBpLower },
         getTargetEntriesFlow { it.targetBodyWeight },
-    ){ upper, lower, bodyWeight -> ChartEntries(upper, lower, emptyList(), bodyWeight)
+    ){ upper, lower, bodyWeight ->
+        ChartEntries(upper, lower, emptyList(), bodyWeight)
     }
+    private val selectedTabIndexFlow = MutableStateFlow(0)
 
     val uiState: StateFlow<ChartUiState> = combine(
         actualEntriesFlow,
         targetEntriesFlow,
-        timeRangeFlow
-    ) { actualEntries, targetEntries, timeRange ->
+        timeRangeFlow,
+        selectedTabIndexFlow,
+    ) { actualEntries, targetEntries, timeRange, selectedTabIndex ->
         ChartUiState(
             actualEntries = actualEntries,
             targetEntries = targetEntries,
             timeRange = timeRange,
+            selectedTabIndex = selectedTabIndex
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartUiState())
 //    fun getChartEntriesFlow(type: ChartType): Flow<List<List<Entry>>> {
@@ -168,12 +173,26 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
             }
         }
     }
+    fun updateSelectedTabIndex(index: Int) {
+        //selectedTabIndexFlow.value = index
+        viewModelScope.launch {
+            selectedTabIndexFlow.emit(index)
+        }
 
-    private fun Flow<List<Entry>>.stateInListEntry(
-        scope: CoroutineScope,
-        defaultValue: List<Entry> = emptyList(),
-        sharingStarted: SharingStarted = SharingStarted.WhileSubscribed(5000)
-    ): StateFlow<List<Entry>> {
-        return this.stateIn(scope, sharingStarted, defaultValue)
+    }
+
+//    private fun Flow<List<Entry>>.stateInListEntry(
+//        scope: CoroutineScope,
+//        defaultValue: List<Entry> = emptyList(),
+//        sharingStarted: SharingStarted = SharingStarted.WhileSubscribed(5000)
+//    ): StateFlow<List<Entry>> {
+//        return this.stateIn(scope, sharingStarted, defaultValue)
+//    }
+}
+fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
+    return mapNotNull { dailyItem ->
+        takeValue(dailyItem)?.toFloat()?.let { value ->
+            Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
+        }
     }
 }

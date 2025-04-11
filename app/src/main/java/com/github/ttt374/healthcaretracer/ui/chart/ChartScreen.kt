@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -84,8 +85,9 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), // configViewM
             // 選択されたタブに応じて異なるグラフを表示
             when (selectedChartType ) {
                 ChartType.BloodPressure -> BloodPressureChart(bpUpperEntries, bpLowerEntries, targetBpUpperEntries, targetBpLowerEntries)
-                ChartType.Pulse -> PulseChart(pulseEntries)
-                ChartType.BodyWeight -> BodyWeightChart(bodyWeightEntries, targetBodyWeightEntries)
+                else -> {}
+//                ChartType.Pulse -> PulseChart(pulseEntries)
+//                ChartType.BodyWeight -> BodyWeightChart(bodyWeightEntries, targetBodyWeightEntries)
             }
         }
     }
@@ -100,22 +102,6 @@ private fun LineChart.setupValueFormatter(datePattern: String){
         }
     }
 }
-//private fun LineChart.setupChart(datePattern: String = "yyyy/M/d") {
-//    description.isEnabled = false
-//    xAxis.apply {
-//        position = XAxis.XAxisPosition.BOTTOM
-////        granularity = 86400000f // 1日
-////        isGranularityEnabled = true
-////        labelRotationAngle = -45f // 見やすさ向上
-//    }
-//    axisLeft.apply {
-//        spaceTop = 40f
-//        spaceBottom = 40f
-//        //axisMinimum = 0f
-//    }
-//    axisRight.isEnabled = false
-//    setupValueFormatter(datePattern)
-//}
 fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount: Int = 10) {
     description.isEnabled = false
 
@@ -161,51 +147,76 @@ fun List<DailyItem>.toEntries(takeValue: (DailyItem) -> Double?): List<Entry> {
         }
     }
 }
+
+
+//@Composable
+//fun HealthChart(updateData: LineData) {
+//    if (updateData.entryCount == 0) {
+//        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+//            Text("No data available")
+//        }
+//    } else {
+//        AndroidView(
+//            factory = { context -> LineChart(context) },
+//            modifier = Modifier.fillMaxSize(),
+//            update = { chart ->
+//                chart.data = updateData
+//                chart.invalidate()
+//                chart.setupChartAdaptive()
+//            }
+//        )
+//    }
+//}
+
+
 @Composable
-fun HealthChart(updateData: LineData) {
-    if (updateData.entryCount == 0) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No data available")
+fun HealthChart(lineDataSetList: List<LineDataSet>) {
+    AndroidView(
+        factory = { context -> LineChart(context) },
+        modifier = Modifier.fillMaxSize(),
+        update = { chart ->
+            chart.data = LineData(*lineDataSetList.toTypedArray())
+            chart.invalidate()
+            chart.setupChartAdaptive()
         }
-    } else {
-        AndroidView(
-            factory = { context -> LineChart(context) },
-            modifier = Modifier.fillMaxSize(),
-            update = { chart ->
-                chart.data = updateData
-                chart.invalidate()
-                chart.setupChartAdaptive()
-            }
-        )
+    )
+
+}
+data class EntryData (val entries: List<Entry>, val resLabel: Int, val color: Color, ){
+    @Composable
+    fun lineDataSet(): LineDataSet {
+        return LineDataSet(entries, stringResource(resLabel)).applyStyle(color.toArgb())
     }
 }
 
 @Composable
 fun BloodPressureChart(bpUpperEntries: List<Entry>, bpLowerEntries: List<Entry>, targetBpUpperEntries: List<Entry>, targetBpLowerEntries: List<Entry>){
-    val bpUpperColor = MaterialTheme.colorScheme.primary.toArgb()
-    val bpLowerColor = MaterialTheme.colorScheme.tertiary.toArgb()
+    val bpUpperColor = MaterialTheme.colorScheme.primary
+    val bpLowerColor = MaterialTheme.colorScheme.tertiary
 
-    val lineData = LineData(
-        LineDataSet(bpUpperEntries, stringResource(R.string.bpUpper)).applyStyle(bpUpperColor),
-        LineDataSet(bpLowerEntries, stringResource(R.string.bpLower)).applyStyle(bpLowerColor),
-        LineDataSet(targetBpUpperEntries, stringResource(R.string.targetBpUpper)).applyStyle(bpUpperColor),
-        LineDataSet(targetBpLowerEntries, stringResource(R.string.targetBpUpper)).applyStyle(bpLowerColor),
+    val lineDataSetList = listOf(
+        EntryData(bpUpperEntries, R.string.bpUpper, bpUpperColor).lineDataSet(),
+        EntryData(bpLowerEntries, R.string.bpLower, bpLowerColor).lineDataSet(),
+        //LineDataSet(bpUpperEntries, stringResource(R.string.bpUpper)).applyStyle(bpUpperColor),
+//        LineDataSet(bpLowerEntries, stringResource(R.string.bpLower)).applyStyle(bpLowerColor.toArgb()),
+//        LineDataSet(targetBpUpperEntries, stringResource(R.string.targetBpUpper)).applyStyle(bpUpperColor.toArgb()),
+//        LineDataSet(targetBpLowerEntries, stringResource(R.string.targetBpUpper)).applyStyle(bpLowerColor.toArgb()),
     )
-    HealthChart(lineData)
+    HealthChart(lineDataSetList)
 }
 
-@Composable
-fun PulseChart(pulseEntries: List<Entry>,){
-    val pulseLabel = stringResource(R.string.pulse)
-    HealthChart(LineData(LineDataSet(pulseEntries, pulseLabel).applyStyle(MaterialTheme.colorScheme.primary.toArgb())))
-}
-@Composable
-fun BodyWeightChart(bodyWeightEntries: List<Entry>, targetBodyWeightEntries: List<Entry>){
-    val bodyWeightLabel = stringResource(R.string.body_weight)
-    val targetBodyWeightLabel = stringResource(R.string.target_body_weight)
-
-    val color = MaterialTheme.colorScheme.primary.toArgb()
-    val bodyWeightDataSet = LineDataSet(bodyWeightEntries, bodyWeightLabel).applyStyle(color)
-    val targetBodyWeightDataSet = LineDataSet(targetBodyWeightEntries, targetBodyWeightLabel).applyTargetStyle(color)
-    HealthChart(LineData(bodyWeightDataSet, targetBodyWeightDataSet))
-}
+//@Composable
+//fun PulseChart(pulseEntries: List<Entry>,){
+//    val pulseLabel = stringResource(R.string.pulse)
+//    HealthChart(LineData(LineDataSet(pulseEntries, pulseLabel).applyStyle(MaterialTheme.colorScheme.primary.toArgb())))
+//}
+//@Composable
+//fun BodyWeightChart(bodyWeightEntries: List<Entry>, targetBodyWeightEntries: List<Entry>){
+//    val bodyWeightLabel = stringResource(R.string.body_weight)
+//    val targetBodyWeightLabel = stringResource(R.string.target_body_weight)
+//
+//    val color = MaterialTheme.colorScheme.primary.toArgb()
+//    val bodyWeightDataSet = LineDataSet(bodyWeightEntries, bodyWeightLabel).applyStyle(color)
+//    val targetBodyWeightDataSet = LineDataSet(targetBodyWeightEntries, targetBodyWeightLabel).applyTargetStyle(color)
+//    HealthChart(LineData(bodyWeightDataSet, targetBodyWeightDataSet))
+//}

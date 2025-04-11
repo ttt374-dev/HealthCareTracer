@@ -57,6 +57,7 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
     val targetBpLowerEntries = getTargetEntriesFlow { it.targetBpLower }.stateInListEntry(viewModelScope)
     val targetBodyWeightEntries = getTargetEntriesFlow({ it.targetBodyWeight }).stateInListEntry(viewModelScope)
 
+
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
             runCatching {

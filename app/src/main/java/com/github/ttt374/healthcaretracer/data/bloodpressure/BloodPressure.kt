@@ -12,13 +12,13 @@ data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
     val upper: Int? get() = systolic
     val lower: Int? get() = diastolic
     //val isValid: Boolean get() = upper != null && lower != null
-    fun toDisplayString(showUnit: Boolean = true, guideline: BloodPressureGuideline? = null) : AnnotatedString {
+    fun toDisplayString(showUnit: Boolean = true, guideline: BloodPressureGuideline = BloodPressureGuideline.Default) : AnnotatedString {
         return bloodPressureFormatted(upper, lower, showUnit, guideline)
     }
 }
 fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
                            showUnit: Boolean = true,
-                           guideline: BloodPressureGuideline? = null): AnnotatedString {
+                           guideline: BloodPressureGuideline = BloodPressureGuideline.Default): AnnotatedString {
     return buildAnnotatedString {
         fun appendBp(value: Int?, color: Color) {
             if (value != null) {
@@ -30,9 +30,12 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
             }
         }
 
-        appendBp(bpUpper, bpUpper?.let { guideline?.getCategory(bpUpper, true)?.color } ?: Color.Unspecified)
+        bpUpper?.let {
+            val color = guideline.getCategory(bpUpper, true).color
+        }
+        appendBp(bpUpper, bpUpper?.let { guideline.getCategory(bpUpper, true).color } ?: Color.Unspecified)
         append("/")
-        appendBp(bpLower, bpLower?.let { guideline?.getCategory(bpLower, false)?.color } ?: Color.Unspecified)
+        appendBp(bpLower, bpLower?.let { guideline.getCategory(bpLower, false).color } ?: Color.Unspecified)
 
 //        meGap?.let {
 //            append(" (")
@@ -77,25 +80,3 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
 //    }
 //}
 
-
-// ME Gap
-//fun List<Item>.gapME(zoneId: ZoneId = ZoneId.systemDefault()): Double? {
-//    val (morning, evening) = this
-//        .mapNotNull { it.bpUpper?.let { bp -> it.measuredAt to bp } }
-//        .partition { (instant, _) -> instant.isMorning(zoneId) }
-//
-//    val morningAvg = morning.map { it.second }.averageOrNull()
-//    val eveningAvg = evening.map { it.second }.averageOrNull()
-//
-//    return morningAvg?.let { m -> eveningAvg?.let { m - it } }
-//}
-
-//fun Instant.isMorning(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-//    val hour = this.atZone(zoneId).hour
-//    return hour in 4..11
-//}
-//
-//fun Instant.isEvening(zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-//    val hour = this.atZone(zoneId).hour
-//    return hour in 17..23 || hour in 0..2
-//}

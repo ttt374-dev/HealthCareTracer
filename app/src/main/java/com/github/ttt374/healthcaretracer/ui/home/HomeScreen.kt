@@ -117,7 +117,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     }
 }
 @Composable
-fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null,
+fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
                  morningTimeRange: LocalTimeRange = LocalTimeRange(), eveningTimeRange: LocalTimeRange = LocalTimeRange(),
                  navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
@@ -134,22 +134,22 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline? = null
         ItemRow(item, guideline, morningTimeRange, eveningTimeRange, navigateToEdit, )
     }
 }
-@Composable
-fun CustomText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-    fontWeight: FontWeight = FontWeight.Bold,
-    textAlign: TextAlign? = null
-) {
-    Text(
-        text = text,
-        color = color,
-        fontWeight = fontWeight,
-        modifier = modifier,
-        textAlign = textAlign
-    )
-}
+//@Composable
+//fun CustomText(
+//    text: String,
+//    modifier: Modifier = Modifier,
+//    color: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+//    fontWeight: FontWeight = FontWeight.Bold,
+//    textAlign: TextAlign? = null
+//) {
+//    Text(
+//        text = text,
+//        color = color,
+//        fontWeight = fontWeight,
+//        modifier = modifier,
+//        textAlign = textAlign
+//    )
+//}
 //@Composable
 //fun CustomText(
 //    text: AnnotatedString,
@@ -167,7 +167,7 @@ fun CustomText(
 //    )
 //}
 @Composable
-fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null,
+fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
             morningTimeRange: LocalTimeRange, eveningTimeRange: LocalTimeRange,
             navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())

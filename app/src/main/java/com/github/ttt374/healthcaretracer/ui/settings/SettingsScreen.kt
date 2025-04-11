@@ -139,9 +139,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 //                }, onDismissRequest = { bpGuidelineState.close() })
             }
             if (bpGuidelineState.isOpen){
-                HorizontalSelector(BloodPressureGuideline.bloodPressureGuidelines.map { it.name }, config.bloodPressureGuideline.name,
+                HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
                     onOptionSelected = { selected ->
-                        val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
+                        val guideline = BloodPressureGuideline.entries.find { it.name == selected } ?: BloodPressureGuideline.Default
                         viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
                     } )
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))

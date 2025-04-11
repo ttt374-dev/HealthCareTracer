@@ -41,7 +41,7 @@ class BloodPressureCategoryTest() {
 
     @Test
     fun categoryESCESHTest() {
-        val guideline = BloodPressureGuideline.ESC_ESH
+        val guideline = BloodPressureGuideline.ESCESH
         assertEquals(guideline.getCategory(110, 65), guideline.normal)
         assertEquals(guideline.getCategory(145, 65), guideline.htn1)
         assertEquals(guideline.getCategory(200, 75), guideline.htn3)
@@ -51,7 +51,7 @@ class BloodPressureCategoryTest() {
     }
     @Test
     fun categoryAHACCTest() {
-        val guideline = BloodPressureGuideline.AHA_ACC
+        val guideline = BloodPressureGuideline.AHAACC
         assertEquals(guideline.getCategory(115, 75), guideline.normal)
         assertEquals(guideline.getCategory(125, 75), guideline.elevated)
     }

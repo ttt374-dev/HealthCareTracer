@@ -38,6 +38,7 @@ data class ChartUiState (
     val actualEntries: ChartEntries = ChartEntries(),
     val targetEntries: ChartEntries = ChartEntries(),
     val timeRange: TimeRange = TimeRange.Default,
+    val selectedTabIndex: Int = 0,
 
     )
 @HiltViewModel
@@ -46,7 +47,8 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
     private val pref = preferencesRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Preferences())
 
     // TimeRange だけを切り出して StateFlow として公開
-    val timeRange: StateFlow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRangeChart }
+    val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
+    val timeRange: StateFlow<TimeRange> = timeRangeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default) // デフォルト指定
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -106,7 +108,7 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartEntries())
 
 
-    val actualEntriesFlow = combine(
+    private val actualEntriesFlow = combine(
         getEntriesFlow { it.avgBpUpper },
         getEntriesFlow { it.avgBpLower },
         getEntriesFlow { it.avgPulse },
@@ -114,7 +116,7 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
     ){ upper, lower, pulse, bodyWeight -> ChartEntries(upper, lower, pulse, bodyWeight)
     }
 
-    val targetEntriesFlow = combine(
+    private val targetEntriesFlow = combine(
         getTargetEntriesFlow { it.targetBpUpper },
         getTargetEntriesFlow { it.targetBpLower },
         getTargetEntriesFlow { it.targetBodyWeight },
@@ -124,10 +126,12 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
     val uiState: StateFlow<ChartUiState> = combine(
         actualEntriesFlow,
         targetEntriesFlow,
-    ) { actualEntries, targetEntries, ->
+        timeRangeFlow
+    ) { actualEntries, targetEntries, timeRange ->
         ChartUiState(
             actualEntries = actualEntries,
             targetEntries = targetEntries,
+            timeRange = timeRange,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartUiState())
 //    fun getChartEntriesFlow(type: ChartType): Flow<List<List<Entry>>> {
@@ -152,7 +156,7 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
 //        }
 //    }
 
-    fun setSelectedRange(range: TimeRange) {
+    fun updateTimeRange(range: TimeRange) {
         viewModelScope.launch {
             runCatching {
                 preferencesRepository.updateData {

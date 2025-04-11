@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,27 +49,18 @@ enum class ChartType(val labelResId: Int) {
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
-    val timeRange by chartViewModel.timeRange.collectAsState()
-
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
     val chartTypes = ChartType.entries.toTypedArray()
     val selectedChartType = chartTypes[selectedTabIndex]
-
-//    val chartEntries by chartViewModel.chartEntries.collectAsState()
-//    val targetEntries by chartViewModel.chartTargetEntries.collectAsState()
-    //val onRangeSelected = () -0>remember { it -> chartViewModel::setSelectedRange(it) }
-    val onRangeSelected = { range: TimeRange -> chartViewModel.setSelectedRange(range)}
-
+    val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
     val uiState by chartViewModel.uiState.collectAsState()
 
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
-        bottomBar = {
-            CustomBottomAppBar(appNavigator)
-        }) { innerPadding ->
+        bottomBar = { CustomBottomAppBar(appNavigator) })
+    { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Box(modifier = Modifier.padding(4.dp)) {
-                //TimeRangeDropdown(timeRange) { chartViewModel.setSelectedRange(it) }
-                TimeRangeDropdown(timeRange, onRangeSelected)
+                TimeRangeDropdown(uiState.timeRange, onRangeSelected)
             }
             TabRow(selectedTabIndex = selectedTabIndex) {
                 chartTypes.forEachIndexed { index, type ->
@@ -83,27 +75,24 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             val primaryColor = MaterialTheme.colorScheme.primary
             val secondaryColor = MaterialTheme.colorScheme.tertiary
 
-            when (selectedChartType ) {
+            when (selectedChartType) {
                 ChartType.BloodPressure -> {
                     HealthChart(listOf(
-                        LineDataSet(uiState.actualEntries.bpUpper, "").labelFrom(R.string.bpUpper).applyStyle(primaryColor.toArgb()),
-                        LineDataSet(uiState.actualEntries.bpLower, "").labelFrom(R.string.bpLower).applyStyle(secondaryColor.toArgb()),
-                        LineDataSet(uiState.targetEntries.bpUpper, "").labelFrom(R.string.targetBpUpper).applyTargetStyle(primaryColor.toArgb()),
-                        LineDataSet(uiState.targetEntries.bpLower, "").labelFrom(R.string.targetBpLower).applyTargetStyle(secondaryColor.toArgb()),
+                        LineDataSet(uiState.actualEntries.bpUpper, stringResource(R.string.bpUpper)).applyStyle(primaryColor.toArgb()),
+                        LineDataSet(uiState.actualEntries.bpLower, stringResource(R.string.bpLower)).applyStyle(secondaryColor.toArgb()),
+                        LineDataSet(uiState.targetEntries.bpUpper, stringResource(R.string.targetBpUpper)).applyTargetStyle(primaryColor.toArgb()),
+                        LineDataSet(uiState.targetEntries.bpLower, stringResource(R.string.targetBpLower)).applyTargetStyle(secondaryColor.toArgb()),
                     ))
                 }
                 ChartType.Pulse -> {
                     HealthChart(
-                        LineDataSet(uiState.actualEntries.pulse, "").labelFrom(R.string.pulse).applyStyle(primaryColor.toArgb())
-                        //LineDataSet(chartEntries.pulse, "").labelFrom(R.string.pulse).applyStyle(primaryColor.toArgb())
+                        LineDataSet(uiState.actualEntries.pulse, stringResource(R.string.pulse)).applyStyle(primaryColor.toArgb())
                     )
                 }
                 ChartType.BodyWeight -> {
                     HealthChart(listOf(
-                        LineDataSet(uiState.actualEntries.bodyWeight, "").labelFrom(R.string.body_weight).applyStyle(primaryColor.toArgb()),
-                        LineDataSet(uiState.targetEntries.bodyWeight, "").labelFrom(R.string.target_body_weight).applyStyle(primaryColor.toArgb())
-//                        createLineDataSet(chartEntries.bodyWeight, R.string.body_weight, MaterialTheme.colorScheme.primary),
-//                        createTargetLineDataSet(targetEntries.bodyWeight, R.string.target_body_weight, MaterialTheme.colorScheme.primary),
+                        LineDataSet(uiState.actualEntries.bodyWeight, stringResource(R.string.body_weight)).applyStyle(primaryColor.toArgb()),
+                        LineDataSet(uiState.targetEntries.bodyWeight, stringResource(R.string.target_body_weight)).applyTargetStyle(primaryColor.toArgb())
                     ))
                 }
             }
@@ -158,9 +147,9 @@ private fun LineDataSet.applyTargetStyle(color: Int) = apply {
     setDrawValues(false)
     setDrawCircles(false)
 }
-@Composable
-fun LineDataSet.labelFrom(@StringRes labelId: Int): LineDataSet =
-    apply { label = stringResource(labelId) } // Composable で実行
+//@Composable
+//fun LineDataSet.labelFrom(@StringRes labelId: Int): LineDataSet =
+//    apply { label = stringResource(labelId) } // Composable で実行
 
 fun LineDataSet.applyColor(color: Color): LineDataSet =
     apply { this.color = color.toArgb() }

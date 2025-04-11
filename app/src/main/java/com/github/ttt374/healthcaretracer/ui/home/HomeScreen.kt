@@ -150,22 +150,22 @@ fun CustomText(
         textAlign = textAlign
     )
 }
-@Composable
-fun CustomText(
-    text: AnnotatedString,
-    modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-    fontWeight: FontWeight = FontWeight.Bold,
-    textAlign: TextAlign? = null
-) {
-    CustomText(
-        text = text.toString(),
-        color = color,
-        fontWeight = fontWeight,
-        modifier = modifier,
-        textAlign = textAlign
-    )
-}
+//@Composable
+//fun CustomText(
+//    text: AnnotatedString,
+//    modifier: Modifier = Modifier,
+//    color: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+//    fontWeight: FontWeight = FontWeight.Bold,
+//    textAlign: TextAlign? = null
+//) {
+//    CustomText(
+//        text = text.toString(),
+//        color = color,
+//        fontWeight = fontWeight,
+//        modifier = modifier,
+//        textAlign = textAlign
+//    )
+//}
 @Composable
 fun ItemRow(item: Item, guideline: BloodPressureGuideline? = null,
             morningTimeRange: LocalTimeRange, eveningTimeRange: LocalTimeRange,

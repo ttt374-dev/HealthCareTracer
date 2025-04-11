@@ -153,7 +153,7 @@ object ColorSerializer : KSerializer<Color> {
 
     override fun serialize(encoder: Encoder, value: Color) {
         // ARGB を hex 表現 "#AARRGGBB" で保存
-        val argb = value.value.toULong().toString(16).padStart(8, '0')
+        val argb = value.value.toString(16).padStart(8, '0')
         encoder.encodeString("#${argb.uppercase()}")
     }
 

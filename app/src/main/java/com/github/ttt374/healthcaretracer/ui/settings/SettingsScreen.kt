@@ -215,7 +215,7 @@ fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, c
         text = {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(bpUpperString, {
-                    bpUpperString = it;
+                    bpUpperString = it
                     if ((it.toIntOrNull() ?: 0) > MIN_BP) bpLowerFocusRequester.requestFocus()},
                         //focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }},
                     Modifier.weight(1f).focusRequester(bpUpperFocusRequester), keyboardOptions = numberKeyboardOptions)

@@ -173,29 +173,20 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     val bp = BloodPressure(item.bpUpper, item.bpLower)
 
-    Column (modifier= Modifier
-        .padding(horizontal = 8.dp, vertical = 4.dp)
-        .fillMaxWidth()
-        .clickable { navigateToEdit(item.id) }) {
+    Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
-            //val meMark =
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
 
             item.measuredAt.toLocalTime().let {
                 when {
                     morningTimeRange.contains(it) -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
                     eveningTimeRange.contains(it) -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
-//                    isMorning() -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
-//                    isEvening() -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
                     else -> Text("")
                 }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
-            //Text(BloodPressure(item.bpUpper ?: 0, item.bpLower ?: 0).toAnnotatedString())
-            //Text(bloodPressureFormatted(item.bpUpper, item.bpLower), fontWeight = FontWeight.Bold)
             Text(bp.toDisplayString(guideline = guideline))
-            //Text(Pair(item.bpUpper, item.bpLower).toBloodPressureString())
             Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.bodyWeight.toBodyWeightString())
@@ -207,7 +198,7 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
             } else {
                 //val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)
                 //with (bp.htnCategory()){
-                guideline?.getCategory(bp.upper, bp.lower)?.let {
+                guideline.getCategory(bp.upper, bp.lower).let {
                     Text(stringResource(it.nameLabel), color=it.color)
                     //Text(it.name, color=it.color)
                 }

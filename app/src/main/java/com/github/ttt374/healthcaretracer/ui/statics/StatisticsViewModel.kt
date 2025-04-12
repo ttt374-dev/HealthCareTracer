@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.statics
 
 
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.datastore.Config
@@ -18,10 +19,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
@@ -36,18 +39,51 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
     @OptIn(ExperimentalCoroutinesApi::class)
     val recentItemsFlow = timeRange.flatMapLatest { range -> itemRepository.getRecentItemsFlow(range.days)}
 
-    val bpUpperStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 }) }
-            .stateInStat(viewModelScope)
-    val bpLowerStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 }) }
-            .stateInStat(viewModelScope)
-    val pulseStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 }) }
-            .stateInStat(viewModelScope)
-    val bodyWeightStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() }) }
-            .stateInStat(viewModelScope)
-    val meGapList: StateFlow<List<Double>> = recentItemsFlow.map { items ->
-        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+//    val bpUpperStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 }) }
+//            .stateInStat(viewModelScope)
+//    val bpLowerStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 }) }
+//            .stateInStat(viewModelScope)
+//    val pulseStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 }) }
+//            .stateInStat(viewModelScope)
+//    val bodyWeightStatistics = recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() }) }
+//            .stateInStat(viewModelScope)
+//    val meGapList: StateFlow<List<Double>> = recentItemsFlow.map { items ->
+//        items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+//            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(), config.value.morningRange, config.value.eveningRange) ?: 0.0 }
+//    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+//
+//    private val statisticsFlow = combine(
+//        recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpUpper?.toDouble() ?: 0.0 }) },
+//        recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bpLower?.toDouble() ?: 0.0 }) },
+//        recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.pulse?.toDouble() ?: 0.0 }) },
+//        recentItemsFlow.map { items -> getStatTimeOfDay(items, { it.bodyWeight?.toDouble() ?: 0.0 }) },
+//        recentItemsFlow.map { items ->
+//            items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+//                .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(), config.value.morningRange, config.value.eveningRange) ?: 0.0 }
+//        },
+//
+//    ){ bpUpper, bpLower, pulse, bodyWeight, meGap ->
+//        StatisticsData(bpUpper, bpLower, pulse, bodyWeight, meGap)
+//    }
+private val statisticsDataFlow: StateFlow<StatisticsData> = recentItemsFlow.map { items ->
+        val bpUpper = getStatTimeOfDay(items) { it.bpUpper?.toDouble() ?: 0.0 }
+        val bpLower = getStatTimeOfDay(items) { it.bpLower?.toDouble() ?: 0.0 }
+        val pulse = getStatTimeOfDay(items) { it.pulse?.toDouble() ?: 0.0 }
+        val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight?.toDouble() ?: 0.0 }
+        val meGap = items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(), config.value.morningRange, config.value.eveningRange) ?: 0.0 }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+        StatisticsData(
+            bpUpper = bpUpper,
+            bpLower = bpLower,
+            pulse = pulse,
+            bodyWeight = bodyWeight,
+            meGap = meGap
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
+
+    val statistics = statisticsDataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
 
     private fun getStatValue(list: List<Double?>): StatValue {
         return StatValue(
@@ -68,13 +104,6 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
             evening = getStatValue(eveningList)
         )
     }
-    private fun Flow<StatTimeOfDay>.stateInStat(
-        scope: CoroutineScope,
-        defaultValue: StatTimeOfDay = StatTimeOfDay(),
-        sharingStarted: SharingStarted = SharingStarted.WhileSubscribed(5000)
-    ): StateFlow<StatTimeOfDay> {
-        return this.stateIn(scope, sharingStarted, defaultValue)
-    }
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
@@ -84,6 +113,43 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
             }
         }
     }
+    // `morning` と `evening` の差を計算する関数
+    fun calculateMeGap(
+        items: List<Item>,
+        morningRange: ClosedRange<LocalTime>,
+        eveningRange: ClosedRange<LocalTime>,
+        takeValue: (Item) -> Double?
+    ): Double {
+        // morning と evening のアイテムをフィルタリング
+        val morningList = items.filter {
+            it.measuredAt.toLocalTime().let { time -> morningRange.contains(time) }
+        }.map { takeValue(it) }
+
+        val eveningList = items.filter {
+            it.measuredAt.toLocalTime().let { time -> eveningRange.contains(time) }
+        }.map { takeValue(it) }
+
+        // morning と evening の平均値を計算
+        val morningValue = morningList.averageOrNull() ?: 0.0
+        val eveningValue = eveningList.averageOrNull() ?: 0.0
+
+        // 差（meGap）を計算
+        return morningValue - eveningValue
+    }
+
+// 使用例
+//
+//    val meGap = items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+//        .map { (date, dailyItems) ->
+//            // `calculateMeGap` 関数を使って差を計算
+//            calculateMeGap(dailyItems, config.value.morningRange, config.value.eveningRange)
+//        }
+//
+//    // `takeValue` はアイテムから必要な値を取り出すヘルパーメソッド
+//    fun takeValue(item: Item): Double? {
+//        return item.bpUpper?.toDouble() // 例えば `bpUpper` を取り出す
+//    }
+
 }
 
 data class StatTimeOfDay (
@@ -99,4 +165,12 @@ data class StatValue(
     val max: Double? = null,
     val min: Double? = null
 
+)
+
+data class StatisticsData(
+    val bpUpper: StatTimeOfDay = StatTimeOfDay(),
+    val bpLower: StatTimeOfDay = StatTimeOfDay(),
+    val pulse: StatTimeOfDay = StatTimeOfDay(),
+    val bodyWeight: StatTimeOfDay = StatTimeOfDay(),
+    val meGap: List<Double> = emptyList(),
 )

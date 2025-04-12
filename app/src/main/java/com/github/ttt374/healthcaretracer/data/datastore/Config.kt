@@ -18,7 +18,7 @@ data class Config (
     val targetBpLower: Int = 80,
     val targetBodyWeight: Double = 60.0,
 
-    val localeTag: String = "en_US"
+    //val localeTag: String = "en_US"
 )
 
 @Serializable
@@ -36,6 +36,10 @@ data class LocalTimeRange(
         }
     }
     override fun toString(): String = "$start..$endInclusive"
+    fun toClosedRange(): ClosedRange<LocalTime> = object : ClosedRange<LocalTime> {
+        override val start = this@LocalTimeRange.start
+        override val endInclusive = this@LocalTimeRange.endInclusive
+    }
 }
 
 @Serializable

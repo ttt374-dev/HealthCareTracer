@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.sp
 data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
     val upper: Int? get() = systolic
     val lower: Int? get() = diastolic
-    //val isValid: Boolean get() = upper != null && lower != null
     fun toDisplayString(showUnit: Boolean = true, guideline: BloodPressureGuideline = BloodPressureGuideline.Default) : AnnotatedString {
         return bloodPressureFormatted(upper, lower, showUnit, guideline)
     }
@@ -37,13 +36,6 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
         append("/")
         appendBp(bpLower, bpLower?.let { guideline.getCategory(bpLower, false).color } ?: Color.Unspecified)
 
-//        meGap?.let {
-//            append(" (")
-//            pushStyle(SpanStyle(color = if (it > 20) Color.Red else Color.Unspecified))
-//            append(it.toString())
-//            pop()
-//            append(")")
-//        }
         if (showUnit){
             pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
             append("mmHg")
@@ -51,6 +43,8 @@ fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
         }
     }
 }
+fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure = BloodPressure(first?.toInt(), second?.toInt())
+
 //
 //sealed class BloodPressureCategory(
 //    val name: String,

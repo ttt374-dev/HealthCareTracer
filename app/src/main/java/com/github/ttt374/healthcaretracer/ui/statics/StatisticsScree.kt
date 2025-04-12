@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.bloodPressureFormatted
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -31,14 +32,9 @@ import com.github.ttt374.healthcaretracer.ui.home.toDisplayString
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val selectedRange by viewModel.timeRange.collectAsState()
-
-    val bpUpperStat by viewModel.bpUpperStatistics.collectAsState()
-    val bpLowerStat by viewModel.bpLowerStatistics.collectAsState()
-    val pulseStat by viewModel.pulseStatistics.collectAsState()
-    val bodyWeightStat by viewModel.bodyWeightStatistics.collectAsState()
-    val meGapList by viewModel.meGapList.collectAsState()
     val conf by viewModel.config.collectAsState()
     val guideline = conf.bloodPressureGuideline
+    val statistics by viewModel.statistics.collectAsState()
 
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
@@ -54,20 +50,19 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
                 Text(stringResource(R.string.blood_pressure), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsBpTable(bpUpperStat, bpLowerStat, guideline)
-                Text("${stringResource(R.string.me_gap)}: ${meGapList.maxOrNull()}")
+                StatisticsBpTable(statistics.bpUpper, statistics.bpLower, guideline)
+                Text("${stringResource(R.string.me_gap)}: ${statistics.meGap.maxOrNull()}")
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
                 Text(stringResource(R.string.pulse), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsTable(pulseStat, takeValue = { v: Double? -> v.toDisplayString("%.0f")})
+                StatisticsTable(statistics.pulse, takeValue = { v: Double? -> v.toDisplayString("%.0f")})
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray)
                 Text(stringResource(R.string.body_weight), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsTable(bodyWeightStat, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
+                StatisticsTable(statistics.bodyWeight, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
             }
-
         }
     }
 }
@@ -85,9 +80,12 @@ fun StatisticsBpTable(bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay, gu
 fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue: StatValue , guideline: BloodPressureGuideline){
     Row {
         Text(label, Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false, guideline), Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false, guideline), Modifier.weight(1f))
-        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false, guideline), Modifier.weight(1f))
+        Text(BloodPressure(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
+        Text(BloodPressure(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
+        Text(BloodPressure(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
+//        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false, guideline), Modifier.weight(1f))
+//        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false, guideline), Modifier.weight(1f))
+//        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false, guideline), Modifier.weight(1f))
     }
 }
 

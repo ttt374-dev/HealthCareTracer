@@ -7,40 +7,33 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
 
+data class BloodPressure(val upper: Int?, val lower: Int?) {
+    val systolic = upper
+    val diastolic = lower
 
-data class BloodPressure(val systolic: Int?, val diastolic: Int?) {
-    val upper: Int? get() = systolic
-    val lower: Int? get() = diastolic
-    fun toDisplayString(showUnit: Boolean = true, guideline: BloodPressureGuideline = BloodPressureGuideline.Default) : AnnotatedString {
-        return bloodPressureFormatted(upper, lower, showUnit, guideline)
-    }
-}
-fun bloodPressureFormatted(bpUpper: Int?, bpLower: Int?,
-                           showUnit: Boolean = true,
-                           guideline: BloodPressureGuideline = BloodPressureGuideline.Default): AnnotatedString {
-    return buildAnnotatedString {
-        fun appendBp(value: Int?, color: Color) {
-            if (value != null) {
-                pushStyle(SpanStyle(color = color))
-                append(value.toString())
-                pop()
-            } else {
-                append("-")
+    fun toDisplayString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
+        return buildAnnotatedString {
+            fun appendBp(value: Int?, color: Color) {
+                if (value != null) {
+                    pushStyle(SpanStyle(color = color))
+                    append(value.toString())
+                    pop()
+                } else {
+                    append("-")
+                }
+            }
+            
+            appendBp(upper, upper?.let { guideline.getCategory(upper, true).color } ?: Color.Unspecified)
+            append("/")
+            appendBp(lower, lower?.let { guideline.getCategory(lower, false).color } ?: Color.Unspecified)
+
+            if (showUnit){
+                pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
+                append("mmHg")
+                pop() // 明示的に `pop()` を追加
             }
         }
-
-        bpUpper?.let {
-            val color = guideline.getCategory(bpUpper, true).color
-        }
-        appendBp(bpUpper, bpUpper?.let { guideline.getCategory(bpUpper, true).color } ?: Color.Unspecified)
-        append("/")
-        appendBp(bpLower, bpLower?.let { guideline.getCategory(bpLower, false).color } ?: Color.Unspecified)
-
-        if (showUnit){
-            pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
-            append("mmHg")
-            pop() // 明示的に `pop()` を追加
-        }
+        //return bloodPressureFormatted(upper, lower, showUnit, guideline)
     }
 }
 fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure = BloodPressure(first?.toInt(), second?.toInt())

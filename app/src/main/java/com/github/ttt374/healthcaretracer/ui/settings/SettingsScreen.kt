@@ -48,6 +48,7 @@ import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -93,31 +94,35 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             closeDialog = { targetBodyWeightState.close() },
             keyboardOptions = decimalKeyboardOptions)
 
-    val morningRangeStartState = rememberDialogState()
-    if (morningRangeStartState.isOpen){
-        LocalTimeRangeDialog(config.morningRange, true,
-            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = it))},
-            onDismiss = { morningRangeStartState.close()})
+    val morningStartState = rememberDialogState()
+    if (morningStartState.isOpen){
+        LocalTimeDialog(config.timeOfDayConfig.morning,
+            onTimeSelected = {
+                val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
+                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+            },
+            onDismiss = { morningStartState.close()})
     }
-    val morningRangeEndState = rememberDialogState()
-    if (morningRangeEndState.isOpen){
-        LocalTimeRangeDialog(config.morningRange, false,
-            onTimeSelected = { viewModel.saveConfig(config.copy(morningRange = it))},
-            onDismiss = { morningRangeEndState.close()})
+    val afternoonStartState = rememberDialogState()
+    if (afternoonStartState.isOpen){
+        LocalTimeDialog(config.timeOfDayConfig.afternoon,
+            onTimeSelected = {
+                val timeOfDayConfig = config.timeOfDayConfig.copy(afternoon = it)
+                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+            },
+            onDismiss = { afternoonStartState.close()})
     }
-    val eveningRangeStartState = rememberDialogState()
-    if (eveningRangeStartState.isOpen){
-        LocalTimeRangeDialog(config.eveningRange, true,
-            onTimeSelected = { viewModel.saveConfig(config.copy(eveningRange = it))},
-            onDismiss = { eveningRangeStartState.close()})
+    val eveningStartState = rememberDialogState()
+    if (eveningStartState.isOpen){
+        LocalTimeDialog(config.timeOfDayConfig.evening,
+            onTimeSelected = {
+                val timeOfDayConfig = config.timeOfDayConfig.copy(evening = it)
+                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+            },
+            onDismiss = { eveningStartState.close()})
     }
-    val eveningRangeEndState = rememberDialogState()
-    if (eveningRangeEndState.isOpen){
-        LocalTimeRangeDialog(config.eveningRange, false,
-            onTimeSelected = { viewModel.saveConfig(config.copy(eveningRange = it))},
-            onDismiss = { eveningRangeEndState.close()})
-    }
-    val localeSelectorState = rememberDialogState()
+
+    //val localeSelectorState = rememberDialogState()
 
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
     ///
@@ -156,17 +161,26 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             SettingsRow("${stringResource(R.string.target_body_weight)} (Kg)"){
                 Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
             }
-            SettingsRow(stringResource(R.string.morning_range)){
-                Text(config.morningRange.start.format(localTimeFormat), Modifier.clickable { morningRangeStartState.open()})
-                Text(" - ")
-                Text(config.morningRange.endInclusive.format(localTimeFormat), Modifier.clickable { morningRangeEndState.open() })
+            SettingsRow(stringResource(R.string.morning)){
+                Text(config.timeOfDayConfig.morning.format(localTimeFormat), Modifier.clickable { morningStartState.open() })
             }
-
-            SettingsRow(stringResource(R.string.evening_range)){
-                Text(config.eveningRange.start.format(localTimeFormat), Modifier.clickable { eveningRangeStartState.open() })
-                Text(" - ")
-                Text(config.eveningRange.endInclusive.format(localTimeFormat), Modifier.clickable { eveningRangeEndState.open() })
+            SettingsRow(stringResource(R.string.afternoon)){
+                Text(config.timeOfDayConfig.afternoon.format(localTimeFormat), Modifier.clickable { afternoonStartState.open() })
             }
+            SettingsRow(stringResource(R.string.evening)){
+                Text(config.timeOfDayConfig.evening.format(localTimeFormat), Modifier.clickable { eveningStartState.open() })
+            }
+//            SettingsRow(stringResource(R.string.morning_range)){
+//                Text(config.morningRange.start.format(localTimeFormat), Modifier.clickable { morningRangeStartState.open()})
+//                Text(" - ")
+//                Text(config.morningRange.endInclusive.format(localTimeFormat), Modifier.clickable { morningRangeEndState.open() })
+//            }
+//
+//            SettingsRow(stringResource(R.string.evening_range)){
+//                Text(config.eveningRange.start.format(localTimeFormat), Modifier.clickable { eveningRangeStartState.open() })
+//                Text(" - ")
+//                Text(config.eveningRange.endInclusive.format(localTimeFormat), Modifier.clickable { eveningRangeEndState.open() })
+//            }
 //            SettingsRow(stringResource(R.string.language)) {
 //                val locale = Locale.forLanguageTag(config.localeTag)
 //
@@ -283,7 +297,14 @@ fun HorizontalSelector(
         }
     }
 }
+@Composable
+fun LocalTimeDialog(localTime: LocalTime, onTimeSelected: (LocalTime) -> Unit, onDismiss: () -> Unit){
+    val zone = ZoneId.systemDefault()
 
+    TimePickerDialog(localTime.atDate(LocalDate.now()).atZone(zone).toInstant(),
+        onTimeSelected = { onTimeSelected(it.atZone(zone).toLocalTime())},
+        onDismiss = onDismiss)
+}
 @Composable
 fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected: (LocalTimeRange) -> Unit, onDismiss: () -> Unit){
     val zone = ZoneId.systemDefault()
@@ -297,6 +318,8 @@ fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected
             onDismiss = onDismiss)
     }
 }
+
+
 //@Composable
 //fun LanguageDropMenu(expanded: Boolean, currentLanguageTag: String, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){
 //    val languages = listOf("en", "ja", "fr")

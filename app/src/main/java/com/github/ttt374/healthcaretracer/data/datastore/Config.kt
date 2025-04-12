@@ -1,11 +1,15 @@
 package com.github.ttt374.healthcaretracer.data.datastore
 
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import kotlinx.serialization.Serializable
-import java.time.LocalTime
+import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Serializable  // (with = ConfigSerializer::class)
@@ -13,6 +17,7 @@ data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
     val morningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(4, 0), LocalTime.of(11,59)),
     val eveningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(17, 0), LocalTime.of(2, 59)),
+    val timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
 
     val targetBpUpper: Int = 120,
     val targetBpLower: Int = 80,

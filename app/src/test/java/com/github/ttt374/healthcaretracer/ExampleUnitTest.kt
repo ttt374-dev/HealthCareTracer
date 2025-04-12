@@ -1,7 +1,11 @@
 package com.github.ttt374.healthcaretracer
 
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
+import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
+import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -37,15 +41,13 @@ class SerializeTest(){
     }
 }
 class BloodPressureCategoryTest() {
-
-
     @Test
     fun categoryESCESHTest() {
         val guideline = BloodPressureGuideline.ESCESH
         assertEquals(guideline.getCategory(110, 65), guideline.normal)
         assertEquals(guideline.getCategory(145, 65), guideline.htn1)
         assertEquals(guideline.getCategory(200, 75), guideline.htn3)
-        assertEquals(guideline.getCategory(null, null), guideline.invalidCategory)
+        assertEquals(guideline.getCategory(null, null), BloodPressureCategory.Invalid)
         assertEquals(guideline.getCategory(165, true), guideline.htn2)
         assertEquals(guideline.getCategory(87, false), guideline.elevated)
     }
@@ -54,6 +56,28 @@ class BloodPressureCategoryTest() {
         val guideline = BloodPressureGuideline.AHAACC
         assertEquals(guideline.getCategory(115, 75), guideline.normal)
         assertEquals(guideline.getCategory(125, 75), guideline.elevated)
+    }
+}
+class TimeOfDayTest {
+    @Test
+    fun timeOfDayTest(){
+        val config = TimeOfDayConfig(LocalTime.of(6, 0), LocalTime.of(13, 0), LocalTime.of(18, 0))
+        val zoneId = ZoneId.of("UTC")
+        Instant.parse("2024-01-01T07:00:00Z").let {
+            assertTrue(it.toTimeOfDay(zoneId, config) is TimeOfDay.Morning)
+            assertFalse(it.toTimeOfDay(zoneId, config) is TimeOfDay.Afternoon)
+            assertFalse(it.toTimeOfDay(zoneId, config) is TimeOfDay.Evening)
+        }
+        Instant.parse("2024-01-01T15:00:00Z").let {
+            assertFalse(it.toTimeOfDay(zoneId, config) is TimeOfDay.Morning)
+            assertTrue(it.toTimeOfDay(zoneId, config) is TimeOfDay.Afternoon)
+            assertFalse(it.toTimeOfDay(zoneId, config) is TimeOfDay.Evening)
+        }
+        Instant.parse("2024-01-01T23:00:00Z").let {
+            assertFalse(it.toTimeOfDay(zoneId, config) is TimeOfDay.Morning)
+            assertFalse(it.toTimeOfDay(zoneId, config) is TimeOfDay.Afternoon)
+            assertTrue(it.toTimeOfDay(zoneId, config) is TimeOfDay.Evening)
+        }
     }
 }
 class MorningEveningTest {

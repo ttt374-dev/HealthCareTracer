@@ -1,7 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.statics
 
 
-import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.datastore.Config
@@ -11,20 +10,17 @@ import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.data.item.averageOrNull
+import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
-import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
+import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
@@ -95,12 +91,16 @@ private val statisticsDataFlow: StateFlow<StatisticsData> = recentItemsFlow.map 
 
     private fun getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> Double?): StatTimeOfDay {
         val allList = items.map { takeValue(it) }
-        val morningList = items.filter { config.value.morningRange.contains(it.measuredAt.toLocalTime()) }.map { takeValue(it) }
-        val eveningList = items.filter { config.value.eveningRange.contains(it.measuredAt.toLocalTime()) }.map { takeValue(it) }
+        val morningList = items.filter { it.measuredAt.toTimeOfDay(config = config.value.timeOfDayConfig) is TimeOfDay.Morning }.map { takeValue(it) }
+        val afternoonList = items.filter { it.measuredAt.toTimeOfDay(config = config.value.timeOfDayConfig) is TimeOfDay.Afternoon }.map { takeValue(it) }
+        val eveningList = items.filter { it.measuredAt.toTimeOfDay(config = config.value.timeOfDayConfig) is TimeOfDay.Evening }.map { takeValue(it) }
+//        val morningList = items.filter { config.value.morningRange.contains(it.measuredAt.toLocalTime()) }.map { takeValue(it) }
+//        val eveningList = items.filter { config.value.eveningRange.contains(it.measuredAt.toLocalTime()) }.map { takeValue(it) }
 
         return StatTimeOfDay(
             all = getStatValue(allList),
             morning = getStatValue(morningList),
+            afternoon = getStatValue(afternoonList),
             evening = getStatValue(eveningList)
         )
     }
@@ -114,28 +114,28 @@ private val statisticsDataFlow: StateFlow<StatisticsData> = recentItemsFlow.map 
         }
     }
     // `morning` と `evening` の差を計算する関数
-    fun calculateMeGap(
-        items: List<Item>,
-        morningRange: ClosedRange<LocalTime>,
-        eveningRange: ClosedRange<LocalTime>,
-        takeValue: (Item) -> Double?
-    ): Double {
-        // morning と evening のアイテムをフィルタリング
-        val morningList = items.filter {
-            it.measuredAt.toLocalTime().let { time -> morningRange.contains(time) }
-        }.map { takeValue(it) }
-
-        val eveningList = items.filter {
-            it.measuredAt.toLocalTime().let { time -> eveningRange.contains(time) }
-        }.map { takeValue(it) }
-
-        // morning と evening の平均値を計算
-        val morningValue = morningList.averageOrNull() ?: 0.0
-        val eveningValue = eveningList.averageOrNull() ?: 0.0
-
-        // 差（meGap）を計算
-        return morningValue - eveningValue
-    }
+//    fun calculateMeGap(
+//        items: List<Item>,
+//        morningRange: ClosedRange<LocalTime>,
+//        eveningRange: ClosedRange<LocalTime>,
+//        takeValue: (Item) -> Double?
+//    ): Double {
+//        // morning と evening のアイテムをフィルタリング
+//        val morningList = items.filter {
+//            it.measuredAt.toLocalTime().let { time -> morningRange.contains(time) }
+//        }.map { takeValue(it) }
+//
+//        val eveningList = items.filter {
+//            it.measuredAt.toLocalTime().let { time -> eveningRange.contains(time) }
+//        }.map { takeValue(it) }
+//
+//        // morning と evening の平均値を計算
+//        val morningValue = morningList.averageOrNull() ?: 0.0
+//        val eveningValue = eveningList.averageOrNull() ?: 0.0
+//
+//        // 差（meGap）を計算
+//        return morningValue - eveningValue
+//    }
 
 // 使用例
 //
@@ -157,7 +157,7 @@ data class StatTimeOfDay (
     val morning: StatValue = StatValue(),
     val afternoon: StatValue = StatValue(),
     val evening: StatValue = StatValue(),
-    val night: StatValue = StatValue(),
+    //val night: StatValue = StatValue(),
 
 )
 data class StatValue(

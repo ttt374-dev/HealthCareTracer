@@ -42,5 +42,6 @@
     <string name="bpcategory__invalid">Invalid</string>
     <string name="home">Home</string>
     <string name="language">Language</string>
+    <string name="afternoon">Afternoon</string>
 
 </resources>

@@ -49,8 +49,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
-import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeSerializer
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -61,10 +59,7 @@ import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
-import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
-import kotlinx.serialization.Serializable
 import java.time.Instant
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -74,31 +69,49 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     appNavigator: AppNavigator
 ){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
-    val filePickerDialogState = rememberDialogState()
+    val importFilePickerDialogState = rememberDialogState()
+    val exportFilePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     val config by homeViewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline //   selectedGuideline
 
-    val filePickerLauncher = rememberLauncherForActivityResult(
+    val importFilePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
             selectedFileUri = uri
             Log.d("ImportScreen", "Selected file: $uri")
             selectedFileUri?.let { homeViewModel.importData(it) }
-            filePickerDialogState.close()
+            importFilePickerDialogState.close()
         }
     )
-    LaunchedEffect(filePickerDialogState.isOpen) {
-        if (filePickerDialogState.isOpen) {
-            filePickerLauncher.launch(arrayOf("*/*"))
+    val exportFilePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/plain"),
+        onResult = { uri ->
+            uri?.let { homeViewModel.exportData(it) }
+            exportFilePickerDialogState.close()
+        }
+    )
+    LaunchedEffect(importFilePickerDialogState.isOpen) {
+        if (importFilePickerDialogState.isOpen) {
+            importFilePickerLauncher.launch(arrayOf("*/*"))
         }
     }
+    LaunchedEffect(exportFilePickerDialogState.isOpen) {
+        if (exportFilePickerDialogState.isOpen){
+            val filenameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm").withZone(ZoneId.systemDefault())
+            val defaultFilename = "items-${filenameFormatter.format(Instant.now())}.csv"
+
+            exportFilePickerLauncher.launch(defaultFilename)
+        }
+    }
+
     Scaffold(topBar = {
         CustomTopAppBar(
             stringResource(R.string.home),
             menuItems = listOf(
-                MenuItem("export", onClick = { homeViewModel.exportData() }),
-                MenuItem("import", onClick = { filePickerDialogState.open() })
+                //MenuItem("export", onClick = { homeViewModel.exportData() }),
+                MenuItem("export", onClick = { exportFilePickerDialogState.open() }),
+                MenuItem("import", onClick = { importFilePickerDialogState.open() })
             )
         )
     },
@@ -135,7 +148,7 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         //CustomText(bp.toDisplayString(guideline = guideline))
         Text(bp.toDisplayString(guideline = guideline), fontWeight = FontWeight.Bold)
         Text(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
-        Text(dailyItem.avgBodyWeight.toBodyWeightString(), textAlign = TextAlign.End)
+        //Text(dailyItem.avgBodyWeight.toBodyWeightString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, guideline, timeOfDayConfig, navigateToEdit, )

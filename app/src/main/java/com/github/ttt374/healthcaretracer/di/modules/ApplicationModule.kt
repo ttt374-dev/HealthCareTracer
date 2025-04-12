@@ -39,7 +39,7 @@ object ApplicationModule {
     fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase = ItemDatabase.getDatabase(context)
 
     @Provides
-    fun provideExportDataUseCase(itemRepository: ItemRepository) = ExportDataUseCase(itemRepository)
+    fun provideExportDataUseCase(@ApplicationContext context: Context, itemRepository: ItemRepository) = ExportDataUseCase(context, itemRepository)
 
     @Provides
     fun provideImportDataUseCase(@ApplicationContext context: Context, itemRepository: ItemRepository) = ImportDataUseCase(context, itemRepository)

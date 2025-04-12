@@ -21,9 +21,9 @@ class HomeViewModel @Inject constructor(
 {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 
-    fun exportData(){
+    fun exportData(uri: Uri){
         viewModelScope.launch {
-            exportDataUseCase()
+            exportDataUseCase(uri)
         }
     }
     fun importData(uri: Uri){

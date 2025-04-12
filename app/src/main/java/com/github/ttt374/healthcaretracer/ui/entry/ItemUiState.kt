@@ -9,6 +9,7 @@ data class ItemUiState (
     val bpLower: String = "",
     val pulse: String = "",
     val bodyWeight: String = "",
+    val bodyTemperature: String = "",
     val location: String = "",
     val memo: String = "",
     val measuredAt: Instant = Instant.now(),
@@ -18,7 +19,8 @@ data class ItemUiState (
         bpUpper = bpUpper.toIntOrNull(),
         bpLower = bpLower.toIntOrNull(),
         pulse = pulse.toIntOrNull(),
-        bodyWeight = bodyWeight.toFloatOrNull(),
+        bodyWeight = bodyWeight.toDoubleOrNull(),
+        bodyTemperature = bodyTemperature.toDoubleOrNull(),
         memo = memo, location = location, measuredAt = measuredAt)
 
     fun isValid(): Boolean {
@@ -36,6 +38,7 @@ fun Item.toItemUiState(): ItemUiState {
         this.bpLower.toStringOrEmpty(),
         this.pulse.toStringOrEmpty(),
         this.bodyWeight.toStringOrEmpty(),
+        this.bodyTemperature.toStringOrEmpty(),
         this.location, this.memo, this.measuredAt)
 }
 

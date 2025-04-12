@@ -22,7 +22,8 @@ data class Item (
     val bpUpper: Int? = null,
     val bpLower: Int? = null,
     val pulse: Int? = 0,
-    val bodyWeight: Float? = null,
+    val bodyWeight: Double? = null,
+    val bodyTemperature: Double? = null,
     val location: String = "",
     val memo: String = "",
 
@@ -35,6 +36,7 @@ data class DailyItem (
     val avgBpLower: Double? = null,
     val avgPulse: Double? = null,
     val avgBodyWeight: Double? = null,
+    val avgBodyTemperature: Double? = null,
     val items: List<Item> = emptyList(),
 
     ){

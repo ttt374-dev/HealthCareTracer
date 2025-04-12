@@ -168,6 +168,13 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
                 modifier = modifier.focusRequester(bodyWeightFocusRequester),
                 label = { Text("Body Weight")})
         }
+        InputFieldRow("Body Temperature") {
+            TextField(itemUiState.bodyTemperature,
+                onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
+                keyboardOptions = decimalKeyboardOptions,
+                modifier = modifier.focusRequester(bodyWeightFocusRequester),
+                label = { Text("Body Weight")})
+        }
         InputFieldRow("Location") {
             SelectableTextField(itemUiState.location, locationList,
                 onValueChange = { updateItemUiState(itemUiState.copy(location = it)) },

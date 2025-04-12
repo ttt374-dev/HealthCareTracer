@@ -50,6 +50,7 @@ class ExportDataUseCase( @ApplicationContext private val context: Context, priva
                     item.bpLower.toString(),
                     item.pulse.toString(),
                     item.bodyWeight.toString(),
+                    item.bodyTemperature.toString(),
                     item.location,
                     item.memo,
                 )
@@ -88,9 +89,10 @@ class ImportDataUseCase(
                         bpUpper = columns[2].toIntOrNull(),
                         bpLower = columns[3].toIntOrNull(),
                         pulse = columns[4].toIntOrNull(),
-                        bodyWeight = columns[5].toFloat(),
-                        location = columns[6],
-                        memo = columns[7]
+                        bodyWeight = columns[5].toDoubleOrNull(),
+                        bodyTemperature = columns[6].toDoubleOrNull(),
+                        location = columns[7],
+                        memo = columns[8]
                     )
                     importedItems.add(item)
                 } catch (e: Exception){

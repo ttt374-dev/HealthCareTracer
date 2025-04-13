@@ -19,7 +19,7 @@ import javax.inject.Inject
 import java.io.File
 
 @HiltViewModel
-class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCase, private val itemRepository: ItemRepository): ViewModel() {
+class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCase, private val itemRepository: ItemRepository, @ApplicationContext val context: Context): ViewModel() {
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _saveState = MutableStateFlow(false)
@@ -28,7 +28,6 @@ class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCas
     fun upsertItem(item: Item){
         viewModelScope.launch {
             itemRepository.upsertItem(item)
-            //exportDataUseCase("items-autosave.csv")  // TODO
             autoBackup()
             setSuccessState(true)
         }
@@ -48,6 +47,6 @@ class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCas
     }
     private suspend fun autoBackup(){
         val downloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        exportDataUseCase(File(downloadFolder, "items-autosave.csv").toUri())
+        exportDataUseCase(File(downloadFolder, "items-autosave.csv").toUri(), context.contentResolver)
     }
 }

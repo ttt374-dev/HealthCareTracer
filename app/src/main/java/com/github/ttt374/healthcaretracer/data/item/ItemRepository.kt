@@ -30,6 +30,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     fun getAllLocationsFlow() = itemDao.getAllLocationsFlow()
 
     fun getAllItemsFlow() = itemDao.getAllItemsFlow()
+    suspend fun getAllItems() = itemDao.getAllItems()
     fun getRecentItemsFlow(days: Long?): Flow<List<Item>> {
         return when (days){
             null -> itemDao.getAllItemsFlow()

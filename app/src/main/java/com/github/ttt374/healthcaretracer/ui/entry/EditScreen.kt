@@ -91,6 +91,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
     val bpLowerFocusRequester = remember { FocusRequester() }
     val pulseFocusRequester = remember { FocusRequester() }
     val bodyWeightFocusRequester = remember { FocusRequester() }
+    val bodyTemperatureFocusRequester = remember { FocusRequester() }
     //val focusManager = remember { FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, pulseFocusRequester)) }
 
     // dialog
@@ -163,17 +164,20 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
         }
         InputFieldRow("Body Weight") {
             TextField(itemUiState.bodyWeight,
-                onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
+                onValueChange = {
+                    updateItemUiState(itemUiState.copy(bodyWeight = it))
+                    if ((it.toIntOrNull() ?: 0) > MIN_PULSE) bodyTemperatureFocusRequester.requestFocus()
+                },
                 keyboardOptions = decimalKeyboardOptions,
                 modifier = modifier.focusRequester(bodyWeightFocusRequester),
                 label = { Text("Body Weight")})
         }
         InputFieldRow("Body Temperature") {
             TextField(itemUiState.bodyTemperature,
-                onValueChange = { updateItemUiState(itemUiState.copy(bodyWeight = it))},
+                onValueChange = { updateItemUiState(itemUiState.copy(bodyTemperature = it))},
                 keyboardOptions = decimalKeyboardOptions,
-                modifier = modifier.focusRequester(bodyWeightFocusRequester),
-                label = { Text("Body Weight")})
+                modifier = modifier.focusRequester(bodyTemperatureFocusRequester),
+                label = { Text("Body Temperature")})
         }
         InputFieldRow("Location") {
             SelectableTextField(itemUiState.location, locationList,

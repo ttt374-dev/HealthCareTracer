@@ -43,5 +43,7 @@
     <string name="home">Home</string>
     <string name="language">Language</string>
     <string name="afternoon">Afternoon</string>
+    <string name="bodyTemperature">Body Temperature</string>
+    <string name="targetBodyTemperature">Target Body Temperature</string>
 
 </resources>

@@ -43,5 +43,7 @@
     <string name="home">ホーム</string>
     <string name="language">言語</string>
     <string name="afternoon">午後</string>
+    <string name="bodyTemperature">体温</string>
+    <string name="targetBodyTemperature">目標体温</string>
 
 </resources>

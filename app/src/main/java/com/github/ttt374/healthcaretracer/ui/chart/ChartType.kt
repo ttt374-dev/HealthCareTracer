@@ -43,9 +43,17 @@ enum class ChartType(@StringRes val labelResId: Int, val datasets: (Context, Cha
                 createLineDataSet(context, uiState.targetEntries.bodyWeight, R.string.target_body_weight, colors.primary, true)
             )
         }
+    ),
+    BodyTemperature(
+        R.string.bodyTemperature,
+        { context, uiState, colors ->
+            listOf(
+                createLineDataSet(context, uiState.actualEntries.bodyTemperature, R.string.bodyTemperature, colors.primary),
+                //createLineDataSet(context, uiState.targetEntries.bodyWeight, R.string.targetBodyTemperature, colors.primary, true)
+            )
+        }
     )
 }
-
 
 private fun createLineDataSet(context: Context, entries: List<Entry>, labelRes: Int, color: Color, isTarget: Boolean = false): LineDataSet {
     val label = context.getString(labelRes) // stringResource(labelRes)
@@ -66,9 +74,3 @@ private fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadi
         setDrawCircles(false)
     }
 }
-//private fun LineDataSet.applyTargetStyle(color: Int) = apply {
-//    this.applyStyle(color, 1f, 1f)
-//    enableDashedLine(15f, 10f, 0f)
-//    setDrawValues(false)
-//    setDrawCircles(false)
-//}

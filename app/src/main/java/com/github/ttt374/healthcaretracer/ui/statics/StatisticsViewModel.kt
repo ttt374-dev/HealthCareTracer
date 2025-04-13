@@ -66,7 +66,7 @@ private val statisticsDataFlow: StateFlow<StatisticsData> = recentItemsFlow.map 
         val bpUpper = getStatTimeOfDay(items) { it.bpUpper?.toDouble() ?: 0.0 }
         val bpLower = getStatTimeOfDay(items) { it.bpLower?.toDouble() ?: 0.0 }
         val pulse = getStatTimeOfDay(items) { it.pulse?.toDouble() ?: 0.0 }
-        val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight?.toDouble() ?: 0.0 }
+        val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight ?: 0.0 }
         val meGap = items.groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
             .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(), config.value.morningRange, config.value.eveningRange) ?: 0.0 }
 

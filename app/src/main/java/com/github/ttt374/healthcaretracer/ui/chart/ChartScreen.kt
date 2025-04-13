@@ -94,7 +94,6 @@ fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount
         setLabelCount(maxLabelCount, false)
         this.labelRotationAngle = labelRotationAngle
     }
-
     axisLeft.spaceTop = 40f
     axisLeft.spaceBottom = 40f
     axisRight.isEnabled = false

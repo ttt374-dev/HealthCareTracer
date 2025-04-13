@@ -32,6 +32,7 @@ data class ChartEntries(
     val bpLower: List<Entry> = emptyList(),
     val pulse: List<Entry> = emptyList(),
     val bodyWeight: List<Entry> = emptyList(),
+    val bodyTemperature: List<Entry> = emptyList(),
 )
 data class ChartUiState (
     val actualEntries: ChartEntries = ChartEntries(),
@@ -62,8 +63,9 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
         getEntriesFlow { it.avgBpLower },
         getEntriesFlow { it.avgPulse },
         getEntriesFlow { it.avgBodyWeight },
-    ){ upper, lower, pulse, bodyWeight ->
-        ChartEntries(upper, lower, pulse, bodyWeight)
+        getEntriesFlow { it.avgBodyTemperature },
+    ){ upper, lower, pulse, bodyWeight, bodyTemperature ->
+        ChartEntries(upper, lower, pulse, bodyWeight, bodyTemperature)
     }
 
     private val targetEntriesFlow = combine(

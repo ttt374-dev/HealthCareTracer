@@ -183,6 +183,7 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
             Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.bodyWeight.toBodyWeightString())
+            Text(item.bodyTemperature.toBodyTemperatureString())
         }
 
         Row {
@@ -229,6 +230,8 @@ fun Number?.toDisplayString(format: String? = null): String {
             this.toString()
     }   ?: "-"
 }
-fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString("%.1f").withSubscript("kg")
+
 fun Number?.toPulseString(): AnnotatedString = toDisplayString().withSubscript("bpm")
+fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString("%.1f").withSubscript("kg")
+fun Number?.toBodyTemperatureString(): AnnotatedString = toDisplayString("%.1f").withSubscript("℃")
 //fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())

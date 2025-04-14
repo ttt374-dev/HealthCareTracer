@@ -5,15 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
@@ -22,11 +19,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.github.ttt374.healthcaretracer.data.item.Item
@@ -44,7 +39,7 @@ import java.time.format.DateTimeFormatter
 
 sealed class EditMode {
     data object Entry : EditMode()
-    data object Edit: EditMode()
+    data class Edit(val item: Item): EditMode()
 }
 
 enum class FocusField { BpUpper, BpLower, Pulse, BodyTemperature, BodyWeight,  }
@@ -136,7 +131,7 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             }
         }
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp).navigationBarsPadding(), horizontalArrangement = Arrangement.End) {
-            ActionButtons(onPost, onDelete, if(editMode == EditMode.Edit) itemUiState.toItem() else null)
+            ActionButtons(editMode, onPost, onDelete)
         }
     }
 }
@@ -205,8 +200,8 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
     }
 }
 @Composable
-private fun ActionButtons(onPost: () -> Unit, onDelete: () -> Unit, itemToDelete: Item? = null) {
-    if (itemToDelete != null){
+private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -> Unit) {
+    if (editMode is EditMode.Edit){
         val deleteDialogState = rememberItemDialogState()
         if (deleteDialogState.isOpen){
             ConfirmDialog(title = { Text("Are you sure to delete ?") },
@@ -214,7 +209,7 @@ private fun ActionButtons(onPost: () -> Unit, onDelete: () -> Unit, itemToDelete
                 onConfirm = onDelete,
                 closeDialog = { deleteDialogState.close()})
         }
-        Button(modifier = Modifier.padding(8.dp), onClick = { deleteDialogState.open(itemToDelete) }){
+        Button(modifier = Modifier.padding(8.dp), onClick = { deleteDialogState.open(editMode.item) }){
             Text("Delete")
         }
     }
@@ -227,8 +222,6 @@ internal fun String.isValidBp() =
     (this.toIntOrNull() ?: 0) > MIN_BP
 internal fun String.isValidPulse() =
     (this.toIntOrNull() ?: 0) > MIN_PULSE
-internal fun String.isTwoDigits() =
-    (this.toDoubleOrNull() ?: 0.0 ) >= 10.0
 
 @Composable
 fun InputFieldRow(label: String, inputField: @Composable () -> Unit){

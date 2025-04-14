@@ -85,7 +85,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
         }
     )
     val exportFilePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/plain"),
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
         onResult = { uri ->
             uri?.let { homeViewModel.exportData(it) }
             exportFilePickerDialogState.close()

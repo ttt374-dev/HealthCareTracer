@@ -6,13 +6,13 @@
 
     <string name="blood_pressure">血圧</string>
     <string name="pulse">心拍数</string>
-    <string name="body_weight">体重</string>
+    <string name="bodyWeight">体重</string>
 
     <string name="bpUpper">収縮期血圧</string>
     <string name="bpLower">拡張期血圧</string>
     <string name="targetBpUpper">目標収縮期血圧</string>
     <string name="targetBpLower">目標拡張期血圧</string>
-    <string name="target_body_weight">目標体重</string>
+    <string name="targetBodyWeight">目標体重</string>
 
     <string name="all">すべて</string>
     <string name="morning">朝方</string>

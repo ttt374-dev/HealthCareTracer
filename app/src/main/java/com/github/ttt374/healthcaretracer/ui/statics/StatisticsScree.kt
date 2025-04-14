@@ -58,7 +58,11 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
                 //Text(stringResource(R.string.body_weight), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsTable(stringResource(R.string.body_weight), statistics.bodyWeight, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
+                StatisticsTable(stringResource(R.string.bodyWeight), statistics.bodyWeight, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
+            }
+            item {
+                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
+                StatisticsTable(stringResource(R.string.bodyTemperature), statistics.bodyTemperature, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
             }
         }
     }

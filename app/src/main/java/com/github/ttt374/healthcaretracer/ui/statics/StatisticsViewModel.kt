@@ -41,6 +41,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         val bpLower = getStatTimeOfDay(items) { it.bpLower?.toDouble()  }
         val pulse = getStatTimeOfDay(items) { it.pulse?.toDouble()  }
         val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight  }
+        val bodyTemperature = getStatTimeOfDay(items) { it.bodyTemperature }
         val zone = ZoneId.systemDefault()
         val timeOfDayConfig = config.value.timeOfDayConfig
         val meGap = items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
@@ -53,6 +54,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
             bpLower = bpLower,
             pulse = pulse,
             bodyWeight = bodyWeight,
+            bodyTemperature = bodyTemperature,
             meGap = meGap
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
@@ -115,5 +117,6 @@ data class StatisticsData(
     val bpLower: StatTimeOfDay = StatTimeOfDay(),
     val pulse: StatTimeOfDay = StatTimeOfDay(),
     val bodyWeight: StatTimeOfDay = StatTimeOfDay(),
+    val bodyTemperature: StatTimeOfDay = StatTimeOfDay(),
     val meGap: List<Double> = emptyList(),
 )

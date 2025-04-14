@@ -185,7 +185,8 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.bodyTemperature,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bodyTemperature = it))
-                focusMap.requestNextIf(FocusField.BodyTemperature) { it.isTwoDigits()}
+                focusMap.requestNextIf(FocusField.BodyTemperature) { it.length >= 4 && it.toDoubleOrNull() != null}
+                //focusMap.requestNextIf(FocusField.BodyTemperature) { it.isTwoDigits()}
             },
             keyboardOptions = decimalKeyboardOptions,
             modifier = Modifier.focusRequester(focusMap[FocusField.BodyTemperature]),
@@ -196,7 +197,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.bodyWeight,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bodyWeight = it))
-                focusMap.requestNextIf(FocusField.BodyWeight) { it.isTwoDigits()}
+
             },
             keyboardOptions = decimalKeyboardOptions,
             modifier = Modifier.focusRequester(focusMap[FocusField.BodyWeight]),

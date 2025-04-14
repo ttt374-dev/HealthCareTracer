@@ -36,11 +36,11 @@ enum class ChartType(@StringRes val labelResId: Int, val datasets: (Context, Cha
         }
     ),
     BodyWeight(
-        R.string.body_weight,
+        R.string.bodyWeight,
         { context, uiState, colors ->
             listOf(
-                createLineDataSet(context, uiState.actualEntries.bodyWeight, R.string.body_weight, colors.primary),
-                createLineDataSet(context, uiState.targetEntries.bodyWeight, R.string.target_body_weight, colors.primary, true)
+                createLineDataSet(context, uiState.actualEntries.bodyWeight, R.string.bodyWeight, colors.primary),
+                createLineDataSet(context, uiState.targetEntries.bodyWeight, R.string.targetBodyWeight, colors.primary, true)
             )
         }
     ),

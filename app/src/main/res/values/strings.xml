@@ -10,8 +10,8 @@
 
     <string name="blood_pressure">Blood Pressure</string>
     <string name="pulse">Pulse</string>
-    <string name="body_weight">BodyWeight</string>
-    <string name="target_body_weight">Target BodyWeight</string>
+    <string name="bodyWeight">BodyWeight</string>
+    <string name="targetBodyWeight">Target BodyWeight</string>
 
     <string name="all">All</string>
     <string name="morning">Morning</string>

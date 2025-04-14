@@ -158,7 +158,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 //                Text(" / ")
 //                Text(config.targetBpLower.toString(), Modifier.clickable { targetBpLowerState.open() })
             }
-            SettingsRow("${stringResource(R.string.target_body_weight)} (Kg)"){
+            SettingsRow("${stringResource(R.string.targetBodyWeight)} (Kg)"){
                 Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
             }
             SettingsRow(stringResource(R.string.morning)){

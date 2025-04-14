@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +9,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
@@ -25,6 +29,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.DatePickerDialog
@@ -56,6 +61,9 @@ class FocusRequestMap(private val map: Map<FocusField, FocusRequester>) {
             map[next]?.requestFocus()
         }
     }
+    fun requestNextIf(current: FocusField, condition: () -> Boolean){
+        if (condition()) requestNext(current)
+    }
     operator fun get(field: FocusField): FocusRequester = map.getValue(field)
 }
 @Composable
@@ -67,6 +75,7 @@ fun rememberFocusRequestMap(): FocusRequestMap {
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ItemEntryContent(modifier: Modifier = Modifier,
                      editMode: EditMode = EditMode.Entry,
@@ -84,55 +93,51 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
             focusMap.requestFirst()
         }
     }
-    Column {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button (onClick = onDelete ){
-                Text("Delete")
-            }
-            Button (onClick = onPost ){
-                Text("OK")
-            }
-        }
-        Row {
-            LazyColumn (modifier=modifier){
-                item {
-                    InputFieldRow("Measured At"){
-                        Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
-                            DateAndTimePickers(itemUiState,
-                                onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
-                                onTimeSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) }
-                            )
-                        }
-                    }
-                }
-                item {
-                    VitalInputFields(itemUiState, updateItemUiState, focusMap)
+//    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+//    LaunchedEffect(Unit) {
+//        snapshotFlow { focusState.isFocused }
+//            .filter { it }
+//            .collect {
+//                bringIntoViewRequester.bringIntoView()
+//            }
+//    }
 
-                    InputFieldRow("Location") {
-                        SelectableTextField(itemUiState.location, locationList,
-                            onValueChange = { updateItemUiState(itemUiState.copy(location = it)) },
+    Column(Modifier.fillMaxSize().imePadding().then(modifier)) {
+        LazyColumn (modifier=modifier.weight(1f)){
+            item {
+                InputFieldRow("Measured At"){
+                    Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
+                        DateAndTimePickers(itemUiState,
+                            onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
+                            onTimeSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) }
                         )
                     }
-                    InputFieldRow("Memo") {
-                        TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))})
-                    }
-    //                InputFieldRow("") {
-    //                    if (editMode is EditMode.Edit){
-    //                        Button(onClick = { deleteDialogState.open(itemUiState.toItem()) }){
-    //                            Text("Delete")
-    //                        }
-    //                    }
-    //                }
-                    Box ( Modifier.padding(32.dp))  // 下の余白
                 }
             }
+            item {
+                VitalInputFields(itemUiState, updateItemUiState, focusMap)
+
+                InputFieldRow("Location") {
+                    SelectableTextField(itemUiState.location, locationList,
+                        onValueChange = { updateItemUiState(itemUiState.copy(location = it)) },
+                    )
+                }
+                InputFieldRow("Memo") {
+                    TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))})
+                }
+//                InputFieldRow("") {
+//                    if (editMode is EditMode.Edit){
+//                        Button(onClick = { deleteDialogState.open(itemUiState.toItem()) }){
+//                            Text("Delete")
+//                        }
+//                    }
+//                }
+                //Box ( Modifier.padding(32.dp))  // 下の余白
+            }
         }
-        // IMEのすぐ上に固定
-        //BottomActionButton(itemUiState, editMode, onPost, onDelete)
-//        Button(onClick = onPost,
-//            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)) {
-//            Text("OK")
-//        }
+        Row(modifier = Modifier.fillMaxWidth().padding(8.dp).navigationBarsPadding(), horizontalArrangement = Arrangement.End) {
+            ActionButtons(onPost, onDelete, if(editMode == EditMode.Edit) itemUiState.toItem() else null)
+        }
     }
 }
 @Composable
@@ -144,7 +149,8 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.bpUpper,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bpUpper = it))
-                if ((it.toIntOrNull() ?: 0) > MIN_BP) focusMap.requestNext(FocusField.BpUpper)
+                focusMap.requestNextIf(FocusField.BpUpper){ it.isValidBp() }
+                //if ((it.toIntOrNull() ?: 0) > MIN_BP) focusMap.requestNext(FocusField.BpUpper)
             },
             suffix = { Text("mmHg") },
             keyboardOptions = numberKeyboardOptions,
@@ -155,12 +161,12 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.bpLower,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bpLower = it))
-                if ((it.toIntOrNull() ?: 0) > MIN_BP) focusMap.requestNext(FocusField.BpLower)
+                focusMap.requestNextIf(FocusField.BpLower){ it.isValidBp() }
+                //if ((it.toIntOrNull() ?: 0) > MIN_BP) focusMap.requestNext(FocusField.BpLower)
                 //focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }
             },
             suffix = { Text("mmHg") },
             keyboardOptions = numberKeyboardOptions,
-            //modifier = modifier.focusRequester(bpLowerFocusRequester)
             modifier = Modifier.focusRequester(focusMap[FocusField.BpLower])
         )
     }
@@ -168,7 +174,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.pulse,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(pulse = it))
-                if ((it.toIntOrNull() ?: 0) > MIN_PULSE) focusMap.requestNext(FocusField.Pulse)
+                focusMap.requestNextIf(FocusField.Pulse) { it.isValidPulse()}
             },
             suffix = { Text("bpm") },
             keyboardOptions = numberKeyboardOptions,
@@ -179,7 +185,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.bodyTemperature,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bodyTemperature = it))
-                if ((it.toIntOrNull() ?: 0) > 20) focusMap.requestNext(FocusField.BodyTemperature)
+                focusMap.requestNextIf(FocusField.BodyTemperature) { it.isTwoDigits()}
             },
             keyboardOptions = decimalKeyboardOptions,
             modifier = Modifier.focusRequester(focusMap[FocusField.BodyTemperature]),
@@ -190,7 +196,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
         TextField(itemUiState.bodyWeight,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bodyWeight = it))
-                if ((it.toIntOrNull() ?: 0) > MIN_PULSE) focusMap.requestNext(FocusField.BodyWeight)
+                focusMap.requestNextIf(FocusField.BodyWeight) { it.isTwoDigits()}
             },
             keyboardOptions = decimalKeyboardOptions,
             modifier = Modifier.focusRequester(focusMap[FocusField.BodyWeight]),
@@ -198,30 +204,30 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
     }
 }
 @Composable
-private fun BottomActionButton(itemUiState: ItemUiState, editMode: EditMode = EditMode.Entry, onPost: () -> Unit, onDelete: () -> Unit) {
-    Box(Modifier.fillMaxWidth()) {
-//        if (editMode is EditMode.Edit){
-//            // dialog
-//            val deleteDialogState = rememberItemDialogState()
-//            if (deleteDialogState.isOpen){
-//                ConfirmDialog(title = { Text("Are you sure to delete ?") },
-//                    text = { Text("") },
-//                    onConfirm = onDelete,
-//                    closeDialog = { deleteDialogState.close()})
-//            }
-//            Button(onClick = { deleteDialogState.open(itemUiState.toItem()) }){
-//                    Text("Delete")
-//                }
-//            }
-//        }
-        Button(
-            onClick = onPost,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            Text("OK")
+private fun ActionButtons(onPost: () -> Unit, onDelete: () -> Unit, itemToDelete: Item? = null) {
+    if (itemToDelete != null){
+        val deleteDialogState = rememberItemDialogState()
+        if (deleteDialogState.isOpen){
+            ConfirmDialog(title = { Text("Are you sure to delete ?") },
+                text = { Text("") },
+                onConfirm = onDelete,
+                closeDialog = { deleteDialogState.close()})
+        }
+        Button(modifier = Modifier.padding(8.dp), onClick = { deleteDialogState.open(itemToDelete) }){
+            Text("Delete")
         }
     }
+    Button(modifier = Modifier.padding(8.dp), onClick = onPost) {
+        Text("OK")
+    }
 }
+
+internal fun String.isValidBp() =
+    (this.toIntOrNull() ?: 0) > MIN_BP
+internal fun String.isValidPulse() =
+    (this.toIntOrNull() ?: 0) > MIN_PULSE
+internal fun String.isTwoDigits() =
+    (this.toDoubleOrNull() ?: 0.0 ) >= 10.0
 
 @Composable
 fun InputFieldRow(label: String, inputField: @Composable () -> Unit){

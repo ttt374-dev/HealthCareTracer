@@ -32,11 +32,11 @@ fun EntryScreen(viewModel: EntryViewModel = hiltViewModel(), itemViewModel: Item
             appNavigator.navigateBack()
         }
     }
-    val imeInsets = WindowInsets.ime
-    val imeBottomPadding = with(LocalDensity.current) {
-        imeInsets.getBottom(this).toDp()
-    }
-
+//    val imeInsets = WindowInsets.ime
+//    val imeBottomPadding = with(LocalDensity.current) {
+//        imeInsets.getBottom(this).toDp()
+//    }
+    //contentWindowInsets = WindowInsets(0),
     Scaffold(contentWindowInsets = WindowInsets(0), topBar = { CustomTopAppBar("Entry", navigateBack = appNavigator::navigateBack) }){ innerPadding ->
         Column (modifier = Modifier.padding(innerPadding)) {
             ItemEntryContent(itemUiState = uiState,

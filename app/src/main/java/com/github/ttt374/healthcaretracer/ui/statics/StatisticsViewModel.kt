@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.datastore.Config
 import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
+import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
 import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
@@ -41,8 +42,11 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         val pulse = getStatTimeOfDay(items) { it.pulse?.toDouble()  }
         val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight  }
         val zone = ZoneId.systemDefault()
+        val timeOfDayConfig = config.value.timeOfDayConfig
         val meGap = items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
-            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(), config.value.morningRange, config.value.eveningRange)}.filterNotNull()
+            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(),
+                LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon),
+                LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)) }.filterNotNull()
 
         StatisticsData(
             bpUpper = bpUpper,

@@ -55,9 +55,8 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
             appNavigator.navigateBack()
         }
     }
-    Scaffold(topBar = { CustomTopAppBar("Edit", navigateBack = appNavigator::navigateBack) }){ innerPadding ->
+    Scaffold(contentWindowInsets = WindowInsets(0), topBar = { CustomTopAppBar("Edit", navigateBack = appNavigator::navigateBack) }){ innerPadding ->
         Box (modifier = Modifier.padding(innerPadding)) {
-//            ButtonAboveIme {  }
             ItemEntryContent(editMode = EditMode.Edit,
                 itemUiState = itemUiState,
                 updateItemUiState = editViewModel::updateItemUiState,
@@ -68,55 +67,3 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
         }
     }
 }
-
-@Composable
-fun ButtonAboveIme(
-    onClick: () -> Unit
-) {
-    val imeInsets = WindowInsets.ime
-    val imeBottomPadding = with(LocalDensity.current) {
-        imeInsets.getBottom(this).toDp()
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = imeBottomPadding)
-    ) {
-        // 他のUI...
-        Column {
-            TextField("asdf", {})
-            TextField("asdf", {})
-            TextField("asdf", {})
-            TextField("asdf", {})
-            TextField("asdf", {})
-            TextField("asdf", {})
-            TextField("asdf", {})
-        }
-
-        // IMEのすぐ上に固定
-        Button(
-            onClick = onClick,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-        ) {
-            Text("送信")
-        }
-    }
-}
-
-//class FocusManager (private val focusRequesters: List<FocusRequester>, initialIndex: Int = 0) {
-//    private var currentFocusIndex: Int = initialIndex
-//
-//    private fun shiftFocus(){
-//        if (currentFocusIndex < focusRequesters.size - 1) {
-//            currentFocusIndex++ // 次のフィールドに移動
-//        } else {
-//            currentFocusIndex = 0 // もし最後のフィールドなら最初に戻る
-//        }
-//        focusRequesters[currentFocusIndex].requestFocus() // 次のフィールドにフォーカスを移す
-//    }
-//    fun shiftFocusIf(condition: () -> Boolean){
-//        if (condition()) shiftFocus()
-//    }
-//}

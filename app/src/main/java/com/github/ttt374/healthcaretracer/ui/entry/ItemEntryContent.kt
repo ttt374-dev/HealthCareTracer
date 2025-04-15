@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -36,47 +34,18 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-
 sealed class EditMode {
     data object Entry : EditMode()
     data class Edit(val item: Item): EditMode()
 }
 
-enum class FocusField { BpUpper, BpLower, Pulse, BodyTemperature, BodyWeight,  }
-class FocusRequestMap(private val map: Map<FocusField, FocusRequester>) {
 
-    fun requestFirst() {
-        map[FocusField.entries.first()]?.requestFocus()
-    }
-
-    fun requestNext(current: FocusField) {
-        val nextIndex = current.ordinal + 1
-        if (nextIndex < FocusField.entries.size) {
-            val next = FocusField.entries[nextIndex]
-            map[next]?.requestFocus()
-        }
-    }
-    fun requestNextIf(current: FocusField, condition: () -> Boolean){
-        if (condition()) requestNext(current)
-    }
-    operator fun get(field: FocusField): FocusRequester = map.getValue(field)
-}
-@Composable
-fun rememberFocusRequestMap(): FocusRequestMap {
-    val map = remember {
-        FocusField.entries.associateWith { FocusRequester() }
-    }
-    return remember { FocusRequestMap(map) }
-}
-
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ItemEntryContent(modifier: Modifier = Modifier,
                      editMode: EditMode = EditMode.Entry,
-                     itemUiState: ItemUiState,
-                     onDelete: () -> Unit = {},
+                     itemUiState: ItemUiState = ItemUiState(),
                      onPost: () -> Unit = {},
+                     onDelete: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      locationList: List<String> = emptyList(),
 ){

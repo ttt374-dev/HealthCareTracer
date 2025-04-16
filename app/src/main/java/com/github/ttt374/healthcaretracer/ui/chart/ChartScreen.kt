@@ -43,27 +43,24 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     val uiState by chartViewModel.uiState.collectAsState()
     val pagerState = rememberPagerState(0) { ChartType.entries.count() }
     val coroutineScope = rememberCoroutineScope()
-    val selectedChartType = ChartType.entries[pagerState.currentPage]
-    //val selectedChartType = ChartType.entries[uiState.selectedTabIndex]
+
     val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
-    //val onClickTab = { index: Int -> chartViewModel.updateSelectedTabIndex(index) }
     val context = LocalContext.current
     val chartColors = ChartColorPalette(
         primary = MaterialTheme.colorScheme.primary,
         secondary = MaterialTheme.colorScheme.secondary
     )
+
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
         bottomBar = { CustomBottomAppBar(appNavigator) })
     { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            Box(modifier = Modifier.padding(4.dp)) {
-                TimeRangeDropdown(uiState.timeRange, onRangeSelected)
-            }
+            TimeRangeDropdown(uiState.timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
+
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 ChartType.entries.forEachIndexed { index, type ->
                     Tab(
                         selected = pagerState.currentPage == index,
-                        //onClick = { selectedTabIndex = index },
                         onClick = {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(index)
@@ -74,18 +71,12 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
                 }
             }
             // 選択されたタブに応じて異なるグラフを表示
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    HealthChart(selectedChartType.datasets(context, uiState, chartColors))
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                val chartType = ChartType.entries[page]
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    HealthChart(chartType.datasets(context, uiState, chartColors))
                 }
             }
-
         }
     }
 }

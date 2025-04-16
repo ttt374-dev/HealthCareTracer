@@ -20,12 +20,12 @@ import com.github.ttt374.healthcaretracer.R
 
 // filter
 @Composable
-fun TimeRangeDropdown(selectedRange: TimeRange, onRangeSelected: (TimeRange) -> Unit) {
+fun TimeRangeDropdown(selectedRange: TimeRange, onRangeSelected: (TimeRange) -> Unit, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
     val ranges = TimeRange.entries
 
     //Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-    Box (modifier= Modifier.padding(8.dp)){
+    Box (modifier= modifier){
         OutlinedButton(onClick = { expanded = true }) {
             Text(stringResource(selectedRange.labelRes))
         }

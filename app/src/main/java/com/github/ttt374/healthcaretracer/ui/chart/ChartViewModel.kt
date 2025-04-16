@@ -38,7 +38,7 @@ data class ChartUiState (
     val actualEntries: ChartEntries = ChartEntries(),
     val targetEntries: ChartEntries = ChartEntries(),
     val timeRange: TimeRange = TimeRange.Default,
-    val selectedTabIndex: Int = 0,
+    //val selectedTabIndex: Int = 0,
 )
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -88,7 +88,7 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
             actualEntries = actualEntries,
             targetEntries = targetEntries,
             timeRange = timeRange,
-            selectedTabIndex = selectedTabIndex
+            //selectedTabIndex = selectedTabIndex
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartUiState())
 
@@ -104,13 +104,13 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
             }
         }
     }
-    fun updateSelectedTabIndex(index: Int) {
-        //selectedTabIndexFlow.value = index
-        viewModelScope.launch {
-            selectedTabIndexFlow.emit(index)
-        }
-
-    }
+//    fun updateSelectedTabIndex(index: Int) {
+//        //selectedTabIndexFlow.value = index
+//        viewModelScope.launch {
+//            selectedTabIndexFlow.emit(index)
+//        }
+//
+//    }
 }
 fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
     return mapNotNull { dailyItem ->

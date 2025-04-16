@@ -41,7 +41,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
             item {
                 Box(modifier = Modifier.padding(4.dp)) {
-                    TimeRangeDropdown(selectedRange) { viewModel.setSelectedRange(it) }
+                    TimeRangeDropdown(selectedRange, onRangeSelected = { viewModel.setSelectedRange(it) })
                 }
             }
             item {

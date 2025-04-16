@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -178,11 +180,12 @@ private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -
                 onConfirm = onDelete,
                 closeDialog = { deleteDialogState.close()})
         }
-        Button(modifier = Modifier.padding(8.dp), onClick = { deleteDialogState.open(editMode.item) }){
+        Button(onClick = { deleteDialogState.open(editMode.item) }){
             Text("Delete")
         }
+        Spacer(modifier = Modifier.width(16.dp)) // ← 間にスペース
     }
-    Button(modifier = Modifier.padding(8.dp), onClick = onPost) {
+    Button(onClick = onPost) {
         Text("OK")
     }
 }

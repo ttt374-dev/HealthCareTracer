@@ -45,5 +45,12 @@
     <string name="afternoon">Afternoon</string>
     <string name="bodyTemperature">Body Temperature</string>
     <string name="targetBodyTemperature">Target Body Temperature</string>
+    <string name="measuredAt">Measured At</string>
+    <string name="location">Location</string>
+    <string name="memo">Memo</string>
+    <string name="msgConfirmToDelete">Are you sure to delete ?</string>
+    <string name="delete">Delete</string>
+    <string name="entry">Entry</string>
+    <string name="edit">Edit</string>
 
 </resources>

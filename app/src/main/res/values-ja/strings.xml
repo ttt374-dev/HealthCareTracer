@@ -45,5 +45,12 @@
     <string name="afternoon">午後</string>
     <string name="bodyTemperature">体温</string>
     <string name="targetBodyTemperature">目標体温</string>
+    <string name="measuredAt">測定日時</string>
+    <string name="location">場所</string>
+    <string name="memo">メモ</string>
+    <string name="msgConfirmToDelete">削除してよろしいですか？</string>
+    <string name="delete">削除</string>
+    <string name="entry">新規エントリー</string>
+    <string name="edit">編集</string>
 
 </resources>

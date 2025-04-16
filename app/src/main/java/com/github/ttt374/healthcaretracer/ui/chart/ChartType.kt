@@ -22,8 +22,8 @@ enum class ChartType(@StringRes val labelResId: Int, val datasets: (Context, Cha
             listOf(
                 createLineDataSet(context, uiState.actualEntries.bpUpper, R.string.bpUpper, primary),
                 createLineDataSet(context, uiState.actualEntries.bpLower, R.string.bpLower, secondary),
-                createLineDataSet(context, uiState.targetEntries.bpUpper, R.string.bpUpper, primary, true),
-                createLineDataSet(context, uiState.targetEntries.bpLower, R.string.bpLower, secondary, true),
+                createLineDataSet(context, uiState.targetEntries.bpUpper, R.string.targetBpUpper, primary, true),
+                createLineDataSet(context, uiState.targetEntries.bpLower, R.string.targetBpLower, secondary, true),
             )
         }
     ),

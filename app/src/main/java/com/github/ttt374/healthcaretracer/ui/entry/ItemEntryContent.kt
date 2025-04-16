@@ -41,7 +41,7 @@ sealed class EditMode {
 
 
 @Composable
-fun ItemEntryContent(modifier: Modifier = Modifier,
+fun ItemEntryContent(//modifier: Modifier = Modifier,
                      editMode: EditMode = EditMode.Entry,
                      itemUiState: ItemUiState = ItemUiState(),
                      onPost: () -> Unit = {},
@@ -66,8 +66,8 @@ fun ItemEntryContent(modifier: Modifier = Modifier,
 //            }
 //    }
 
-    Column(Modifier.fillMaxSize().imePadding().then(modifier)) {
-        LazyColumn (modifier=modifier.weight(1f)){
+    Column(Modifier.fillMaxSize().imePadding()) {
+        LazyColumn (modifier=Modifier.weight(1f)){
             item {
                 InputFieldRow("Measured At"){
                     Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){

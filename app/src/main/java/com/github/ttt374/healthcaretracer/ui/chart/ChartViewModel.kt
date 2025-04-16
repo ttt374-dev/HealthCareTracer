@@ -54,7 +54,8 @@ class ChartViewModel @Inject constructor(val itemRepository: ItemRepository, con
     }
     private fun getTargetEntriesFlow(takeValue: (Config) -> Number): Flow<List<Entry>> {
         return config.map { takeValue(it) }.flatMapLatest { target ->
-            getEntriesFlow { target.toDouble() }
+            //getEntriesFlow { target.toDouble() }
+            dailyItemsFlow.map { list -> list.firstAndLast().toEntries { target.toDouble() }}
         }
     }
 
@@ -116,5 +117,12 @@ fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue
         takeValue(dailyItem)?.toFloat()?.let { value ->
             Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
         }
+    }
+}
+fun <T> List<T>.firstAndLast(): List<T> {
+    return when (size) {
+        0 -> emptyList()
+        1 -> listOf(first())
+        else -> listOf(first(), last())
     }
 }

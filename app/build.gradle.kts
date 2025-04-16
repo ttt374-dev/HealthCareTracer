@@ -101,5 +101,6 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.compose.foundation:foundation:1.7.8") // バージョンは最新に調整
+
 }

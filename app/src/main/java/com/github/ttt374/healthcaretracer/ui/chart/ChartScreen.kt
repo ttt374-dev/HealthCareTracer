@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -12,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -29,6 +33,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -36,9 +41,12 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val uiState by chartViewModel.uiState.collectAsState()
-    val selectedChartType = ChartType.entries[uiState.selectedTabIndex]
+    val pagerState = rememberPagerState(0) { ChartType.entries.count() }
+    val coroutineScope = rememberCoroutineScope()
+    val selectedChartType = ChartType.entries[pagerState.currentPage]
+    //val selectedChartType = ChartType.entries[uiState.selectedTabIndex]
     val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
-    val onClickTab = { index: Int -> chartViewModel.updateSelectedTabIndex(index) }
+    //val onClickTab = { index: Int -> chartViewModel.updateSelectedTabIndex(index) }
     val context = LocalContext.current
     val chartColors = ChartColorPalette(
         primary = MaterialTheme.colorScheme.primary,
@@ -51,18 +59,33 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             Box(modifier = Modifier.padding(4.dp)) {
                 TimeRangeDropdown(uiState.timeRange, onRangeSelected)
             }
-            TabRow(selectedTabIndex = uiState.selectedTabIndex) {
+            TabRow(selectedTabIndex = pagerState.currentPage) {
                 ChartType.entries.forEachIndexed { index, type ->
                     Tab(
-                        selected = uiState.selectedTabIndex == index,
+                        selected = pagerState.currentPage == index,
                         //onClick = { selectedTabIndex = index },
-                        onClick = { onClickTab(index) },
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
                         text = { Text(stringResource(type.labelResId)) }
                     )
                 }
             }
             // 選択されたタブに応じて異なるグラフを表示
-            HealthChart(selectedChartType.datasets(context, uiState, chartColors))
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    HealthChart(selectedChartType.datasets(context, uiState, chartColors))
+                }
+            }
+
         }
     }
 }

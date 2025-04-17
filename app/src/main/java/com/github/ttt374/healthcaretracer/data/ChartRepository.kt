@@ -23,7 +23,6 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository, private val configRepository: ConfigRepository, private val preferencesRepository: PreferencesRepository) : ViewModel() {
-    val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
 
     private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.mikephil.charting.charts.LineChart
@@ -31,6 +32,7 @@ import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
+import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -38,6 +40,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
+    val timeRange by chartViewModel.timeRange.collectAsState()
     val selectedType by chartViewModel.selectedChartType.collectAsState()
     val pagerState = rememberPagerState(
         initialPage = ChartType.entries.indexOf(selectedType),
@@ -61,7 +64,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
         bottomBar = { CustomBottomAppBar(appNavigator) })
     { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            //TimeRangeDropdown(uiState.timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
+            TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
 
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 ChartType.entries.forEachIndexed { index, type ->

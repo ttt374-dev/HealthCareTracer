@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.ChartRepository
+import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,7 +38,10 @@ data class ChartEntries(
 data class ChartSeries(val seriesDef: SeriesDef, val entries: List<Entry>, val targetEntries: List<Entry>)
 
 @HiltViewModel
-class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository) : ViewModel() {
+class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository, private val preferencesRepository: PreferencesRepository) : ViewModel() {
+    private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
+    val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope,  SharingStarted.WhileSubscribed(5000), TimeRange.Default)
+
     private val _selectedChartType: MutableStateFlow<ChartType> = MutableStateFlow(ChartType.BloodPressure)
     val selectedChartType: StateFlow<ChartType> = _selectedChartType.asStateFlow()
 

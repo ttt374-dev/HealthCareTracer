@@ -42,7 +42,7 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, pr
 //        }
 //        return Chart()
 //    }
-    val actualEntriesFlow = combine(
+private val actualEntriesFlow = combine(
         getEntriesFlow { it.avgBpUpper },
         getEntriesFlow { it.avgBpLower },
         getEntriesFlow { it.avgPulse },
@@ -52,7 +52,7 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, pr
         ChartEntries(upper, lower, pulse, bodyWeight, bodyTemperature)
     }
 
-    val targetEntriesFlow = combine(
+    private val targetEntriesFlow = combine(
         getTargetEntriesFlow { it.targetBpUpper },
         getTargetEntriesFlow { it.targetBpLower },
         getTargetEntriesFlow { it.targetBodyWeight },

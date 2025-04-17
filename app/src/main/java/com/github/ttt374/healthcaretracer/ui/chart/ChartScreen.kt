@@ -76,7 +76,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
                 }
             }
             // 選択されたタブに応じて異なるグラフを表示
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
                 HealthChart(chartData.chartSeriesList)
             }
         }
@@ -118,16 +118,11 @@ fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount
 
 @Composable
 fun HealthChart(chartSeriesList: List<ChartSeries>) {
-//fun HealthChart(lineDataSetList: List<LineDataSet>) {
-    val chartColors = ChartColorPalette(
-        primary = MaterialTheme.colorScheme.primary,
-        secondary = MaterialTheme.colorScheme.tertiary
-    )
-
+    val colorScheme = MaterialTheme.colorScheme
     val list = chartSeriesList.flatMap { chartSeries ->
-        val color = when(chartSeries.seriesDef.seniority){
-            Seniority.Primary -> chartColors.primary
-            Seniority.Secondary -> chartColors.secondary
+        val color = when(chartSeries.seriesDef.seriesPriority){
+            SeriesPriority.Primary -> colorScheme.primary
+            SeriesPriority.Secondary -> colorScheme.secondary
         }
         val label = chartSeries.seriesDef.labelResId?.let { stringResource(it) } ?: ""
         val targetLabel = chartSeries.seriesDef.targetLabelResId?.let { stringResource(it) } ?: ""

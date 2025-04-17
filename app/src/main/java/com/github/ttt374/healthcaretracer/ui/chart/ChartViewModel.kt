@@ -28,22 +28,17 @@ data class ChartEntries(
     val bodyWeight: List<Entry> = emptyList(),
     val bodyTemperature: List<Entry> = emptyList(),
 )
-//data class ChartUiState (
-//    val actualEntries: ChartEntries = ChartEntries(),
-//    val targetEntries: ChartEntries = ChartEntries(),
-//    val timeRange: TimeRange = TimeRange.Default,
-//    //val selectedTabIndex: Int = 0,
-//)
-//data class Chart(val type: ChartType = ChartType.BloodPressure, val series: List<ChartSeries> = emptyList())
-data class ChartSeries(val seriesDef: SeriesDef, val entries: List<Entry>, val targetEntries: List<Entry>)
+data class ChartData(val chartType: ChartType = ChartType.Default, val chartSeriesList: List<ChartSeries> = emptyList())
+data class ChartSeries(val seriesDef: SeriesDef = SeriesDef.BpUpper, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry> = emptyList())
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository, private val preferencesRepository: PreferencesRepository) : ViewModel() {
     private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
     val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope,  SharingStarted.WhileSubscribed(5000), TimeRange.Default)
 
     private val _selectedChartType: MutableStateFlow<ChartType> = MutableStateFlow(ChartType.BloodPressure)
-    val selectedChartType: StateFlow<ChartType> = _selectedChartType.asStateFlow()
+    private val selectedChartType: StateFlow<ChartType> = _selectedChartType.asStateFlow()
 
     fun onChartTypeSelected(type: ChartType) {
         _selectedChartType.value = type
@@ -52,40 +47,12 @@ class ChartViewModel @Inject constructor(private val chartRepository: ChartRepos
     fun onPageChanged(index: Int) {
         _selectedChartType.value = ChartType.entries[index]
     }
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val chartSeries: StateFlow<List<ChartSeries>> = selectedChartType.flatMapLatest { chartType ->
+
+    val chartData: StateFlow<ChartData> = selectedChartType.flatMapLatest { chartType ->
         chartRepository.seriesEntriesFlow.map { seriesEntries ->
-            chartType.seriesDefList.map { def ->
-                ChartSeries(def, def.takeValue(seriesEntries.actual), def.takeValue(seriesEntries.target))
-            }
+            ChartData(chartType, chartType.toChartSeriesList(seriesEntries))
         }
-//        chartRepository.actualEntriesFlow.map { chartEntries ->
-//            //chartRepository.targetEntriesFlow.map { targetChartEntries ->
-//                chartType.seriesDefList.map { def ->
-//                    ChartSeries(def, def.takeValue(chartEntries))
-//                    //LineDataSet(def.takeValue(chartEntries), "")
-//                    //def.createLineDataSet(chartEntries)
-//                    //LineDataSet(chartEntries.pulse, "asdf")
-//                }
-//            //}
-//        }
-        //listOf(LineDataSet(chartEntries.pulse, "stringResource(R.string.pulse)"))
-    }.stateIn(viewModelScope,  SharingStarted.WhileSubscribed(5000), emptyList())
-
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-
-//     val uiState: StateFlow<ChartUiState> = combine(
-//        chartRepository.actualEntriesFlow,
-//        chartRepository.targetEntriesFlow,
-//        chartRepository.timeRangeFlow,
-//    ) { actualEntries, targetEntries, timeRange ->
-//        ChartUiState(
-//            actualEntries = actualEntries,
-//            targetEntries = targetEntries,
-//            timeRange = timeRange,
-//        )
-//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartUiState())
+    }.stateIn(viewModelScope,  SharingStarted.WhileSubscribed(5000), ChartData())
 
     fun updateTimeRange(range: TimeRange) {
         viewModelScope.launch {
@@ -99,13 +66,6 @@ class ChartViewModel @Inject constructor(private val chartRepository: ChartRepos
             }
         }
     }
-//    fun updateSelectedTabIndex(index: Int) {
-//        //selectedTabIndexFlow.value = index
-//        viewModelScope.launch {
-//            selectedTabIndexFlow.emit(index)
-//        }
-//
-//    }
 }
 fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
     return mapNotNull { dailyItem ->

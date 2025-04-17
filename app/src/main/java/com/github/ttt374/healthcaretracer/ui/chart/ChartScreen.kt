@@ -17,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -40,26 +39,23 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
+    val chartData by chartViewModel.chartData.collectAsState()
     val timeRange by chartViewModel.timeRange.collectAsState()
-    val selectedType by chartViewModel.selectedChartType.collectAsState()
+
     val pagerState = rememberPagerState(
-        initialPage = ChartType.entries.indexOf(selectedType),
+        initialPage = ChartType.entries.indexOf(chartData.chartType),
         pageCount = { ChartType.entries.size }
     )
 
-    //val uiState by chartViewModel.uiState.collectAsState()
-
     val coroutineScope = rememberCoroutineScope()
-
     val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
-
 
     // ページ変更時に ViewModel に反映
     LaunchedEffect(pagerState.currentPage) {
         chartViewModel.onPageChanged(pagerState.currentPage)
     }
-    val chartSeriesList by chartViewModel.chartSeries.collectAsState()
 
+    //////////////////////////////
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
         bottomBar = { CustomBottomAppBar(appNavigator) })
     { innerPadding ->
@@ -81,19 +77,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             }
             // 選択されたタブに応じて異なるグラフを表示
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-                //val selectedChartType = ChartType.entries[page]
-                HealthChart(chartSeriesList)
-
-//                when (selectedChartType){
-//                    ChartType.Pulse -> HealthChart(datasets)
-//                    else -> {}
-//                }
-//                val datasets = remember(uiState, selectedChartType) {
-//                    selectedChartType.datasets(context, uiState, chartColors)
-//                }
-//                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//                    HealthChart(datasets)
-//                }
+                HealthChart(chartData.chartSeriesList)
             }
         }
     }
@@ -145,9 +129,10 @@ fun HealthChart(chartSeriesList: List<ChartSeries>) {
             Seniority.Primary -> chartColors.primary
             Seniority.Secondary -> chartColors.secondary
         }
+        val label = chartSeries.seriesDef.labelResId?.let { stringResource(it) } ?: ""
         val targetLabel = chartSeries.seriesDef.targetLabelResId?.let { stringResource(it) } ?: ""
         listOfNotNull(
-            LineDataSet(chartSeries.entries, stringResource(chartSeries.seriesDef.labelResId)).applyStyle(color.toArgb()),
+            LineDataSet(chartSeries.actualEntries, label).applyStyle(color.toArgb()),
             LineDataSet(chartSeries.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
         )
     }

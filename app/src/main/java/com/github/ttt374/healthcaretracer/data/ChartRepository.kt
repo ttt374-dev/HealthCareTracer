@@ -37,6 +37,12 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, pr
             dailyItemsFlow.map { list -> list.firstAndLast().toEntries { target.toDouble() }}
         }
     }
+//    fun getChartEntriesFlow(chartType: ChartType): Flow<Chart> {
+//        val list = chartType.seriesDefs.map { def ->
+//            ChartSeries(def, getEntriesFlow { def.takeValue(it) })
+//        }
+//        return Chart()
+//    }
     val actualEntriesFlow = combine(
         getEntriesFlow { it.avgBpUpper },
         getEntriesFlow { it.avgBpLower },
@@ -54,6 +60,12 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, pr
     ){ upper, lower, bodyWeight ->
         ChartEntries(upper, lower, emptyList(), bodyWeight)
     }
+    data class SeriesEntries (val actual: ChartEntries, val target: ChartEntries)
+    val seriesEntriesFlow = combine(
+        actualEntriesFlow, targetEntriesFlow
+    ){ actual, target -> SeriesEntries(actual, target)}
+
+    //fun getChartEntriesFlow(chartType: ChartType):
     //override suspend fun updateData(transform: suspend (t: T) -> T): T = dataStore.updateData(transform)
     suspend fun updatePreferences (transform: suspend (t: Preferences) -> Preferences) = preferencesRepository.updateData(transform)
 

@@ -71,7 +71,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
     Column(Modifier.fillMaxSize().imePadding()) {
         LazyColumn (modifier=Modifier.weight(1f)){
             item {
-                InputFieldRow("Measured At"){
+                InputFieldRow("Measured At"){  // TODO: stringResources()
                     Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
                         DateAndTimePickers(itemUiState,
                             onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },

@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,9 +73,12 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             }
             // 選択されたタブに応じて異なるグラフを表示
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-                val chartType = ChartType.entries[page]
+                val selectedChartType = ChartType.entries[page]
+                val datasets = remember(uiState, selectedChartType) {
+                    selectedChartType.datasets(context, uiState, chartColors)
+                }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    HealthChart(chartType.datasets(context, uiState, chartColors))
+                    HealthChart(datasets)
                 }
             }
         }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -15,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
@@ -50,10 +52,12 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     val coroutineScope = rememberCoroutineScope()
     val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
 
-    // ページ変更時に ViewModel に反映
-    LaunchedEffect(pagerState.currentPage) {
-        chartViewModel.onPageChanged(pagerState.currentPage)
+    LaunchedEffect(Unit) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            chartViewModel.onPageChanged(page)
+        }
     }
+
 
     //////////////////////////////
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
@@ -109,36 +113,46 @@ fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount
         isGranularityEnabled = true
         setLabelCount(maxLabelCount, false)
         this.labelRotationAngle = labelRotationAngle
+        setAvoidFirstLastClipping(true)
     }
-    axisLeft.spaceTop = 40f
-    axisLeft.spaceBottom = 40f
+
+    axisLeft.apply {
+        spaceTop = 40f
+        spaceBottom = 40f
+    }
     axisRight.isEnabled = false
     setupValueFormatter(datePattern)
+    invalidate()
 }
 
 @Composable
-fun HealthChart(chartSeriesList: List<ChartSeries>) {
-    val colorScheme = MaterialTheme.colorScheme
-    val list = chartSeriesList.flatMap { chartSeries ->
-        val color = when(chartSeries.seriesDef.seriesPriority){
-            SeriesPriority.Primary -> colorScheme.primary
-            SeriesPriority.Secondary -> colorScheme.secondary
-        }
-        val label = chartSeries.seriesDef.labelResId?.let { stringResource(it) } ?: ""
-        val targetLabel = chartSeries.seriesDef.targetLabelResId?.let { stringResource(it) } ?: ""
-        listOfNotNull(
-            LineDataSet(chartSeries.actualEntries, label).applyStyle(color.toArgb()),
-            LineDataSet(chartSeries.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
-        )
-    }
+fun HealthChart(chartSeriesList: List<ChartSeries>, colorScheme: ColorScheme = MaterialTheme.colorScheme) {
+    val list = chartSeriesList.toLineDataSets(colorScheme)
+
     AndroidView(
         factory = { context -> LineChart(context) },
         modifier = Modifier.fillMaxSize(),
         update = { chart ->
             chart.data = LineData(*list.toTypedArray())
             //chart.data = LineData(*lineDataSetLit.toTypedArray())
-            chart.invalidate()
+
             chart.setupChartAdaptive()
         }
     )
+}
+
+@Composable
+private fun List<ChartSeries>.toLineDataSets(colorScheme: ColorScheme): List<LineDataSet> {
+    return flatMap { series ->
+        val color = when (series.seriesDef.seriesPriority) {
+            SeriesPriority.Primary -> colorScheme.primary
+            SeriesPriority.Secondary -> colorScheme.secondary
+        }
+        val label = series.seriesDef.labelResId?.let { stringResource(it) } ?: ""
+        val targetLabel = series.seriesDef.targetLabelResId?.let { stringResource(it) } ?: ""
+        listOfNotNull(
+            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
+            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
+        )
+    }
 }

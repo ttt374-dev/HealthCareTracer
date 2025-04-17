@@ -42,10 +42,7 @@ sealed class SeriesDef(val takeValue: (ChartEntries) -> List<Entry>,
     data object BodyTemperature: SeriesDef({ it.bodyTemperature }, R.string.bodyTemperature, null)
     data object BodyWeight: SeriesDef({ it.bodyWeight }, R.string.bodyWeight, R.string.targetBodyWeight, getTargetValue = { it.bodyWeight })
 }
-fun SeriesDef.createTargetEntries(
-    targetItem: ChartableItem,
-    actualEntries: ChartEntries
-): List<Entry> {
+fun SeriesDef.createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
     val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
     val entries = takeValue(actualEntries)
 
@@ -61,7 +58,7 @@ fun SeriesDef.createTargetEntries(
 }
 
 
-sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
+sealed class ChartType(@StringRes val labelResId: Int, private val seriesDefList: List<SeriesDef>){
     data object BloodPressure : ChartType(R.string.blood_pressure,
         listOf(SeriesDef.BpUpper, SeriesDef.BpLower))
     data object Pulse: ChartType(R.string.pulse, listOf(SeriesDef.Pulse))
@@ -77,12 +74,12 @@ sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<S
         get() = targetLabelResId != null
 
 
-    fun toChartSeriesList(entries: ChartRepository.SeriesEntries, targetValue: ChartableItem): List<ChartSeries> {
+    fun toChartSeriesList(entries: ChartEntries, targetValue: ChartableItem): List<ChartSeries> {
         return seriesDefList.map { def ->
             ChartSeries(
                 seriesDef = def,
-                actualEntries = def.takeValue(entries.actual),
-                targetEntries = def.createTargetEntries(targetValue, entries.actual)
+                actualEntries = def.takeValue(entries),
+                targetEntries = def.createTargetEntries(targetValue, entries)
                 //targetEntries = def.takeValue(entries.target)
             )
         }

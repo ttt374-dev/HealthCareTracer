@@ -8,9 +8,10 @@ import com.github.ttt374.healthcaretracer.data.datastore.Preferences
 import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
+import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartEntries
-import com.github.ttt374.healthcaretracer.ui.chart.firstAndLast
-import com.github.ttt374.healthcaretracer.ui.chart.toEntries
+import com.github.ttt374.healthcaretracer.ui.chart.ChartType
+import com.github.ttt374.healthcaretracer.ui.chart.ChartableItem
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,11 +19,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
-class ChartRepository @Inject constructor(val itemRepository: ItemRepository, private val configRepository: ConfigRepository, private val preferencesRepository: PreferencesRepository) : ViewModel() {
+class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
+                                          private val configRepository: ConfigRepository,
+                                          private val preferencesRepository: PreferencesRepository) : ViewModel() {
 
     private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
         itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
@@ -30,19 +34,8 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, pr
     private fun getEntriesFlow(takeValue: (DailyItem) -> Double?): Flow<List<Entry>> {
         return dailyItemsFlow.map { list -> list.toEntries { takeValue(it) } }
     }
-    private fun getTargetEntriesFlow(takeValue: (Config) -> Number): Flow<List<Entry>> {
-        return configRepository.dataFlow.map { takeValue(it) }.flatMapLatest { target ->
-            //getEntriesFlow { target.toDouble() }
-            dailyItemsFlow.map { list -> list.firstAndLast().toEntries { target.toDouble() }}
-        }
-    }
-//    fun getChartEntriesFlow(chartType: ChartType): Flow<Chart> {
-//        val list = chartType.seriesDefs.map { def ->
-//            ChartSeries(def, getEntriesFlow { def.takeValue(it) })
-//        }
-//        return Chart()
-//    }
-private val actualEntriesFlow = combine(
+
+    private val entriesFlow = combine(
         getEntriesFlow { it.avgBpUpper },
         getEntriesFlow { it.avgBpLower },
         getEntriesFlow { it.avgPulse },
@@ -52,20 +45,24 @@ private val actualEntriesFlow = combine(
         ChartEntries(upper, lower, pulse, bodyWeight, bodyTemperature)
     }
 
-    private val targetEntriesFlow = combine(
-        getTargetEntriesFlow { it.targetBpUpper },
-        getTargetEntriesFlow { it.targetBpLower },
-        getTargetEntriesFlow { it.targetBodyWeight },
-    ){ upper, lower, bodyWeight ->
-        ChartEntries(upper, lower, emptyList(), bodyWeight)
+    fun getChartDataFlow(chartType: ChartType): Flow<ChartData> {
+        return combine(entriesFlow, configRepository.dataFlow) { entries, config ->
+            val targetValue = config.toChartableItem()
+            ChartData(chartType, chartType.toChartSeriesList(entries, targetValue))
+        }
     }
-    data class SeriesEntries (val actual: ChartEntries, val target: ChartEntries)
-    val seriesEntriesFlow = combine(
-        actualEntriesFlow, targetEntriesFlow
-    ){ actual, target -> SeriesEntries(actual, target)}
-
-    //fun getChartEntriesFlow(chartType: ChartType):
-    //override suspend fun updateData(transform: suspend (t: T) -> T): T = dataStore.updateData(transform)
     suspend fun updatePreferences (transform: suspend (t: Preferences) -> Preferences) = preferencesRepository.updateData(transform)
 
 }
+fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
+    return mapNotNull { dailyItem ->
+        takeValue(dailyItem)?.toFloat()?.let { value ->
+            Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
+        }
+    }
+}
+private fun Config.toChartableItem(): ChartableItem = ChartableItem(
+    bpUpper = targetBpUpper.toDouble(),
+    bpLower = targetBpLower.toDouble(),
+    bodyWeight = targetBodyWeight
+)

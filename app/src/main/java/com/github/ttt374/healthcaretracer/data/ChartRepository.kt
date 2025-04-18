@@ -51,6 +51,11 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
             ChartData(chartType, chartType.toChartSeriesList(entries, targetValue))
         }
     }
+//    fun chartDataFlow(chartType: ChartType): Flow<ChartData> {
+//        return combine(){
+//            ChartData(chartType, )
+//        }
+//    }
     suspend fun updatePreferences (transform: suspend (t: Preferences) -> Preferences) = preferencesRepository.updateData(transform)
 
 }

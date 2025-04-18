@@ -41,22 +41,28 @@ sealed class SeriesDef(val takeValue: (ChartEntries) -> List<Entry>,
     data object Pulse: SeriesDef({ it.pulse }, R.string.pulse, null)
     data object BodyTemperature: SeriesDef({ it.bodyTemperature }, R.string.bodyTemperature, null)
     data object BodyWeight: SeriesDef({ it.bodyWeight }, R.string.bodyWeight, R.string.targetBodyWeight, getTargetValue = { it.bodyWeight })
+
+    fun createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
+        val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
+        val entries = takeValue(actualEntries)
+
+        if (entries.isEmpty()) return emptyList()
+
+        val startX = entries.first().x
+        val endX = entries.last().x
+
+        return listOf(
+            Entry(startX, targetValue),
+            Entry(endX, targetValue)
+        )
+    }
+    fun createChartSeries(entries: ChartEntries, targetValue: ChartableItem) =
+          ChartSeries(
+            seriesDef = this,
+            actualEntries = takeValue(entries),
+            targetEntries = createTargetEntries(targetValue, entries)
+        )
 }
-fun SeriesDef.createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
-    val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
-    val entries = takeValue(actualEntries)
-
-    if (entries.isEmpty()) return emptyList()
-
-    val startX = entries.first().x
-    val endX = entries.last().x
-
-    return listOf(
-        Entry(startX, targetValue),
-        Entry(endX, targetValue)
-    )
-}
-
 
 sealed class ChartType(@StringRes val labelResId: Int, private val seriesDefList: List<SeriesDef>){
     data object BloodPressure : ChartType(R.string.blood_pressure,
@@ -75,13 +81,13 @@ sealed class ChartType(@StringRes val labelResId: Int, private val seriesDefList
 
 
     fun toChartSeriesList(entries: ChartEntries, targetValue: ChartableItem): List<ChartSeries> {
-        return seriesDefList.map { def ->
-            ChartSeries(
-                seriesDef = def,
-                actualEntries = def.takeValue(entries),
-                targetEntries = def.createTargetEntries(targetValue, entries)
+        return seriesDefList.map { def -> def.createChartSeries(entries, targetValue)
+//            ChartSeries(
+//                seriesDef = def,
+//                actualEntries = def.takeValue(entries),
+//                targetEntries = def.createTargetEntries(targetValue, entries)
                 //targetEntries = def.takeValue(entries.target)
-            )
+            //)
         }
     }
 }
@@ -90,13 +96,16 @@ fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadius: Floa
     this.color = color
     setCircleColor(color)
     valueTextColor = color
-    this.lineWidth = lineWidth
     this.circleRadius = circleRadius
-    if (isTarget){
+
+    if (isTarget) {
         enableDashedLine(15f, 10f, 0f)
-        this.lineWidth = 1f
         setDrawValues(false)
         setDrawCircles(false)
+        this.lineWidth = 1f
+    } else {
+        this.lineWidth = lineWidth
+        //this.circleRadius = circleRadius
     }
 }
 

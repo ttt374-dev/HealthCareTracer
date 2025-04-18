@@ -27,7 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
-                                         private val preferencesRepository: PreferencesRepository) : ViewModel() {
+                                         preferencesRepository: PreferencesRepository) : ViewModel() {
     private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }
     val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope,  SharingStarted.WhileSubscribed(5000), TimeRange.Default)
 
@@ -58,11 +58,3 @@ class ChartViewModel @Inject constructor(private val chartRepository: ChartRepos
         }
     }
 }
-
-//internal fun <T> List<T>.firstAndLast(): List<T> {
-//    return when (size) {
-//        0 -> emptyList()
-//        1 -> listOf(first())
-//        else -> listOf(first(), last())
-//    }
-//}

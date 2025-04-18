@@ -17,6 +17,9 @@ import kotlinx.coroutines.flow.map
 import java.time.ZoneId
 import javax.inject.Inject
 
+fun DailyItem.toChartableItem() =
+    ChartableItem(bpUpper = avgBpUpper, bpLower = avgBpLower, pulse = avgPulse, bodyTemperature = avgBodyTemperature, bodyWeight = avgBodyWeight)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
                                           private val configRepository: ConfigRepository,
@@ -36,7 +39,8 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
     }
     private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange): Flow<ChartSeries> {
         return targetValuesFlow.flatMapLatest { targetValues ->
-            getEntriesFlow(takeValue = { seriesDef.takeDailyValue(it) }, timeRange).map {
+            getEntriesFlow(takeValue = { seriesDef.takeValue(it.toChartableItem()) }, timeRange).map {
+            //getEntriesFlow(takeValue = { seriesDef.takeDailyValue(it) }, timeRange).map {
                 ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it))
             }
         }

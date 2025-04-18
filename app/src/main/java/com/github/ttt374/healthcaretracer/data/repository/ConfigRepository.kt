@@ -28,11 +28,11 @@ data class Config (
     //val localeTag: String = "en_US"
 )
 
-@Serializable
+//@Serializable
 data class LocalTimeRange(
-    @Serializable(with=LocalTimeSerializer::class)
+    //@Serializable(with=LocalTimeSerializer::class)
     val start: LocalTime = LocalTime.of(0, 0),
-    @Serializable(with=LocalTimeSerializer::class)
+    //@Serializable(with=LocalTimeSerializer::class)
     val endInclusive: LocalTime = LocalTime.of(23, 59)
 ) {
     operator fun contains(time: LocalTime): Boolean {

@@ -7,7 +7,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 
-@Serializable
+//@Serializable
 sealed class TimeOfDay {
     object Morning : TimeOfDay()
     object Afternoon : TimeOfDay()

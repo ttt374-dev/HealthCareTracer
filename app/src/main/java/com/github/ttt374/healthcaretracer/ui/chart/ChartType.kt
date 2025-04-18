@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
 import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.Color
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.ttt374.healthcaretracer.R
@@ -16,7 +17,9 @@ import kotlinx.serialization.encoding.Encoder
 data class ChartData(val chartType: ChartType = ChartType.Default, val chartSeriesList: List<ChartSeries> = emptyList())
 data class ChartSeries(val seriesDef: SeriesDef = SeriesDef.BpUpper, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry> = emptyList())
 
-enum class SeriesPriority { Primary, Secondary }
+//enum class SeriesPriority { Primary, Secondary }
+//
+//data class ColorPalette (val primary: Color = Color.Unspecified, val secondary: Color)
 
 data class ChartableItem (
     val bpUpper: Double? = null,
@@ -27,22 +30,22 @@ data class ChartableItem (
 )
 
 sealed class SeriesDef(
-    @StringRes val labelResId: Int?, @StringRes val targetLabelResId: Int? = null,
-    val seriesPriority: SeriesPriority = SeriesPriority.Primary,
-    val getTargetValue: ((ChartableItem) -> Number?)? = null,
-    val takeDailyValue: (DailyItem) -> Double?
+    @StringRes val labelResId: Int?,
+    @StringRes val targetLabelResId: Int? = null,
+    //val color: Color = Color.Unspecified,
+    val takeValue: (ChartableItem) -> Double?
 ){
-    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper, SeriesPriority.Primary, getTargetValue = { it.bpUpper }, { it.avgBpUpper})
-    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower, SeriesPriority.Secondary, getTargetValue = { it.bpLower }, { it.avgBpLower})
-    data object Pulse: SeriesDef(R.string.pulse, null, SeriesPriority.Primary, null, { it.avgPulse })
-    data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, SeriesPriority.Primary, null, { it.avgBodyTemperature })
-    data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  getTargetValue = { it.bodyWeight }, takeDailyValue = { it.avgBodyWeight } )
+    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper,  { it.bpUpper} )
+    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower,  { it.bpLower} )
+    data object Pulse: SeriesDef(R.string.pulse, null,  { it.pulse })
+    data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
+    data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
 
     companion object {
         val entries = listOf(BpUpper, BpLower, Pulse, BodyTemperature, BodyWeight)
     }
     fun createTargetEntries(targetValues: ChartableItem, entries: List<Entry>): List<Entry> {
-        val targetValue = getTargetValue?.invoke(targetValues)?.toFloat() ?: return emptyList()
+        val targetValue = takeValue?.invoke(targetValues)?.toFloat() ?: return emptyList()
         if (entries.isEmpty()) return emptyList()
 
         val startX = entries.first().x
@@ -53,10 +56,9 @@ sealed class SeriesDef(
             Entry(endX, targetValue)
         )
     }
-
 }
 
-@Serializable(with = ChartTypeSerializer::class)
+//@Serializable(with = ChartTypeSerializer::class)
 sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
     data object BloodPressure : ChartType(R.string.blood_pressure,
         listOf(SeriesDef.BpUpper, SeriesDef.BpLower))
@@ -73,48 +75,32 @@ sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<S
 //        get() = targetLabelResId != null
 }
 
-fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadius: Float = 4f, isTarget: Boolean = false) = apply {
-    this.color = color
-    setCircleColor(color)
-    valueTextColor = color
-    this.circleRadius = circleRadius
-
-    if (isTarget) {
-        enableDashedLine(15f, 10f, 0f)
-        setDrawValues(false)
-        setDrawCircles(false)
-        this.lineWidth = 1f
-    } else {
-        this.lineWidth = lineWidth
-        //this.circleRadius = circleRadius
-    }
-}
-
-object ChartTypeSerializer : KSerializer<ChartType> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("ChartType", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: ChartType) {
-        encoder.encodeString(
-            when (value) {
-                ChartType.BloodPressure -> "BloodPressure"
-                ChartType.Pulse -> "Pulse"
-                ChartType.BodyTemperature -> "BodyTemperature"
-                ChartType.BodyWeight -> "BodyWeight"
-            }
-        )
-    }
-
-    override fun deserialize(decoder: Decoder): ChartType {
-        return when (val name = decoder.decodeString()) {
-            "BloodPressure" -> ChartType.BloodPressure
-            "Pulse" -> ChartType.Pulse
-            "BodyTemperature" -> ChartType.BodyTemperature
-            "BodyWeight" -> ChartType.BodyWeight
-            else -> error("Unknown ChartType: $name")
-        }
-    }
-}
+//
+//object ChartTypeSerializer : KSerializer<ChartType> {
+//    override val descriptor: SerialDescriptor =
+//        PrimitiveSerialDescriptor("ChartType", PrimitiveKind.STRING)
+//
+//    override fun serialize(encoder: Encoder, value: ChartType) {
+//        encoder.encodeString(
+//            when (value) {
+//                ChartType.BloodPressure -> "BloodPressure"
+//                ChartType.Pulse -> "Pulse"
+//                ChartType.BodyTemperature -> "BodyTemperature"
+//                ChartType.BodyWeight -> "BodyWeight"
+//            }
+//        )
+//    }
+//
+//    override fun deserialize(decoder: Decoder): ChartType {
+//        return when (val name = decoder.decodeString()) {
+//            "BloodPressure" -> ChartType.BloodPressure
+//            "Pulse" -> ChartType.Pulse
+//            "BodyTemperature" -> ChartType.BodyTemperature
+//            "BodyWeight" -> ChartType.BodyWeight
+//            else -> error("Unknown ChartType: $name")
+//        }
+//    }
+//}
 
 
 //

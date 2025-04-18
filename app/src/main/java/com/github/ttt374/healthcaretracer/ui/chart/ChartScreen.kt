@@ -42,10 +42,12 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val chartData by chartViewModel.chartData.collectAsState()
+    val selectedChartType by chartViewModel.selectedChartType.collectAsState()
     val timeRange by chartViewModel.timeRange.collectAsState()
 
+
     val pagerState = rememberPagerState(
-        initialPage = ChartType.entries.indexOf(chartData.chartType),
+        initialPage = ChartType.entries.indexOf(selectedChartType),
         pageCount = { ChartType.entries.size }
     )
 
@@ -57,7 +59,6 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             chartViewModel.onPageChanged(page)
         }
     }
-
 
     //////////////////////////////
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },

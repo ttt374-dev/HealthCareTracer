@@ -5,19 +5,14 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-//data class ChartColorPalette(
-//    val primary: Color,
-//    val secondary: Color
-//)
-
-data class ChartEntries(
-    val bpUpper: List<Entry> =  emptyList(),
-    val bpLower: List<Entry> = emptyList(),
-    val pulse: List<Entry> = emptyList(),
-    val bodyWeight: List<Entry> = emptyList(),
-    val bodyTemperature: List<Entry> = emptyList(),
-)
 data class ChartData(val chartType: ChartType = ChartType.Default, val chartSeriesList: List<ChartSeries> = emptyList())
 data class ChartSeries(val seriesDef: SeriesDef = SeriesDef.BpUpper, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry> = emptyList())
 
@@ -43,7 +38,9 @@ sealed class SeriesDef(
     data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, SeriesPriority.Primary, null, { it.avgBodyTemperature })
     data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  getTargetValue = { it.bodyWeight }, takeDailyValue = { it.avgBodyWeight } )
 
-
+    companion object {
+        val entries = listOf(BpUpper, BpLower, Pulse, BodyTemperature, BodyWeight)
+    }
     fun createTargetEntries(targetValues: ChartableItem, entries: List<Entry>): List<Entry> {
         val targetValue = getTargetValue?.invoke(targetValues)?.toFloat() ?: return emptyList()
         if (entries.isEmpty()) return emptyList()
@@ -56,28 +53,10 @@ sealed class SeriesDef(
             Entry(endX, targetValue)
         )
     }
-//    fun createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
-//        val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
-//        val entries = takeValue(actualEntries)
-//
-//        if (entries.isEmpty()) return emptyList()
-//
-//        val startX = entries.first().x
-//        val endX = entries.last().x
-//
-//        return listOf(
-//            Entry(startX, targetValue),
-//            Entry(endX, targetValue)
-//        )
-//    }
-//    fun createChartSeries(entries: ChartEntries, targetValue: ChartableItem) =
-//          ChartSeries(
-//            seriesDef = this,
-//            actualEntries = takeValue(entries),
-//            targetEntries = createTargetEntries(targetValue, entries)
-//        )
+
 }
 
+@Serializable(with = ChartTypeSerializer::class)
 sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
     data object BloodPressure : ChartType(R.string.blood_pressure,
         listOf(SeriesDef.BpUpper, SeriesDef.BpLower))
@@ -90,20 +69,8 @@ sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<S
         val entries
             get() = listOf(BloodPressure, Pulse, BodyTemperature, BodyWeight)
     }
-    val SeriesDef.hasTarget: Boolean
-        get() = targetLabelResId != null
-
-
-//    fun toChartSeriesList(entries: ChartEntries, targetValue: ChartableItem): List<ChartSeries> {
-//        return seriesDefList.map { def -> def.createChartSeries(entries, targetValue)
-////            ChartSeries(
-////                seriesDef = def,
-////                actualEntries = def.takeValue(entries),
-////                targetEntries = def.createTargetEntries(targetValue, entries)
-//                //targetEntries = def.takeValue(entries.target)
-//            //)
-//        }
-//    }
+//    val SeriesDef.hasTarget: Boolean
+//        get() = targetLabelResId != null
 }
 
 fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadius: Float = 4f, isTarget: Boolean = false) = apply {
@@ -120,6 +87,32 @@ fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadius: Floa
     } else {
         this.lineWidth = lineWidth
         //this.circleRadius = circleRadius
+    }
+}
+
+object ChartTypeSerializer : KSerializer<ChartType> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ChartType", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ChartType) {
+        encoder.encodeString(
+            when (value) {
+                ChartType.BloodPressure -> "BloodPressure"
+                ChartType.Pulse -> "Pulse"
+                ChartType.BodyTemperature -> "BodyTemperature"
+                ChartType.BodyWeight -> "BodyWeight"
+            }
+        )
+    }
+
+    override fun deserialize(decoder: Decoder): ChartType {
+        return when (val name = decoder.decodeString()) {
+            "BloodPressure" -> ChartType.BloodPressure
+            "Pulse" -> ChartType.Pulse
+            "BodyTemperature" -> ChartType.BodyTemperature
+            "BodyWeight" -> ChartType.BodyWeight
+            else -> error("Unknown ChartType: $name")
+        }
     }
 }
 

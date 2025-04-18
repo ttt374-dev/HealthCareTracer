@@ -2,12 +2,11 @@ package com.github.ttt374.healthcaretracer.data.item
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
-import com.github.ttt374.healthcaretracer.ui.common.TimeRange
+import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
+import com.github.ttt374.healthcaretracer.data.repository.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
 
 //const val MIN_PULSE = 30

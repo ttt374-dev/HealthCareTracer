@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.data.datastore
+package com.github.ttt374.healthcaretracer.data.repository
 
 import android.content.Context
 import android.util.Log

@@ -1,12 +1,13 @@
 package com.github.ttt374.healthcaretracer.ui.common
 
-import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeSerializer
+import com.github.ttt374.healthcaretracer.data.repository.LocalTimeSerializer
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 
 
+@Serializable
 sealed class TimeOfDay {
     object Morning : TimeOfDay()
     object Afternoon : TimeOfDay()

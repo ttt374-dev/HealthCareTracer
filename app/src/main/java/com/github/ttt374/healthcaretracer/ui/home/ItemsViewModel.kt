@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
-import com.github.ttt374.healthcaretracer.data.item.ItemRepository
-import com.github.ttt374.healthcaretracer.data.item.averageOrNull
+import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.data.repository.averageOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map

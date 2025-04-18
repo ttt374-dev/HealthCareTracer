@@ -3,14 +3,14 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.datastore.Config
-import com.github.ttt374.healthcaretracer.data.datastore.ConfigRepository
-import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
-import com.github.ttt374.healthcaretracer.data.datastore.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
-import com.github.ttt374.healthcaretracer.data.item.ItemRepository
-import com.github.ttt374.healthcaretracer.data.item.averageOrNull
+import com.github.ttt374.healthcaretracer.data.repository.Config
+import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
+import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
+import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
+import com.github.ttt374.healthcaretracer.data.repository.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
@@ -27,7 +27,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
-class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository, val preferencesRepository: PreferencesRepository) : ViewModel() {
+class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository,
+                                               private val preferencesRepository: PreferencesRepository) : ViewModel() {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 
     // TimeRange だけを切り出して StateFlow として公開

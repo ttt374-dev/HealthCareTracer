@@ -2,7 +2,7 @@ package com.github.ttt374.healthcaretracer
 
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.datastore.LocalTimeRange
+import com.github.ttt374.healthcaretracer.data.config.LocalTimeRange
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay

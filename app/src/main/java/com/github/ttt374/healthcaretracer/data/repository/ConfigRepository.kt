@@ -1,5 +1,6 @@
-package com.github.ttt374.healthcaretracer.data.datastore
+package com.github.ttt374.healthcaretracer.data.repository
 
+import android.content.Context
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import kotlinx.serialization.KSerializer
@@ -11,6 +12,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import javax.inject.Singleton
 
 @Serializable  // (with = ConfigSerializer::class)
 data class Config (
@@ -62,3 +64,17 @@ object LocalTimeSerializer : KSerializer<LocalTime> {
         return LocalTime.parse(decoder.decodeString(), formatter)
     }
 }
+
+//////////////////////////////////////////////////////////////
+/**
+ *  [ConfigRepository]
+ *
+ *  Config - 設定を管理する。データを Config にまとめて serialize して　DataStore に入れている。
+ *  datastore の interface に移譲しているが、ConfigHandler でラップしたのを使った方がよい。
+ */
+@Singleton
+class ConfigRepository(context: Context) : DataStoreRepository<Config> by DataStoreRepositoryImpl (
+    context = context,
+    fileName = "config4", // AppConst.DataStoreFilename.CONFIG.filename,
+    serializer = GenericSerializer(serializer = Config.serializer(), default = Config())
+)

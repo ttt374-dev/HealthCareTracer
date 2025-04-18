@@ -37,32 +37,41 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
         return dailyItemsFlow.map { list -> list.toEntries { takeValue(it) } }
     }
 
-    private val entriesFlow = combine(
-        getEntriesFlow { it.avgBpUpper },
-        getEntriesFlow { it.avgBpLower },
-        getEntriesFlow { it.avgPulse },
-        getEntriesFlow { it.avgBodyWeight },
-        getEntriesFlow { it.avgBodyTemperature },
-    ){ upper, lower, pulse, bodyWeight, bodyTemperature ->
-        ChartEntries(upper, lower, pulse, bodyWeight, bodyTemperature)
-    }
+//    private val entriesFlow = combine(
+//        getEntriesFlow { it.avgBpUpper },
+//        getEntriesFlow { it.avgBpLower },
+//        getEntriesFlow { it.avgPulse },
+//        getEntriesFlow { it.avgBodyWeight },
+//        getEntriesFlow { it.avgBodyTemperature },
+//    ){ upper, lower, pulse, bodyWeight, bodyTemperature ->
+//        ChartEntries(upper, lower, pulse, bodyWeight, bodyTemperature)
+//    }
     private val targetValuesFlow = configRepository.dataFlow.map {
         it.toChartableItem()
     }
-    fun getChartSeriesFlow(seriesDef: SeriesDef): Flow<ChartSeries> {
-        return getEntriesFlow { seriesDef.takeDailyValue(it) }.map {
-            ChartSeries(seriesDef, it)
+    private fun getChartSeriesFlow(seriesDef: SeriesDef): Flow<ChartSeries> {
+        return targetValuesFlow.flatMapLatest { targetValues ->
+            getEntriesFlow { seriesDef.takeDailyValue(it) }.map {
+                ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it))
+            }
         }
     }
 
     fun getChartDataFlow(chartType: ChartType): Flow<ChartData> {
-        val flowList = chartType.seriesDefList.map { def ->
-            getChartSeriesFlow(def)
+        val seriesFlows = chartType.seriesDefList.map(::getChartSeriesFlow)
+
+        return combine(*seriesFlows.toTypedArray()) { seriesList ->
+            ChartData(chartType, seriesList.toList())
         }
-        val combined = combine(*flowList.toTypedArray()){ it.toList() }
-        return combined.map {
-            ChartData(chartType, it)
-        }
+    }
+
+//    fun getChartDataFlow(chartType: ChartType): Flow<ChartData> {
+//        val flowList = chartType.seriesDefList.map { def ->
+//            getChartSeriesFlow(def)
+//        }
+//        combine(*flowList.toTypedArray()){ it.toList() }.map {
+//            ChartData(chartType, it)
+//        }
 
 //        return combine(entriesFlow, targetValuesFlow) { entries, targetValues ->
 //            ChartData(chartType, chartType.toChartSeriesList(entries, targetValues))
@@ -70,7 +79,7 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
 //        return combine(entriesFlow, targetValuesFlow) { entries, targetValues ->
 //            ChartData(chartType, chartType.toChartSeriesList(entries, targetValues))
 //        }
-    }
+//    }
 
 
 //    fun chartDataFlow(chartType: ChartType): Flow<ChartData> {

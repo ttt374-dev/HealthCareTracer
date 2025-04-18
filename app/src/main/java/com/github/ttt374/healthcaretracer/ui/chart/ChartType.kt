@@ -1,11 +1,9 @@
 package com.github.ttt374.healthcaretracer.ui.chart
 
 import androidx.annotation.StringRes
-import androidx.compose.ui.graphics.Color
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.ChartRepository
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 
 //data class ChartColorPalette(
@@ -33,23 +31,21 @@ data class ChartableItem (
     val bodyWeight: Double? = null,
 )
 
-sealed class SeriesDef(val takeValue: (ChartEntries) -> List<Entry>,
-                       @StringRes val labelResId: Int?, @StringRes val targetLabelResId: Int? = null,
-                       val seriesPriority: SeriesPriority = SeriesPriority.Primary,
-                       val getTargetValue: ((ChartableItem) -> Number?)? = null,
-                        val takeDailyValue: (DailyItem) -> Double?
-    ){
-    data object BpUpper: SeriesDef({ it.bpUpper }, R.string.bpUpper, R.string.targetBpUpper, SeriesPriority.Primary, getTargetValue = { it.bpUpper }, { it.avgBpUpper})
-    data object BpLower: SeriesDef({ it.bpLower }, R.string.bpLower, R.string.targetBpLower, SeriesPriority.Secondary, getTargetValue = { it.bpLower }, { it.avgBpLower})
-    data object Pulse: SeriesDef({ it.pulse }, R.string.pulse, null, SeriesPriority.Primary, null, { null })
-    data object BodyTemperature: SeriesDef({ it.bodyTemperature }, R.string.bodyTemperature, null, SeriesPriority.Primary, null, { null })
-    data object BodyWeight: SeriesDef({ it.bodyWeight }, R.string.bodyWeight, R.string.targetBodyWeight,  getTargetValue = { it.bodyWeight }, takeDailyValue = { null } )
+sealed class SeriesDef(
+    @StringRes val labelResId: Int?, @StringRes val targetLabelResId: Int? = null,
+    val seriesPriority: SeriesPriority = SeriesPriority.Primary,
+    val getTargetValue: ((ChartableItem) -> Number?)? = null,
+    val takeDailyValue: (DailyItem) -> Double?
+){
+    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper, SeriesPriority.Primary, getTargetValue = { it.bpUpper }, { it.avgBpUpper})
+    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower, SeriesPriority.Secondary, getTargetValue = { it.bpLower }, { it.avgBpLower})
+    data object Pulse: SeriesDef(R.string.pulse, null, SeriesPriority.Primary, null, { it.avgPulse })
+    data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, SeriesPriority.Primary, null, { it.avgBodyTemperature })
+    data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  getTargetValue = { it.bodyWeight }, takeDailyValue = { it.avgBodyWeight } )
 
 
-    fun createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
-        val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
-        val entries = takeValue(actualEntries)
-
+    fun createTargetEntries(targetValues: ChartableItem, entries: List<Entry>): List<Entry> {
+        val targetValue = getTargetValue?.invoke(targetValues)?.toFloat() ?: return emptyList()
         if (entries.isEmpty()) return emptyList()
 
         val startX = entries.first().x
@@ -60,12 +56,26 @@ sealed class SeriesDef(val takeValue: (ChartEntries) -> List<Entry>,
             Entry(endX, targetValue)
         )
     }
-    fun createChartSeries(entries: ChartEntries, targetValue: ChartableItem) =
-          ChartSeries(
-            seriesDef = this,
-            actualEntries = takeValue(entries),
-            targetEntries = createTargetEntries(targetValue, entries)
-        )
+//    fun createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
+//        val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
+//        val entries = takeValue(actualEntries)
+//
+//        if (entries.isEmpty()) return emptyList()
+//
+//        val startX = entries.first().x
+//        val endX = entries.last().x
+//
+//        return listOf(
+//            Entry(startX, targetValue),
+//            Entry(endX, targetValue)
+//        )
+//    }
+//    fun createChartSeries(entries: ChartEntries, targetValue: ChartableItem) =
+//          ChartSeries(
+//            seriesDef = this,
+//            actualEntries = takeValue(entries),
+//            targetEntries = createTargetEntries(targetValue, entries)
+//        )
 }
 
 sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
@@ -84,16 +94,16 @@ sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<S
         get() = targetLabelResId != null
 
 
-    fun toChartSeriesList(entries: ChartEntries, targetValue: ChartableItem): List<ChartSeries> {
-        return seriesDefList.map { def -> def.createChartSeries(entries, targetValue)
-//            ChartSeries(
-//                seriesDef = def,
-//                actualEntries = def.takeValue(entries),
-//                targetEntries = def.createTargetEntries(targetValue, entries)
-                //targetEntries = def.takeValue(entries.target)
-            //)
-        }
-    }
+//    fun toChartSeriesList(entries: ChartEntries, targetValue: ChartableItem): List<ChartSeries> {
+//        return seriesDefList.map { def -> def.createChartSeries(entries, targetValue)
+////            ChartSeries(
+////                seriesDef = def,
+////                actualEntries = def.takeValue(entries),
+////                targetEntries = def.createTargetEntries(targetValue, entries)
+//                //targetEntries = def.takeValue(entries.target)
+//            //)
+//        }
+//    }
 }
 
 fun LineDataSet.applyStyle(color: Int, lineWidth: Float = 2f, circleRadius: Float = 4f, isTarget: Boolean = false) = apply {

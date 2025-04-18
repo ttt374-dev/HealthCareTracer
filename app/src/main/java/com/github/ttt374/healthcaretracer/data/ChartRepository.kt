@@ -10,8 +10,10 @@ import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.ItemRepository
 import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartEntries
+import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
 import com.github.ttt374.healthcaretracer.ui.chart.ChartType
 import com.github.ttt374.healthcaretracer.ui.chart.ChartableItem
+import com.github.ttt374.healthcaretracer.ui.chart.SeriesDef
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,13 +46,33 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
     ){ upper, lower, pulse, bodyWeight, bodyTemperature ->
         ChartEntries(upper, lower, pulse, bodyWeight, bodyTemperature)
     }
-
-    fun getChartDataFlow(chartType: ChartType): Flow<ChartData> {
-        return combine(entriesFlow, configRepository.dataFlow) { entries, config ->
-            val targetValue = config.toChartableItem()
-            ChartData(chartType, chartType.toChartSeriesList(entries, targetValue))
+    private val targetValuesFlow = configRepository.dataFlow.map {
+        it.toChartableItem()
+    }
+    fun getChartSeriesFlow(seriesDef: SeriesDef): Flow<ChartSeries> {
+        return getEntriesFlow { seriesDef.takeDailyValue(it) }.map {
+            ChartSeries(seriesDef, it)
         }
     }
+
+    fun getChartDataFlow(chartType: ChartType): Flow<ChartData> {
+        val flowList = chartType.seriesDefList.map { def ->
+            getChartSeriesFlow(def)
+        }
+        val combined = combine(*flowList.toTypedArray()){ it.toList() }
+        return combined.map {
+            ChartData(chartType, it)
+        }
+
+//        return combine(entriesFlow, targetValuesFlow) { entries, targetValues ->
+//            ChartData(chartType, chartType.toChartSeriesList(entries, targetValues))
+//        }
+//        return combine(entriesFlow, targetValuesFlow) { entries, targetValues ->
+//            ChartData(chartType, chartType.toChartSeriesList(entries, targetValues))
+//        }
+    }
+
+
 //    fun chartDataFlow(chartType: ChartType): Flow<ChartData> {
 //        return combine(){
 //            ChartData(chartType, )

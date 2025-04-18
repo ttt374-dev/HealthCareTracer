@@ -6,6 +6,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.ChartRepository
+import com.github.ttt374.healthcaretracer.data.item.DailyItem
 
 //data class ChartColorPalette(
 //    val primary: Color,
@@ -35,12 +36,15 @@ data class ChartableItem (
 sealed class SeriesDef(val takeValue: (ChartEntries) -> List<Entry>,
                        @StringRes val labelResId: Int?, @StringRes val targetLabelResId: Int? = null,
                        val seriesPriority: SeriesPriority = SeriesPriority.Primary,
-                       val getTargetValue: ((ChartableItem) -> Number?)? = null){
-    data object BpUpper: SeriesDef({ it.bpUpper }, R.string.bpUpper, R.string.targetBpUpper, SeriesPriority.Primary, getTargetValue = { it.bpUpper })
-    data object BpLower: SeriesDef({ it.bpLower }, R.string.bpLower, R.string.targetBpLower, SeriesPriority.Secondary, getTargetValue = { it.bpLower })
-    data object Pulse: SeriesDef({ it.pulse }, R.string.pulse, null)
-    data object BodyTemperature: SeriesDef({ it.bodyTemperature }, R.string.bodyTemperature, null)
-    data object BodyWeight: SeriesDef({ it.bodyWeight }, R.string.bodyWeight, R.string.targetBodyWeight, getTargetValue = { it.bodyWeight })
+                       val getTargetValue: ((ChartableItem) -> Number?)? = null,
+                        val takeDailyValue: (DailyItem) -> Double?
+    ){
+    data object BpUpper: SeriesDef({ it.bpUpper }, R.string.bpUpper, R.string.targetBpUpper, SeriesPriority.Primary, getTargetValue = { it.bpUpper }, { it.avgBpUpper})
+    data object BpLower: SeriesDef({ it.bpLower }, R.string.bpLower, R.string.targetBpLower, SeriesPriority.Secondary, getTargetValue = { it.bpLower }, { it.avgBpLower})
+    data object Pulse: SeriesDef({ it.pulse }, R.string.pulse, null, SeriesPriority.Primary, null, { null })
+    data object BodyTemperature: SeriesDef({ it.bodyTemperature }, R.string.bodyTemperature, null, SeriesPriority.Primary, null, { null })
+    data object BodyWeight: SeriesDef({ it.bodyWeight }, R.string.bodyWeight, R.string.targetBodyWeight,  getTargetValue = { it.bodyWeight }, takeDailyValue = { null } )
+
 
     fun createTargetEntries(targetItem: ChartableItem, actualEntries: ChartEntries): List<Entry> {
         val targetValue = getTargetValue?.invoke(targetItem)?.toFloat() ?: return emptyList()
@@ -64,7 +68,7 @@ sealed class SeriesDef(val takeValue: (ChartEntries) -> List<Entry>,
         )
 }
 
-sealed class ChartType(@StringRes val labelResId: Int, private val seriesDefList: List<SeriesDef>){
+sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
     data object BloodPressure : ChartType(R.string.blood_pressure,
         listOf(SeriesDef.BpUpper, SeriesDef.BpLower))
     data object Pulse: ChartType(R.string.pulse, listOf(SeriesDef.Pulse))

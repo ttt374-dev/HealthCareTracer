@@ -12,6 +12,7 @@ import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
+import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.common.maxOrNull
@@ -27,6 +28,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.ZoneId
 import javax.inject.Inject
+
+fun calcMeGap(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): List<Double> {
+    val zone = ZoneId.systemDefault()
+    return items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
+        .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(),
+            LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon),
+            LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)) }.filterNotNull()
+}
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,12 +56,9 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         val pulse = getStatTimeOfDay(items) { it.pulse?.toDouble()  }
         val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight  }
         val bodyTemperature = getStatTimeOfDay(items) { it.bodyTemperature }
-        val zone = ZoneId.systemDefault()
+        //val zone = ZoneId.systemDefault()
         val timeOfDayConfig = config.value.timeOfDayConfig
-        val meGap = items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
-            .map { (date, dailyItems) -> DailyItem(date = date, items = dailyItems).meGap(ZoneId.systemDefault(),
-                LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon),
-                LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)) }.filterNotNull()
+        val meGap = calcMeGap(items, timeOfDayConfig)
 
         StatisticsData(
             bloodPressure = bp,
@@ -65,7 +71,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
 
-    private fun <T> getStatValue(list: List<T>): StatValue<T> {
+    fun <T> getStatValue(list: List<T>): StatValue<T> {
         return StatValue(
             avg = list.averageOrNull(),
             max = list.maxOrNull(),

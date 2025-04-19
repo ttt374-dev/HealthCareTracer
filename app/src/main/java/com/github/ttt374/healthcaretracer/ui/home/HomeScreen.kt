@@ -37,12 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,6 +54,10 @@ import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import com.github.ttt374.healthcaretracer.ui.common.toBodyTemperatureString
+import com.github.ttt374.healthcaretracer.ui.common.toBodyWeightString
+import com.github.ttt374.healthcaretracer.ui.common.toDisplayString
+import com.github.ttt374.healthcaretracer.ui.common.toPulseString
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import java.time.Instant
 import java.time.ZoneId
@@ -145,10 +145,8 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         verticalAlignment = Alignment.CenterVertically){
         val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-        //CustomText(bp.toDisplayString(guideline = guideline))
         Text(bp.toDisplayString(guideline = guideline), fontWeight = FontWeight.Bold)
         Text(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
-        //Text(dailyItem.avgBodyWeight.toBodyWeightString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, guideline, timeOfDayConfig, navigateToEdit, )
@@ -206,32 +204,5 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
             }
         }
     }
-
     HorizontalDivider(thickness = 0.75.dp, color = Color.LightGray)
 }
-
-fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
-    return AnnotatedString.Builder().apply {
-        pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ
-       append(this@withSubscript)
-
-        // 小さな単位部分
-        pop()
-        pushStyle(SpanStyle(fontSize = subscriptFontSize, baselineShift = BaselineShift.Subscript))
-        append(subscript)
-    }.toAnnotatedString()
-}
-
-fun Number?.toDisplayString(format: String? = null): String {
-    return this?.let  {
-        if (format != null)
-            String.format(format, this)
-        else
-            this.toString()
-    }   ?: "-"
-}
-
-fun Number?.toPulseString(): AnnotatedString = toDisplayString().withSubscript("bpm")
-fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString("%.1f").withSubscript("kg")
-fun Number?.toBodyTemperatureString(): AnnotatedString = toDisplayString("%.1f").withSubscript("℃")
-//fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())

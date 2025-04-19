@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,27 +28,18 @@ import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.common.toAnnotatedString
 import com.github.ttt374.healthcaretracer.ui.common.toDisplayString
 
-
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val selectedRange by viewModel.timeRange.collectAsState()
-    val conf by viewModel.config.collectAsState()
-    val guideline = conf.bloodPressureGuideline
+    val config by viewModel.config.collectAsState()
+    val guideline = config.bloodPressureGuideline
     val statistics by viewModel.statistics.collectAsState()
 
-    val statisticsItems = listOf(
-        //statisticsItem(R.string.blood_pressure, statistics.bloodPressure, {v -> v?.toDisplayString() ?: AnnotatedString("-")}),
-        StatisticsItem(R.string.pulse, statistics.pulse, { v -> AnnotatedString(v.toDisplayString("%.1f"))}),
-        StatisticsItem(R.string.bodyTemperature, statistics.bodyTemperature, { v -> AnnotatedString(v.toDisplayString("%.1f"))}),
-        StatisticsItem(R.string.bodyWeight, statistics.bodyWeight, { v-> AnnotatedString(v.toDisplayString("%.1f"))}),
-    )
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
-        LazyColumn(modifier = Modifier
-            .padding(innerPadding)
-            .padding(horizontal = 8.dp)){
+        LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
             item {
                 Box(modifier = Modifier.padding(4.dp)) {
                     TimeRangeDropdown(selectedRange, onRangeSelected = { viewModel.setSelectedRange(it) })
@@ -56,26 +48,24 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
                 StatisticsTable(stringResource(R.string.blood_pressure), statistics.bloodPressure,
-                    takeValue = { v: BloodPressure? -> v?.toDisplayString(guideline, false) ?: AnnotatedString("-")})
-                val meGapStatValue = viewModel.getStatValue(statistics.meGap)
-                StatisticsRow(stringResource(R.string.me_gap), meGapStatValue, { v -> v.toDisplayString("%.1f").toAnnotatedString()})
-                //Text("${stringResource(R.string.me_gap)}: ${statistics.meGap.maxOrNull()}")
+                    takeValue = { v: BloodPressure? -> v?.toAnnotatedString(guideline, false) ?: AnnotatedString("-")})
+                val meGapStatValue = statistics.meGap.toStatValue()
+                StatisticsRow(stringResource(R.string.me_gap), meGapStatValue, { v -> v.toAnnotatedString("%.1f")})
             }
-            statisticsItems.forEach { statItem ->
-                item {
-                    HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
-                    StatisticsTable(stringResource(statItem.resId), statItem.statTimeOfDay, statItem.takeValue )
-                }
+            items(listOf(
+                R.string.pulse to statistics.pulse,
+                R.string.bodyTemperature to statistics.bodyTemperature,
+                R.string.bodyWeight to statistics.bodyWeight))
+            { (resId, stat) ->
+                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
+                StatisticsTable(stringResource(resId), stat,  { v -> AnnotatedString(v.toDisplayString("%.1f"))})
             }
         }
     }
 }
-data class StatisticsItem<T>(
-    val resId: Int, val statTimeOfDay: StatTimeOfDay<T>, val takeValue: (T?) -> AnnotatedString
-)
 
 @Composable
-fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString ) {
+fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString = { v -> v.toAnnotatedString()} ) {
     Column {
         StatisticsHeadersRow(title)
 
@@ -91,83 +81,29 @@ fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -
 }
 
 @Composable
-fun <T> StatisticsRow(label: String, statValue: StatValue<T>, takeValue: (T?) -> AnnotatedString = { v -> v.toDisplayString()}) {
+fun <T> StatisticsRow(label: String, statValue: StatValue<T>, takeValue: (T?) -> AnnotatedString = { v -> v.toAnnotatedString()}) {
     Row {
-        Text(label, modifier = Modifier.weight(1f))
+        val statTextModifier = Modifier.weight(1f)
+        Text(label, modifier = statTextModifier)
         listOf(statValue.avg, statValue.max, statValue.min).forEach { value ->
-            Text(takeValue(value), modifier = Modifier.weight(1f))
+            Text(takeValue(value), modifier = statTextModifier)
         }
     }
 }
 
-internal fun <T> T?.toDisplayString(format: String? = null): AnnotatedString {
-    return when (this){
-        null -> {
-            AnnotatedString("-")
-        }
-        is Number -> {
-            AnnotatedString(this.toDisplayString(format))
-        }
-        is BloodPressure -> {
-            this.toDisplayString()
-        }
-        else -> { AnnotatedString("error") }
-    }
-}
+internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
+internal fun BloodPressure.toAnnotatedString(): AnnotatedString = toAnnotatedString()
+internal fun <T> T?.toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
+
 @Composable
 fun StatisticsHeadersRow(title: String){
     Row {
-        //Spacer(Modifier.weight(1f))
-        Text(title, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.average), Modifier.weight(1f))
-        Text(stringResource(R.string.max), Modifier.weight(1f))
-        Text(stringResource(R.string.min), Modifier.weight(1f))
+        val statTextModifier = Modifier.weight(1f)
+
+        Text(title, fontWeight = FontWeight.Bold, modifier = statTextModifier)
+        listOf(R.string.average, R.string.max, R.string.min).forEach {
+            Text(stringResource(it), statTextModifier)
+        }
     }
     HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
 }
-
-//@Composable
-//fun StatisticsBpTable(title: String, bpUpperStat: StatTimeOfDay<Double>, bpLowerStat: StatTimeOfDay<Double>, guideline: BloodPressureGuideline){
-//    Column {
-//        StatisticsHeadersRow(title)
-//        StatisticsBpRow(stringResource(R.string.all), bpUpperStat.all, bpLowerStat.all, guideline)
-//        StatisticsBpRow(stringResource(R.string.morning), bpUpperStat.morning, bpLowerStat.morning, guideline)
-//        StatisticsBpRow(stringResource(R.string.afternoon), bpUpperStat.afternoon, bpLowerStat.afternoon, guideline)
-//        StatisticsBpRow(stringResource(R.string.evening), bpUpperStat.evening, bpLowerStat.evening, guideline )
-//    }
-//}
-//@Composable
-//fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue<Double>, bpLowerStatValue: StatValue<Double> , guideline: BloodPressureGuideline){
-//    Row {
-//        Text(label, Modifier.weight(1f))
-//        Text(Pair(bpUpperStatValue.avg, bpLowerStatValue.avg).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
-//        Text(Pair(bpUpperStatValue.max, bpLowerStatValue.max).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
-//        Text(Pair(bpUpperStatValue.min, bpLowerStatValue.min).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
-//        //Text(BloodPressure(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
-//        //Text(BloodPressure(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
-//        //Text(BloodPressure(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
-////        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false, guideline), Modifier.weight(1f))
-////        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false, guideline), Modifier.weight(1f))
-////        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false, guideline), Modifier.weight(1f))
-//    }
-//}
-
-//@Composable
-//fun StatisticsTable(title: String, stat: StatTimeOfDay<Double>, takeValue: (Double?) -> String){
-//    Column {
-//        StatisticsHeadersRow(title)
-//        StatisticsRow(stringResource(R.string.all), stat.all, takeValue)
-//        StatisticsRow(stringResource(R.string.morning), stat.morning, takeValue)
-//        StatisticsRow(stringResource(R.string.afternoon), stat.afternoon, takeValue)
-//        StatisticsRow(stringResource(R.string.evening), stat.evening, takeValue)
-//    }
-//}
-//@Composable
-//fun StatisticsRow(label: String, statValue: StatValue<Double>, takeValue: (Double?) -> String){
-//    Row {
-//        Text(label, modifier = Modifier.weight(1f))
-//        Text(takeValue(statValue.avg), Modifier.weight(1f))
-//        Text(takeValue(statValue.max), Modifier.weight(1f))
-//        Text(takeValue(statValue.min), Modifier.weight(1f))
-//    }
-//}

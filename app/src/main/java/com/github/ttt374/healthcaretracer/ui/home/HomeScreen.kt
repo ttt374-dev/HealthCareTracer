@@ -56,7 +56,6 @@ import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.toBodyTemperatureString
 import com.github.ttt374.healthcaretracer.ui.common.toBodyWeightString
-import com.github.ttt374.healthcaretracer.ui.common.toDisplayString
 import com.github.ttt374.healthcaretracer.ui.common.toPulseString
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import java.time.Instant
@@ -145,7 +144,7 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         verticalAlignment = Alignment.CenterVertically){
         val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-        Text(bp.toDisplayString(guideline = guideline), fontWeight = FontWeight.Bold)
+        Text(bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
         Text(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
@@ -177,7 +176,7 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
 //            }
 
             Spacer(modifier = Modifier.width(16.dp))
-            Text(bp.toDisplayString(guideline = guideline))
+            Text(bp.toAnnotatedString(guideline = guideline))
             Text(item.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
             Text(item.bodyWeight.toBodyWeightString())

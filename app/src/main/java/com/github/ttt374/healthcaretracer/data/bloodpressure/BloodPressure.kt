@@ -19,7 +19,7 @@ data class BloodPressure(val upper: Int?, val lower: Int?) : StatComputable {
     val systolic = upper
     val diastolic = lower
 
-    fun toDisplayString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
+    fun toAnnotatedString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
         return buildAnnotatedString {
             fun appendBp(value: Int?, color: Color) {
                 if (value != null) {

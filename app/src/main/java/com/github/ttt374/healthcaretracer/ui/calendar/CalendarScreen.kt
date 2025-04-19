@@ -127,7 +127,7 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
             Text(text = day.date.dayOfMonth.toString())
             if (dailyItem != null){
                 val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-                Text(bp.toDisplayString(showUnit = false), fontSize = 10.sp)
+                Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
             }
         }
     }

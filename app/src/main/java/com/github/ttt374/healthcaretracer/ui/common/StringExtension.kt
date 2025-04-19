@@ -31,6 +31,6 @@ fun Number?.toDisplayString(format: String? = null): String {
 fun Number?.toPulseString(): AnnotatedString = toDisplayString().withSubscript("bpm")
 fun Number?.toBodyWeightString(): AnnotatedString = toDisplayString("%.1f").withSubscript("kg")
 fun Number?.toBodyTemperatureString(): AnnotatedString = toDisplayString("%.1f").withSubscript("℃")
-//fun Pair<Number?, Number?>.toBloodPressureString(): AnnotatedString = bloodPressureFormatted(first?.toInt(), second?.toInt())
+fun Number?.toAnnotatedString(format: String? = null) = toDisplayString(format).toAnnotatedString()
 
 fun String.toAnnotatedString() = AnnotatedString(this)

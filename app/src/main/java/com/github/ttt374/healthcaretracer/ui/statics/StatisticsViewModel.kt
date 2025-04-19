@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.repository.Config
@@ -13,6 +14,8 @@ import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
+import com.github.ttt374.healthcaretracer.ui.common.maxOrNull
+import com.github.ttt374.healthcaretracer.ui.common.minOrNull
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +41,8 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
     private val recentItemsFlow = timeRange.flatMapLatest { range -> itemRepository.getRecentItemsFlow(range.days)}
 
     val statistics = recentItemsFlow.map { items ->
-        val bpUpper = getStatTimeOfDay(items) { it.bpUpper?.toDouble()  }
+        val bp = getStatTimeOfDay(items) { BloodPressure(it.bpUpper, it.bpLower)}
+        val bpUpper: StatTimeOfDay<Double> = getStatTimeOfDay(items) { it: Item -> it.bpUpper?.toDouble()  }
         val bpLower = getStatTimeOfDay(items) { it.bpLower?.toDouble()  }
         val pulse = getStatTimeOfDay(items) { it.pulse?.toDouble()  }
         val bodyWeight = getStatTimeOfDay(items) { it.bodyWeight  }
@@ -60,34 +64,45 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
 
-    private fun getStatValue(list: List<Double?>): StatValue {
+    private fun <T> getStatValue(list: List<T>): StatValue<T> {
         return StatValue(
-            avg = list.filterNotNull().averageOrNull(),
-            max = list.filterNotNull().maxOrNull(),
-            min = list.filterNotNull().minOrNull()
+            avg = list.averageOrNull(),
+            max = list.maxOrNull(),
+            min = list.minOrNull()
         )
     }
-
-    private fun getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> Double?): StatTimeOfDay {
-        val valuesWithTime = items.map { it to takeValue(it) }
+//    private fun getStatValue(list: List<Double?>): StatValue<Double> {
+//        return StatValue(
+//            avg = list.filterNotNull().averageOrNull(),
+//            max = list.filterNotNull().maxOrNull(),
+//            min = list.filterNotNull().minOrNull()
+//        )
+//    }
+//    private fun getStatValue(list: List<BloodPressure?>): StatValue<BloodPressure> {
+//        return StatValue(
+//            avg = list.filterNotNull().averageOrNull(),
+//            max = list.filterNotNull().maxOrNull(),
+//            min = list.filterNotNull().minOrNull()
+//        )
+//    }
+    private fun <T> getStatTimeOfDay(items: List<Item>, takeValue: (Item) -> T?): StatTimeOfDay<T> {
+        val valuesWithTime = items.mapNotNull { item ->
+            takeValue(item)?.let { value: T -> item to value }
+        }
 
         val allList = valuesWithTime.map { it.second }
         val morningList = valuesWithTime.filter { it.first.measuredAt.toTimeOfDay(config=config.value.timeOfDayConfig) is TimeOfDay.Morning }.map { it.second }
         val afternoonList = valuesWithTime.filter { it.first.measuredAt.toTimeOfDay(config=config.value.timeOfDayConfig) is TimeOfDay.Afternoon}.map { it.second }
         val eveningList = valuesWithTime.filter { it.first.measuredAt.toTimeOfDay(config=config.value.timeOfDayConfig) is TimeOfDay.Evening}.map { it.second }
 
-//        val allList = items.map { takeValue(it) }
-//        val morningList = items.filter { it.measuredAt.toTimeOfDay(config = config.value.timeOfDayConfig) is TimeOfDay.Morning }.map { takeValue(it) }
-//        val afternoonList = items.filter { it.measuredAt.toTimeOfDay(config = config.value.timeOfDayConfig) is TimeOfDay.Afternoon }.map { takeValue(it) }
-//        val eveningList = items.filter { it.measuredAt.toTimeOfDay(config = config.value.timeOfDayConfig) is TimeOfDay.Evening }.map { takeValue(it) }
-
-        return StatTimeOfDay(
+        return StatTimeOfDay<T>(
             all = getStatValue(allList),
             morning = getStatValue(morningList),
             afternoon = getStatValue(afternoonList),
             evening = getStatValue(eveningList)
         )
     }
+
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
@@ -99,25 +114,30 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
     }
 }
 
-data class StatTimeOfDay (
-    val all: StatValue = StatValue(),
-    val morning: StatValue = StatValue(),
-    val afternoon: StatValue = StatValue(),
-    val evening: StatValue = StatValue(),
+data class StatTimeOfDay <T> (
+    val all: StatValue<T> = StatValue(),
+    val morning: StatValue<T> = StatValue(),
+    val afternoon: StatValue<T> = StatValue(),
+    val evening: StatValue<T> = StatValue(),
     //val night: StatValue = StatValue(),
 
 )
-data class StatValue(
-    val avg: Double? = null,
-    val max: Double? = null,
-    val min: Double? = null
+data class StatValue<T>(
+    val avg: T? = null,
+    val max: T? = null,
+    val min: T? = null
 )
+//data class StatValue(
+//    val avg: Double? = null,
+//    val max: Double? = null,
+//    val min: Double? = null
+//)
 
 data class StatisticsData(
-    val bpUpper: StatTimeOfDay = StatTimeOfDay(),
-    val bpLower: StatTimeOfDay = StatTimeOfDay(),
-    val pulse: StatTimeOfDay = StatTimeOfDay(),
-    val bodyWeight: StatTimeOfDay = StatTimeOfDay(),
-    val bodyTemperature: StatTimeOfDay = StatTimeOfDay(),
+    val bpUpper: StatTimeOfDay<Double> = StatTimeOfDay(),
+    val bpLower: StatTimeOfDay<Double> = StatTimeOfDay(),
+    val pulse: StatTimeOfDay<Double> = StatTimeOfDay(),
+    val bodyWeight: StatTimeOfDay<Double> = StatTimeOfDay(),
+    val bodyTemperature: StatTimeOfDay<Double> = StatTimeOfDay(),
     val meGap: List<Double> = emptyList(),
 )

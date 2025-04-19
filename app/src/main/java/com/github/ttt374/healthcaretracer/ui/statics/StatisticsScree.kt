@@ -69,7 +69,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
 }
 
 @Composable
-fun StatisticsBpTable(title: String, bpUpperStat: StatTimeOfDay, bpLowerStat: StatTimeOfDay, guideline: BloodPressureGuideline){
+fun StatisticsBpTable(title: String, bpUpperStat: StatTimeOfDay<Double>, bpLowerStat: StatTimeOfDay<Double>, guideline: BloodPressureGuideline){
     Column {
         StatisticsHeadersRow(title)
         StatisticsBpRow(stringResource(R.string.all), bpUpperStat.all, bpLowerStat.all, guideline)
@@ -79,7 +79,7 @@ fun StatisticsBpTable(title: String, bpUpperStat: StatTimeOfDay, bpLowerStat: St
     }
 }
 @Composable
-fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue: StatValue , guideline: BloodPressureGuideline){
+fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue<Double>, bpLowerStatValue: StatValue<Double> , guideline: BloodPressureGuideline){
     Row {
         Text(label, Modifier.weight(1f))
         Text(Pair(bpUpperStatValue.avg, bpLowerStatValue.avg).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
@@ -95,7 +95,7 @@ fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue, bpLowerStatValue
 }
 
 @Composable
-fun StatisticsTable(title: String, stat: StatTimeOfDay, takeValue: (Double?) -> String){
+fun StatisticsTable(title: String, stat: StatTimeOfDay<Double>, takeValue: (Double?) -> String){
     Column {
         StatisticsHeadersRow(title)
         StatisticsRow(stringResource(R.string.all), stat.all, takeValue)
@@ -105,7 +105,7 @@ fun StatisticsTable(title: String, stat: StatTimeOfDay, takeValue: (Double?) -> 
     }
 }
 @Composable
-fun StatisticsRow(label: String, statValue: StatValue, takeValue: (Double?) -> String){
+fun StatisticsRow(label: String, statValue: StatValue<Double>, takeValue: (Double?) -> String){
     Row {
         Text(label, modifier = Modifier.weight(1f))
         Text(takeValue(statValue.avg), Modifier.weight(1f))

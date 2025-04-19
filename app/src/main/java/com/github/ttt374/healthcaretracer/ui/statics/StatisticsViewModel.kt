@@ -10,9 +10,9 @@ import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
-import com.github.ttt374.healthcaretracer.data.repository.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
+import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi

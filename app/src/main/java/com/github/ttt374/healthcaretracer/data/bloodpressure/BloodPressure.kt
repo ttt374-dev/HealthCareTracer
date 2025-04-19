@@ -7,7 +7,15 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
 
-data class BloodPressure(val upper: Int?, val lower: Int?) {
+sealed interface StatComputable
+
+//data class BloodPressure(val upper: Double, val lower: Double) : StatComputable
+
+// Double にも対応させる
+@JvmInline
+value class StatDouble(val value: Double) : StatComputable
+
+data class BloodPressure(val upper: Int?, val lower: Int?) : StatComputable {
     val systolic = upper
     val diastolic = lower
 

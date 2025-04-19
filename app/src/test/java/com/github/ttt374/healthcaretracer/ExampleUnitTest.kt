@@ -2,7 +2,7 @@ package com.github.ttt374.healthcaretracer
 
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureCategory
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.config.LocalTimeRange
+import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
@@ -10,11 +10,13 @@ import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
-import java.time.ZoneId
 import java.time.LocalTime
+import java.time.ZoneId
 
 /**
  * Example local unit test, which will execute on the development machine (host).

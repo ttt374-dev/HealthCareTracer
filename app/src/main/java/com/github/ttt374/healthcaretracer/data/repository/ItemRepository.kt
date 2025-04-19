@@ -40,7 +40,3 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
         }
     }
 }
-fun <T : Number> List<T?>.averageOrNull(): Double? {
-    val filtered = this.filterNotNull()
-    return if (filtered.isEmpty()) null else filtered.map { it.toDouble() }.average()
-}

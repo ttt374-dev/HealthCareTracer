@@ -55,6 +55,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
                 LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)) }.filterNotNull()
 
         StatisticsData(
+            bloodPressure = bp,
             bpUpper = bpUpper,
             bpLower = bpLower,
             pulse = pulse,
@@ -134,6 +135,7 @@ data class StatValue<T>(
 //)
 
 data class StatisticsData(
+    val bloodPressure: StatTimeOfDay<BloodPressure> = StatTimeOfDay(),
     val bpUpper: StatTimeOfDay<Double> = StatTimeOfDay(),
     val bpLower: StatTimeOfDay<Double> = StatTimeOfDay(),
     val pulse: StatTimeOfDay<Double> = StatTimeOfDay(),

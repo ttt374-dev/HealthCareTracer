@@ -14,10 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -38,7 +40,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
     ) { innerPadding ->
-        LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
+        LazyColumn(modifier = Modifier
+            .padding(innerPadding)
+            .padding(horizontal = 8.dp)){
             item {
                 Box(modifier = Modifier.padding(4.dp)) {
                     TimeRangeDropdown(selectedRange, onRangeSelected = { viewModel.setSelectedRange(it) })
@@ -46,23 +50,31 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                //Text(stringResource(R.string.blood_pressure), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsBpTable(stringResource(R.string.blood_pressure), statistics.bpUpper, statistics.bpLower, guideline)
+                StatisticsTable(stringResource(R.string.blood_pressure), statistics.bloodPressure,
+                    takeValue = { v: BloodPressure? -> v?.toDisplayString() ?: AnnotatedString("-")})
+                //StatisticsBpTable(stringResource(R.string.blood_pressure), statistics.bpUpper, statistics.bpLower, guideline)
                 Text("${stringResource(R.string.me_gap)}: ${statistics.meGap.maxOrNull()}")
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                //Text(stringResource(R.string.pulse), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsTable(stringResource(R.string.pulse), statistics.pulse, takeValue = { v: Double? -> v.toDisplayString("%.0f")})
+                StatisticsTable(stringResource(R.string.pulse), statistics.pulse,
+                    takeValue = { v: Double? ->
+                        AnnotatedString(v.toDisplayString("%.0f"))
+                    })
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                //Text(stringResource(R.string.body_weight), Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
-                StatisticsTable(stringResource(R.string.bodyWeight), statistics.bodyWeight, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
+                StatisticsTable(stringResource(R.string.bodyWeight), statistics.bodyWeight,
+                    takeValue =  { v: Double? ->
+                        AnnotatedString(v.toDisplayString("%.0f"))
+                    })
             }
             item {
                 HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                StatisticsTable(stringResource(R.string.bodyTemperature), statistics.bodyTemperature, takeValue = { v: Double? -> v.toDisplayString("%.1f")})
+                StatisticsTable(stringResource(R.string.bodyTemperature), statistics.bodyTemperature,
+                    takeValue =  { v: Double? ->
+                        AnnotatedString(v.toDisplayString("%.1f"))
+                    })
             }
         }
     }
@@ -95,7 +107,7 @@ fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue<Double>, bpLowerS
 }
 
 @Composable
-fun StatisticsTable(title: String, stat: StatTimeOfDay<Double>, takeValue: (Double?) -> String){
+fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString) {
     Column {
         StatisticsHeadersRow(title)
         StatisticsRow(stringResource(R.string.all), stat.all, takeValue)
@@ -104,8 +116,9 @@ fun StatisticsTable(title: String, stat: StatTimeOfDay<Double>, takeValue: (Doub
         StatisticsRow(stringResource(R.string.evening), stat.evening, takeValue)
     }
 }
+
 @Composable
-fun StatisticsRow(label: String, statValue: StatValue<Double>, takeValue: (Double?) -> String){
+fun <T> StatisticsRow(label: String, statValue: StatValue<T>, takeValue: (T?) -> AnnotatedString){
     Row {
         Text(label, modifier = Modifier.weight(1f))
         Text(takeValue(statValue.avg), Modifier.weight(1f))
@@ -113,6 +126,25 @@ fun StatisticsRow(label: String, statValue: StatValue<Double>, takeValue: (Doubl
         Text(takeValue(statValue.min), Modifier.weight(1f))
     }
 }
+//@Composable
+//fun StatisticsTable(title: String, stat: StatTimeOfDay<Double>, takeValue: (Double?) -> String){
+//    Column {
+//        StatisticsHeadersRow(title)
+//        StatisticsRow(stringResource(R.string.all), stat.all, takeValue)
+//        StatisticsRow(stringResource(R.string.morning), stat.morning, takeValue)
+//        StatisticsRow(stringResource(R.string.afternoon), stat.afternoon, takeValue)
+//        StatisticsRow(stringResource(R.string.evening), stat.evening, takeValue)
+//    }
+//}
+//@Composable
+//fun StatisticsRow(label: String, statValue: StatValue<Double>, takeValue: (Double?) -> String){
+//    Row {
+//        Text(label, modifier = Modifier.weight(1f))
+//        Text(takeValue(statValue.avg), Modifier.weight(1f))
+//        Text(takeValue(statValue.max), Modifier.weight(1f))
+//        Text(takeValue(statValue.min), Modifier.weight(1f))
+//    }
+//}
 @Composable
 fun StatisticsHeadersRow(title: String){
     Row {

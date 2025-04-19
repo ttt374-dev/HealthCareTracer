@@ -36,6 +36,15 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     val guideline = conf.bloodPressureGuideline
     val statistics by viewModel.statistics.collectAsState()
 
+    data class StatisticsItem(
+        val resId: Int, val statTimeOfDay: StatTimeOfDay<Double>, val takeValue: (Double?) -> AnnotatedString
+    )
+    val statisticsItems = listOf(
+//        StatisticsItem(R.string.blood_pressure, statistics.bloodPressure, { v: BloodPressure? -> v?.toDisplayString() ?: AnnotatedString("-")}),
+        StatisticsItem(R.string.pulse, statistics.pulse, { v -> AnnotatedString(v.toDisplayString("%.0f"))}),
+        StatisticsItem(R.string.bodyTemperature, statistics.bodyTemperature, { v -> AnnotatedString(v.toDisplayString("%.0f"))}),
+        StatisticsItem(R.string.bodyWeight, statistics.bodyWeight, { v -> AnnotatedString(v.toDisplayString("%.1f"))}),
+    )
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
@@ -55,56 +64,62 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 //StatisticsBpTable(stringResource(R.string.blood_pressure), statistics.bpUpper, statistics.bpLower, guideline)
                 Text("${stringResource(R.string.me_gap)}: ${statistics.meGap.maxOrNull()}")
             }
-            item {
-                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                StatisticsTable(stringResource(R.string.pulse), statistics.pulse,
-                    takeValue = { v: Double? ->
-                        AnnotatedString(v.toDisplayString("%.0f"))
-                    })
+            statisticsItems.forEach { statItem ->
+                item {
+                    HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
+                    StatisticsTable(stringResource(statItem.resId), statItem.statTimeOfDay, statItem.takeValue)
+                }
             }
-            item {
-                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                StatisticsTable(stringResource(R.string.bodyWeight), statistics.bodyWeight,
-                    takeValue =  { v: Double? ->
-                        AnnotatedString(v.toDisplayString("%.0f"))
-                    })
-            }
-            item {
-                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
-                StatisticsTable(stringResource(R.string.bodyTemperature), statistics.bodyTemperature,
-                    takeValue =  { v: Double? ->
-                        AnnotatedString(v.toDisplayString("%.1f"))
-                    })
-            }
+//            item {
+//                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
+//                StatisticsTable(stringResource(R.string.pulse), statistics.pulse,
+//                    takeValue = { v: Double? ->
+//                        AnnotatedString(v.toDisplayString("%.0f"))
+//                    })
+//            }
+//            item {
+//                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
+//                StatisticsTable(stringResource(R.string.bodyWeight), statistics.bodyWeight,
+//                    takeValue =  { v: Double? ->
+//                        AnnotatedString(v.toDisplayString("%.0f"))
+//                    })
+//            }
+//            item {
+//                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
+//                StatisticsTable(stringResource(R.string.bodyTemperature), statistics.bodyTemperature,
+//                    takeValue =  { v: Double? ->
+//                        AnnotatedString(v.toDisplayString("%.1f"))
+//                    })
+//            }
         }
     }
 }
 
-@Composable
-fun StatisticsBpTable(title: String, bpUpperStat: StatTimeOfDay<Double>, bpLowerStat: StatTimeOfDay<Double>, guideline: BloodPressureGuideline){
-    Column {
-        StatisticsHeadersRow(title)
-        StatisticsBpRow(stringResource(R.string.all), bpUpperStat.all, bpLowerStat.all, guideline)
-        StatisticsBpRow(stringResource(R.string.morning), bpUpperStat.morning, bpLowerStat.morning, guideline)
-        StatisticsBpRow(stringResource(R.string.afternoon), bpUpperStat.afternoon, bpLowerStat.afternoon, guideline)
-        StatisticsBpRow(stringResource(R.string.evening), bpUpperStat.evening, bpLowerStat.evening, guideline )
-    }
-}
-@Composable
-fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue<Double>, bpLowerStatValue: StatValue<Double> , guideline: BloodPressureGuideline){
-    Row {
-        Text(label, Modifier.weight(1f))
-        Text(Pair(bpUpperStatValue.avg, bpLowerStatValue.avg).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
-        Text(Pair(bpUpperStatValue.max, bpLowerStatValue.max).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
-        Text(Pair(bpUpperStatValue.min, bpLowerStatValue.min).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
-        //Text(BloodPressure(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
-        //Text(BloodPressure(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
-        //Text(BloodPressure(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
-//        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false, guideline), Modifier.weight(1f))
-//        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false, guideline), Modifier.weight(1f))
-//        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false, guideline), Modifier.weight(1f))
-    }
-}
+//@Composable
+//fun StatisticsBpTable(title: String, bpUpperStat: StatTimeOfDay<Double>, bpLowerStat: StatTimeOfDay<Double>, guideline: BloodPressureGuideline){
+//    Column {
+//        StatisticsHeadersRow(title)
+//        StatisticsBpRow(stringResource(R.string.all), bpUpperStat.all, bpLowerStat.all, guideline)
+//        StatisticsBpRow(stringResource(R.string.morning), bpUpperStat.morning, bpLowerStat.morning, guideline)
+//        StatisticsBpRow(stringResource(R.string.afternoon), bpUpperStat.afternoon, bpLowerStat.afternoon, guideline)
+//        StatisticsBpRow(stringResource(R.string.evening), bpUpperStat.evening, bpLowerStat.evening, guideline )
+//    }
+//}
+//@Composable
+//fun StatisticsBpRow(label: String, bpUpperStatValue: StatValue<Double>, bpLowerStatValue: StatValue<Double> , guideline: BloodPressureGuideline){
+//    Row {
+//        Text(label, Modifier.weight(1f))
+//        Text(Pair(bpUpperStatValue.avg, bpLowerStatValue.avg).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
+//        Text(Pair(bpUpperStatValue.max, bpLowerStatValue.max).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
+//        Text(Pair(bpUpperStatValue.min, bpLowerStatValue.min).toBloodPressure().toDisplayString(guideline, false), modifier=Modifier.weight(1f))
+//        //Text(BloodPressure(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
+//        //Text(BloodPressure(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
+//        //Text(BloodPressure(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt()).toDisplayString(guideline = guideline), Modifier.weight(1f))
+////        Text(bloodPressureFormatted(bpUpperStatValue.avg?.toInt(), bpLowerStatValue.avg?.toInt(), false, guideline), Modifier.weight(1f))
+////        Text(bloodPressureFormatted(bpUpperStatValue.max?.toInt(), bpLowerStatValue.max?.toInt(), false, guideline), Modifier.weight(1f))
+////        Text(bloodPressureFormatted(bpUpperStatValue.min?.toInt(), bpLowerStatValue.min?.toInt(), false, guideline), Modifier.weight(1f))
+//    }
+//}
 
 @Composable
 fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString) {

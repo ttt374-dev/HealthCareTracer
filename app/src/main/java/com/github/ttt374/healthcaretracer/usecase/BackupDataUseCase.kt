@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.usecase
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.opencsv.CSVReader
@@ -42,8 +43,8 @@ class ExportDataUseCase( private val itemRepository: ItemRepository) {
                 val data = arrayOf(
                     item.id.toString(),
                     formatter.format(item.measuredAt),
-                    item.bpUpper.toString(),
-                    item.bpLower.toString(),
+                    item.bp?.upper.toString(),
+                    item.bp?.lower.toString(),
                     item.pulse.toString(),
                     item.bodyWeight.toString(),
                     item.bodyTemperature.toString(),
@@ -104,8 +105,8 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
 
                     val item = Item(
                         measuredAt = Instant.parse(line[headerIndexMap.getValue("measuredAt")]),
-                        bpUpper = line[headerIndexMap.getValue("BP upper")].toIntOrNull(),
-                        bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
+                        bp = (line[headerIndexMap.getValue("BP upper")].toIntOrNull() to line[headerIndexMap.getValue("BP lower")].toIntOrNull()).toBloodPressure(),
+                        //bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
                         pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toIntOrNull() },
                         bodyWeight = headerIndexMap["body weight"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
                         bodyTemperature = headerIndexMap["body temperature"]?.let { line.getOrNull(it)?.toDoubleOrNull() },

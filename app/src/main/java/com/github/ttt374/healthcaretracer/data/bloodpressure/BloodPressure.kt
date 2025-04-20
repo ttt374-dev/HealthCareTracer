@@ -6,6 +6,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
+import androidx.room.TypeConverter
+import com.github.ttt374.healthcaretracer.ui.statics.toAnnotatedString
 
 sealed interface StatComputable
 
@@ -15,12 +17,14 @@ sealed interface StatComputable
 @JvmInline
 value class StatDouble(val value: Double) : StatComputable
 
-data class BloodPressure(val upper: Int?, val lower: Int?) : StatComputable {
+data class BloodPressure(val upper: Int, val lower: Int) : StatComputable {
     val systolic = upper
     val diastolic = lower
-
-    fun toAnnotatedString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
-        return buildAnnotatedString {
+}
+fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
+    val bp = this
+    return this?.let {
+        buildAnnotatedString {
             fun appendBp(value: Int?, color: Color) {
                 if (value != null) {
                     pushStyle(SpanStyle(color = color))
@@ -30,10 +34,9 @@ data class BloodPressure(val upper: Int?, val lower: Int?) : StatComputable {
                     append("-")
                 }
             }
-            
-            appendBp(upper, upper?.let { guideline.getCategory(upper, true).color } ?: Color.Unspecified)
+            appendBp(upper, guideline.getCategory(bp).color)
             append("/")
-            appendBp(lower, lower?.let { guideline.getCategory(lower, false).color } ?: Color.Unspecified)
+            appendBp(lower, guideline.getCategory(bp).color)
 
             if (showUnit){
                 pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
@@ -41,10 +44,36 @@ data class BloodPressure(val upper: Int?, val lower: Int?) : StatComputable {
                 pop() // 明示的に `pop()` を追加
             }
         }
-        //return bloodPressureFormatted(upper, lower, showUnit, guideline)
+    }?: "-/-".toAnnotatedString()
+}
+    //return bloodPressureFormatted(upper, lower, showUnit, guideline)
+
+//fun Pair<Number, Number>.toBloodPressure(): BloodPressure = BloodPressure(first.toInt(), second.toInt())
+
+fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure? {
+    val (upper, lower) = this
+    return if (upper != null && lower != null) {
+        BloodPressure(upper.toInt(), lower.toInt())
+    } else {
+        null
     }
 }
-fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure = BloodPressure(first?.toInt(), second?.toInt())
+
+
+class BloodPressureConverter {
+    @TypeConverter
+    fun fromBloodPressure(bp: BloodPressure): String {
+        return "${bp.upper},${bp.lower}"
+    }
+
+    @TypeConverter
+    fun toBloodPressure(data: String): BloodPressure {
+        val parts = data.split(",")
+        val upper = parts[0].toInt()
+        val lower = parts[1].toInt()
+        return BloodPressure(upper, lower)
+    }
+}
 
 //
 //sealed class BloodPressureCategory(

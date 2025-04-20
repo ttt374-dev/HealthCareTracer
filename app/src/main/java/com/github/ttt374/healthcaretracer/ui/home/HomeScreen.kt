@@ -45,6 +45,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -142,7 +144,8 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
-        val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
+        //val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
+        val bp = Pair(dailyItem.avgBpLower, dailyItem.avgBpLower).toBloodPressure()
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
         Text(bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
         Text(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
@@ -154,10 +157,10 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
 @Composable
 fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
             timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
-//            morningTimeRange: LocalTimeRange, eveningTimeRange: LocalTimeRange,
             navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
-    val bp = BloodPressure(item.bpUpper, item.bpLower)
+    val bp = item.bp
+    //val bp = BloodPressure(item.bppper, item.bpLower)
 
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
@@ -184,12 +187,12 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
         }
 
         Row {
-            if (item.bpUpper == null || item.bpLower == null){
+            if (item.bp == null){
                 Text("-")
             } else {
                 //val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)
                 //with (bp.htnCategory()){
-                guideline.getCategory(bp.upper, bp.lower).let {
+                guideline.getCategory(bp).let {
                     Text(stringResource(it.nameLabel), color=it.color)
                     //Text(it.name, color=it.color)
                 }

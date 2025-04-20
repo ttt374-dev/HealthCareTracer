@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -95,8 +96,8 @@ fun <T> StatisticsRow(label: String, statValue: StatValue<T>, takeValue: (T?) ->
     }
 }
 
-//internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
-//internal fun BloodPressure.toAnnotatedString(): AnnotatedString = toAnnotatedString()
+internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
+internal fun BloodPressure?.toAnnotatedString(): AnnotatedString = toAnnotatedString()
 internal fun <T> T?.toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
 
 @Composable

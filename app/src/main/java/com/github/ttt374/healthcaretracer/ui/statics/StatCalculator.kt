@@ -15,11 +15,7 @@ import java.time.ZoneId
 class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
     fun calculateAll(items: List<Item>): StatisticsData {
         return StatisticsData(
-            bloodPressure = calculateStat(items) {
-                val upper = it.bpUpper
-                val lower = it.bpLower
-                if (upper != null && lower != null) BloodPressure(upper, lower) else null
-            },
+            bloodPressure = calculateStat(items) { it.bp },
             pulse = calculateStat(items) { it.pulse?.toDouble() },
             bodyWeight = calculateStat(items) { it.bodyWeight },
             bodyTemperature = calculateStat(items) { it.bodyTemperature },

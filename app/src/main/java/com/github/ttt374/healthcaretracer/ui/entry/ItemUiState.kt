@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import java.time.Instant
@@ -17,8 +18,9 @@ data class ItemUiState (
 ){
     fun toItem() = Item(
         id = id?: 0,
-        bpUpper = bpUpper.toIntOrNull(),
-        bpLower = bpLower.toIntOrNull(),
+        bp = bpUpper.toIntOrNull()?.let { upper -> bpLower.toIntOrNull()?.let { lower -> BloodPressure(upper, lower)}},
+        //bpUpper = bpUpper.toIntOrNull(),
+        //bpLower = bpLower.toIntOrNull(),
         pulse = pulse.toIntOrNull(),
         bodyWeight = bodyWeight.toDoubleOrNull(),
         bodyTemperature = bodyTemperature.toDoubleOrNull(),
@@ -33,8 +35,10 @@ data class ItemUiState (
 }
 fun Item.toItemUiState(): ItemUiState {
     return ItemUiState(  this.id,
-        this.bpUpper.toStringOrEmpty(),
-        this.bpLower.toStringOrEmpty(),
+        this.bp?.upper.toStringOrEmpty(),
+        this.bp?.lower.toStringOrEmpty(),
+//        this.bpUpper.toStringOrEmpty(),
+//        this.bpLower.toStringOrEmpty(),
         this.pulse.toStringOrEmpty(),
         this.bodyWeight.toStringOrEmpty(),
         this.bodyTemperature.toStringOrEmpty(),

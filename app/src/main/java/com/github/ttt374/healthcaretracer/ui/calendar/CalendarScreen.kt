@@ -31,12 +31,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -126,8 +128,13 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.date.dayOfMonth.toString())
             if (dailyItem != null){
-                val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-                Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
+                //val bp: BloodPressure? = BloodPressure(dailyItem.avgBpUpper.toInt(), dailyItem.avgBpLower.toInt())
+                val bp: BloodPressure? = dailyItem.avgBpUpper?.let { upper ->
+                    dailyItem.avgBpLower?.let { lower ->
+                        BloodPressure(upper.toInt(), lower.toInt())
+                    }
+                }
+                Text(bp?.toAnnotatedString(showUnit = false) ?: AnnotatedString(""), fontSize = 10.sp)
             }
         }
     }

@@ -26,8 +26,8 @@ fun List<Item>.groupByDate(): List<DailyItem> {
         .map { (date, dailyItems) ->
             DailyItem(
                 date = date,
-                avgBpUpper = dailyItems.map { it.bpUpper }.averageOrNull(),
-                avgBpLower = dailyItems.map { it.bpLower }.averageOrNull(),
+                avgBpUpper = dailyItems.map { it.bp?.upper }.averageOrNull(),
+                avgBpLower = dailyItems.map { it.bp?.lower }.averageOrNull(),
                 avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
                 avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
                 avgBodyTemperature = dailyItems.map { it.bodyTemperature }.averageOrNull(),

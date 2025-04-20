@@ -59,13 +59,14 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
 
     val categories: List<BloodPressureCategory> get() = listOf(normal, elevated, htn1, htn2, htn3)
 
-    fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
-        return categories.reversed().firstOrNull { bpUpper in it.upperRange && bpLower in it.lowerRange } ?:
-                categories.reversed().firstOrNull { bpUpper in it.upperRange || bpLower in it.lowerRange } ?: BloodPressureCategory.Invalid
+    //fun getCategory(bpUpper: Int?, bpLower: Int?): BloodPressureCategory {
+    fun getCategory(bp: BloodPressure?): BloodPressureCategory {
+        return categories.reversed().firstOrNull { bp?.upper in it.upperRange && bp?.lower in it.lowerRange } ?:
+                categories.reversed().firstOrNull { bp?.upper in it.upperRange || bp?.lower in it.lowerRange } ?: BloodPressureCategory.Invalid
     }
-    fun getCategory(value: Int, isUpper: Boolean): BloodPressureCategory {
-        return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: BloodPressureCategory.Invalid
-    }
+//    fun getCategory(value: Int, isUpper: Boolean): BloodPressureCategory {
+//        return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: BloodPressureCategory.Invalid
+//    }
     companion object {
         val Default = AHAACC
         val entries = listOf(AHAACC, JSH2019, ESCESH)

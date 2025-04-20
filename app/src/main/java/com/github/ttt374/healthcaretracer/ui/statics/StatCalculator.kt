@@ -13,7 +13,20 @@ import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import java.time.ZoneId
 
 class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
-    fun <T> calculateStat(items: List<Item>, takeValue: (Item) -> T?): StatTimeOfDay<T> {
+    fun calculateAll(items: List<Item>): StatisticsData {
+        return StatisticsData(
+            bloodPressure = calculateStat(items) {
+                val upper = it.bpUpper
+                val lower = it.bpLower
+                if (upper != null && lower != null) BloodPressure(upper, lower) else null
+            },
+            pulse = calculateStat(items) { it.pulse?.toDouble() },
+            bodyWeight = calculateStat(items) { it.bodyWeight },
+            bodyTemperature = calculateStat(items) { it.bodyTemperature },
+            meGap = getMeStats(items)
+        )
+    }
+    private fun <T> calculateStat(items: List<Item>, takeValue: (Item) -> T?): StatTimeOfDay<T> {
         val valuesWithTime = items.mapNotNull { item ->
             takeValue(item)?.let { item to it }
         }
@@ -30,7 +43,7 @@ class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
         )
     }
 
-    fun getMeStats(items: List<Item>): List<Double> {
+    private fun getMeStats(items: List<Item>): List<Double> {
         val zone = ZoneId.systemDefault()
         return items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
             .map { (date, dailyItems) ->
@@ -41,17 +54,8 @@ class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
                 )
             }.filterNotNull()
     }
-
 }
 
-
-//fun <T> getStatValue(list: List<T>): StatValue<T> {
-//    return StatValue(
-//        avg = list.averageOrNull(),
-//        max = list.maxOrNull(),
-//        min = list.minOrNull()
-//    )
-//}
 data class StatTimeOfDay <T> (
     val all: StatValue<T> = StatValue(),
     val morning: StatValue<T> = StatValue(),

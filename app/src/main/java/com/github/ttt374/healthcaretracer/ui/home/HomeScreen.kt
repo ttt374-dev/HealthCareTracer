@@ -98,7 +98,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
     LaunchedEffect(exportFilePickerDialogState.isOpen) {
         if (exportFilePickerDialogState.isOpen){
             val filenameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm").withZone(ZoneId.systemDefault())
-            val defaultFilename = "items-${filenameFormatter.format(Instant.now())}.csv"
+            val defaultFilename = "healthcare-${filenameFormatter.format(Instant.now())}.csv"
 
             exportFilePickerLauncher.launch(defaultFilename)
         }

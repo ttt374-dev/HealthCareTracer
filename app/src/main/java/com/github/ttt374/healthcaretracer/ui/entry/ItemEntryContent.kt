@@ -102,7 +102,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
             }
         }
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp).navigationBarsPadding(), horizontalArrangement = Arrangement.End) {
-            ActionButtons(editMode, onPost, onDelete)
+            ActionButtons(editMode, onPost, onDelete, itemUiState.isValid)
         }
     }
 }
@@ -171,7 +171,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
     }
 }
 @Composable
-private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -> Unit) {
+private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -> Unit, enablePost: Boolean = true) {
     if (editMode is EditMode.Edit){
         val deleteDialogState = rememberItemDialogState()
         if (deleteDialogState.isOpen){
@@ -185,7 +185,7 @@ private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -
         }
         Spacer(modifier = Modifier.width(16.dp)) // ← 間にスペース
     }
-    Button(onClick = onPost) {
+    Button(enabled = enablePost, onClick = onPost) {
         Text("OK")
     }
 }

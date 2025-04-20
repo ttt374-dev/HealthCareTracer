@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
 import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import java.time.Instant
 
 data class ItemUiState (
@@ -23,14 +24,12 @@ data class ItemUiState (
         bodyTemperature = bodyTemperature.toDoubleOrNull(),
         memo = memo, location = location, measuredAt = measuredAt)
 
-    fun isValid(): Boolean {
-        if (bpUpper.isEmpty() && bpLower.isEmpty()) return true
-        if (bpUpper.isEmpty() || bpLower.isEmpty()) return false
-
-        return bpUpper.toIntOrNull()?.let { upper ->
-            bpLower.toIntOrNull()?.let { lower -> upper > lower }
+    val isValid: Boolean
+        get() = bpUpper.toIntOrNull()?.let { upper ->
+            bpLower.toIntOrNull()?.let { lower ->
+                upper > lower && upper >= MIN_BP && lower >= MIN_BP
+            }
         } ?: false
-    }
 }
 fun Item.toItemUiState(): ItemUiState {
     return ItemUiState(  this.id,

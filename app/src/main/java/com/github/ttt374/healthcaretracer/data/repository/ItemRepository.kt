@@ -16,6 +16,9 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
 //        itemDao.insertItem(item)
 //    }
     suspend fun upsertItem(item: Item){
+        if (item.bpUpper == null || item.bpLower == null) {
+            throw IllegalArgumentException("bpUpper and bpLower must not be null")
+        }
         itemDao.upsertItem(item)
     }
     suspend fun deleteItem(item: Item){

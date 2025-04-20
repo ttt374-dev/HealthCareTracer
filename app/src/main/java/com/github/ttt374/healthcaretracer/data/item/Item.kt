@@ -20,7 +20,7 @@ data class Item (
     val id: Long = 0,
     val bpUpper: Int? = null,
     val bpLower: Int? = null,
-    val pulse: Int? = 0,
+    val pulse: Int? = null,
     val bodyWeight: Double? = null,
     val bodyTemperature: Double? = null,
     val location: String = "",

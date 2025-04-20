@@ -127,15 +127,12 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.date.dayOfMonth.toString())
-            if (dailyItem != null){
-                //val bp: BloodPressure? = BloodPressure(dailyItem.avgBpUpper.toInt(), dailyItem.avgBpLower.toInt())
-                val bp: BloodPressure? = dailyItem.avgBpUpper?.let { upper ->
-                    dailyItem.avgBpLower?.let { lower ->
-                        BloodPressure(upper.toInt(), lower.toInt())
-                    }
-                }
-                Text(bp?.toAnnotatedString(showUnit = false) ?: AnnotatedString(""), fontSize = 10.sp)
+            dailyItem?.bp?.let { bp ->
+                Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
             }
+            //if (dailyItem != null){
+            //    Text(dailyItem?.bp?.toAnnotatedString(showUnit = false) ?: AnnotatedString(""), fontSize = 10.sp)
+            //}
         }
     }
 }

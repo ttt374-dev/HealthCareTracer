@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
@@ -145,10 +144,10 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
         //val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-        val bp = Pair(dailyItem.avgBpLower, dailyItem.avgBpLower).toBloodPressure()
+        //val bp = Pair(dailyItem.bpLower, dailyItem.bpLower).toBloodPressure()
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-        Text(bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
-        Text(dailyItem.avgPulse?.toInt().toPulseString(), textAlign = TextAlign.End)
+        Text(dailyItem.bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
+        Text(dailyItem.pulse?.toInt().toPulseString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, guideline, timeOfDayConfig, navigateToEdit, )

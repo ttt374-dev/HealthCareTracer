@@ -45,7 +45,7 @@ sealed class SeriesDef(
         val entries = listOf(BpUpper, BpLower, Pulse, BodyTemperature, BodyWeight)
     }
     fun createTargetEntries(targetValues: ChartableItem, entries: List<Entry>): List<Entry> {
-        val targetValue = takeValue?.invoke(targetValues)?.toFloat() ?: return emptyList()
+        val targetValue = takeValue.invoke(targetValues)?.toFloat() ?: return emptyList()
         if (entries.isEmpty()) return emptyList()
 
         val startX = entries.first().x

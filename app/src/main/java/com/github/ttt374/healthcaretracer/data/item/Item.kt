@@ -6,7 +6,6 @@ import androidx.room.TypeConverters
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureConverter
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
-import com.github.ttt374.healthcaretracer.ui.chart.ChartType
 import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import java.time.Instant
@@ -35,14 +34,12 @@ data class Item (
 
 data class DailyItem (
     val date: LocalDate,
-    val avgBpUpper: Double? = null,
-    val avgBpLower: Double? = null,
-    val avgPulse: Double? = null,
-    val avgBodyWeight: Double? = null,
-    val avgBodyTemperature: Double? = null,
+    val bp: BloodPressure? = null,
+    val pulse: Double? = null,
+    val bodyWeight: Double? = null,
+    val bodyTemperature: Double? = null,
     val items: List<Item> = emptyList(),
-
-    ){
+){
     fun meGap(zoneId: ZoneId = ZoneId.systemDefault(), morningRange: LocalTimeRange, eveningRange: LocalTimeRange): Double? {
         val morningAvg = items.filter { morningRange.contains(it.measuredAt.toLocalTime(zoneId)) }.map { it.bp?.upper }.averageOrNull()
         val eveningAvg = items.filter { eveningRange.contains(it.measuredAt.toLocalTime(zoneId)) }.map { it.bp?.upper }.averageOrNull()

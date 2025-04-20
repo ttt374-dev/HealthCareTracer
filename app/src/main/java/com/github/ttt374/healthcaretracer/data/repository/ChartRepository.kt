@@ -18,7 +18,7 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 fun DailyItem.toChartableItem() =
-    ChartableItem(bpUpper = avgBpUpper, bpLower = avgBpLower, pulse = avgPulse, bodyTemperature = avgBodyTemperature, bodyWeight = avgBodyWeight)
+    ChartableItem(bpUpper = bp?.upper?.toDouble(), bpLower = bp?.lower?.toDouble(), pulse = pulse, bodyTemperature = bodyTemperature, bodyWeight = bodyWeight)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,

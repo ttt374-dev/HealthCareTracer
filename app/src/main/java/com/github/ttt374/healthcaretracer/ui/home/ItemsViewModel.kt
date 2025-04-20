@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
@@ -24,13 +25,17 @@ class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : View
 fun List<Item>.groupByDate(): List<DailyItem> {
     return groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
         .map { (date, dailyItems) ->
+            val bpUpper = dailyItems.map { it.bp?.upper }.averageOrNull()
+            val bpLower = dailyItems.map { it.bp?.lower }.averageOrNull()
+
             DailyItem(
                 date = date,
-                avgBpUpper = dailyItems.map { it.bp?.upper }.averageOrNull(),
-                avgBpLower = dailyItems.map { it.bp?.lower }.averageOrNull(),
-                avgPulse = dailyItems.map { it.pulse }.averageOrNull(),
-                avgBodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
-                avgBodyTemperature = dailyItems.map { it.bodyTemperature }.averageOrNull(),
+                bp = (bpUpper to bpLower).toBloodPressure(),
+//                bpUpper = dailyItems.map { it.bp?.upper }.averageOrNull(),
+//                bpLower = dailyItems.map { it.bp?.lower }.averageOrNull(),
+                pulse = dailyItems.map { it.pulse }.averageOrNull(),
+                bodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
+                bodyTemperature = dailyItems.map { it.bodyTemperature }.averageOrNull(),
                 items = dailyItems
             )
         }.sortedBy { it.date }

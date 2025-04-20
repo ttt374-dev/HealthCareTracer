@@ -61,7 +61,8 @@ data class StatTimeOfDay <T> (
 data class StatValue<T>(
     val avg: T? = null,
     val max: T? = null,
-    val min: T? = null
+    val min: T? = null,
+    val count: Int = 0,
 )
 
 data class StatisticsData(
@@ -73,4 +74,4 @@ data class StatisticsData(
 )
 
 fun <T> List<T>.toStatValue() =
-    StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull())
+    StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())

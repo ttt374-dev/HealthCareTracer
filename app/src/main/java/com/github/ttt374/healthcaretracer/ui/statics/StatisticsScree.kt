@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
@@ -46,7 +47,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 }
             }
             item {
-                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top =  8.dp))
+                CustomDivider()
                 StatisticsTable(stringResource(R.string.blood_pressure), statistics.bloodPressure,
                     takeValue = { v: BloodPressure? -> v?.toAnnotatedString(guideline, false) ?: AnnotatedString("-")})
                 val meGapStatValue = statistics.meGap.toStatValue()
@@ -57,13 +58,16 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 R.string.bodyTemperature to statistics.bodyTemperature,
                 R.string.bodyWeight to statistics.bodyWeight))
             { (resId, stat) ->
-                HorizontalDivider(thickness = 2.dp, color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
+                CustomDivider()
                 StatisticsTable(stringResource(resId), stat,  { v -> AnnotatedString(v.toDisplayString("%.1f"))})
             }
         }
     }
 }
-
+@Composable
+internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingTop: Dp = 8.dp){
+    HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(top = paddingTop))
+}
 @Composable
 fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString = { v -> v.toAnnotatedString()} ) {
     Column {
@@ -91,8 +95,8 @@ fun <T> StatisticsRow(label: String, statValue: StatValue<T>, takeValue: (T?) ->
     }
 }
 
-internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
-internal fun BloodPressure.toAnnotatedString(): AnnotatedString = toAnnotatedString()
+//internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
+//internal fun BloodPressure.toAnnotatedString(): AnnotatedString = toAnnotatedString()
 internal fun <T> T?.toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
 
 @Composable

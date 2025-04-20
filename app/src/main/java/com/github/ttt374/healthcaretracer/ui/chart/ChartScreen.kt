@@ -31,11 +31,14 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
+import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -186,7 +189,19 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(
-            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
+            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()).apply {
+                val colors = series.actualEntries.map { entry ->
+                    val instant = Instant.ofEpochMilli(entry.x.toLong())
+                    //val timeOfDayConfig = TimeOfDayConfig()
+                    if (instant.isMorning()) Color.Blue.toArgb() else
+                        if (instant.isEvening()) Color.Red.toArgb() else
+                            Color.Black.toArgb()
+
+
+                }
+                //setCircleColors(colors)
+
+                                                                                      },
             LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
         )
     }
@@ -195,6 +210,15 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
 //fun adjustForDarkMode(color: Color): Color {
 //    return if (isSystemInDarkTheme()) color.toDarkMode() else color
 //}
+
+fun Instant.isMorning(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig()): Boolean {
+    val range = LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon)
+    return range.contains(this.toLocalTime())
+}
+fun Instant.isEvening(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig()): Boolean {
+    val range = LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)
+    return range.contains(this.toLocalTime())
+}
 
 fun Color.adjustForMode(isDarkMode: Boolean = false): Color {
     return if (isDarkMode) this.toDarkMode() else this

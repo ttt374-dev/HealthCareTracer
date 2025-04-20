@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
+import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
 import com.github.ttt374.healthcaretracer.ui.chart.ChartType
@@ -14,11 +15,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 
 fun DailyItem.toChartableItem() =
     ChartableItem(bpUpper = bp?.upper?.toDouble(), bpLower = bp?.lower?.toDouble(), pulse = pulse, bodyTemperature = bodyTemperature, bodyWeight = bodyWeight)
+
+fun Item.toChartableItem() =
+    ChartableItem(bpUpper = bp?.upper?.toDouble(), bpLower = bp?.lower?.toDouble(), pulse = pulse?.toDouble(), bodyTemperature = bodyTemperature, bodyWeight = bodyWeight)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
@@ -28,11 +33,16 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
 //    private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
 //        itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
 //    }
+    private fun getItemsFlow(timeRange: TimeRange) =
+        itemRepository.getRecentItemsFlow(timeRange.days)
     private fun getDailyItemsFlow(timeRange: TimeRange) =
         itemRepository.getRecentItemsFlow(timeRange.days).map { items -> items.groupByDate()}
 
-    private fun getEntriesFlow(takeValue: (DailyItem) -> Double?, timeRange: TimeRange) =
-        getDailyItemsFlow(timeRange).map { list -> list.toEntries { takeValue(it) } }
+    private fun getEntriesFlow(takeValue: (Item) -> Double?, timeRange: TimeRange) =
+        getItemsFlow(timeRange).map { list -> list.toEntries(getTime = { it.measuredAt}, takeValue = { takeValue(it) } )}
+
+//    private fun getEntriesFlow(takeValue: (DailyItem) -> Double?, timeRange: TimeRange) =
+//        getDailyItemsFlow(timeRange).map { list -> list.toEntries({ it.date.atStartOfDay(zoneId).toInstant(zoneId) }, { takeValue(it) }) }
 
     private val targetValuesFlow = configRepository.dataFlow.map {
         it.toChartableItem()
@@ -53,13 +63,28 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
     //suspend fun updatePreferences (transform: suspend (t: Preferences) -> Preferences) = preferencesRepository.updateData(transform)
 
 }
-fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
-    return mapNotNull { dailyItem ->
-        takeValue(dailyItem)?.toFloat()?.let { value ->
-            Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
+//fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
+//    return mapNotNull { dailyItem ->
+//        takeValue(dailyItem)?.toFloat()?.let { value ->
+//            Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
+//        }
+//    }
+//}
+fun <T> List<T>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), getTime: (T) -> Instant, takeValue: (T) -> Double?): List<Entry> {
+    return mapNotNull { item ->
+        takeValue(item)?.toFloat()?.let { value ->
+            Entry(getTime(item).toEpochMilli().toFloat(), value)
         }
     }
 }
+
+//fun List<Item>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (Item) -> Double?): List<Entry> {
+//    return mapNotNull { item ->
+//        takeValue(item)?.toFloat()?.let { value ->
+//            Entry(item.measuredAt.toEpochMilli().toFloat(), value)
+//        }
+//    }
+//}
 private fun Config.toChartableItem(): ChartableItem = ChartableItem(
     bpUpper = targetBpUpper.toDouble(),
     bpLower = targetBpLower.toDouble(),

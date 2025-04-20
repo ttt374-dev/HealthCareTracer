@@ -41,9 +41,6 @@ sealed class SeriesDef(
     data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
     data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
 
-    companion object {
-        val entries = listOf(BpUpper, BpLower, Pulse, BodyTemperature, BodyWeight)
-    }
     fun createTargetEntries(targetValues: ChartableItem, entries: List<Entry>): List<Entry> {
         val targetValue = takeValue.invoke(targetValues)?.toFloat() ?: return emptyList()
         if (entries.isEmpty()) return emptyList()

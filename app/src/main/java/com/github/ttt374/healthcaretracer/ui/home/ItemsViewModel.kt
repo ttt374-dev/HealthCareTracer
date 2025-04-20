@@ -25,14 +25,10 @@ class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : View
 fun List<Item>.groupByDate(): List<DailyItem> {
     return groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
         .map { (date, dailyItems) ->
-            val bpUpper = dailyItems.map { it.bp?.upper }.averageOrNull()
-            val bpLower = dailyItems.map { it.bp?.lower }.averageOrNull()
-
             DailyItem(
                 date = date,
-                bp = (bpUpper to bpLower).toBloodPressure(),
-//                bpUpper = dailyItems.map { it.bp?.upper }.averageOrNull(),
-//                bpLower = dailyItems.map { it.bp?.lower }.averageOrNull(),
+                bp = (dailyItems.map { it.bp?.upper }.averageOrNull() to dailyItems.map { it.bp?.lower }.averageOrNull())
+                    .toBloodPressure(),
                 pulse = dailyItems.map { it.pulse }.averageOrNull(),
                 bodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
                 bodyTemperature = dailyItems.map { it.bodyTemperature }.averageOrNull(),

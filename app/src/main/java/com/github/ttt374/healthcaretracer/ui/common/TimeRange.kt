@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.shared.TimeRange
 
 // filter
 @Composable
@@ -38,14 +39,3 @@ fun TimeRangeDropdown(selectedRange: TimeRange, onRangeSelected: (TimeRange) -> 
 
 }
 
-enum class TimeRange(val days: Long?,  @StringRes val labelRes: Int) {
-    ONE_WEEK(7, R.string.range__1week),
-    ONE_MONTH(30, R.string.range__1month),
-    SIX_MONTHS(180, R.string.range__6months),
-    ONE_YEAR(365, R.string.range__1year),
-    FULL(null, R.string.range__full_range);
-
-    companion object {
-        val Default = ONE_MONTH
-    }
-}

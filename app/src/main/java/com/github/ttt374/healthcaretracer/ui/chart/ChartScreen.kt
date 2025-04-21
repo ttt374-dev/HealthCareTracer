@@ -32,10 +32,10 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
+import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
-import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.coroutines.launch
@@ -55,7 +55,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     )
 
     val coroutineScope = rememberCoroutineScope()
-    val onRangeSelected = { range: TimeRange -> chartViewModel.updateTimeRange(range)}
+    val onRangeSelected = { range: TimeRange -> chartViewModel.setSelectedRange(range)}
 
     LaunchedEffect(Unit) {
         snapshotFlow { pagerState.currentPage }.collect { page ->

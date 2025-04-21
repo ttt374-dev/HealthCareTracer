@@ -19,7 +19,6 @@ interface ItemDao {
     suspend fun updateItem(item: Item)
     @Upsert
     suspend fun upsertItem(item: Item)
-
     @Delete
     suspend fun deleteItem(item: Item)
 

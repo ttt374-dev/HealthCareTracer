@@ -32,10 +32,6 @@ data class Item (
     val id: Long = 0,
     @Embedded
     val vitals: Vitals = Vitals(),
-//    val bp: BloodPressure? = null,
-//    val pulse: Int? = null,
-//    val bodyWeight: Double? = null,
-//    val bodyTemperature: Double? = null,
     val location: String = "",
     val memo: String = "",
 
@@ -45,10 +41,6 @@ data class Item (
 data class DailyItem (
     val date: LocalDate,
     val vitals: Vitals = Vitals(),
-//    val bp: BloodPressure? = null,
-//    val pulse: Double? = null,
-//    val bodyWeight: Double? = null,
-//    val bodyTemperature: Double? = null,
     val items: List<Item> = emptyList(),
 ){
     fun meGap(zoneId: ZoneId = ZoneId.systemDefault(), morningRange: LocalTimeRange, eveningRange: LocalTimeRange): Double? {

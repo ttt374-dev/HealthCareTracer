@@ -3,12 +3,12 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
-import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
-import com.github.ttt374.healthcaretracer.ui.common.TimeRange
+import com.github.ttt374.healthcaretracer.di.modules.StatisticsTimeRange
+import com.github.ttt374.healthcaretracer.shared.TimeRange
+import com.github.ttt374.healthcaretracer.shared.TimeRangeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,15 +24,14 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, configRepository: ConfigRepository,
-                                               private val preferencesRepository: PreferencesRepository) : ViewModel() {
+                                               @StatisticsTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
     private val configFlow = configRepository.dataFlow
-    val config = configFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
+    val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
     private val timeOfDayConfigFlow = configFlow.map { it.timeOfDayConfig }
-    private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRangeStatistics }
-    val timeRange = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
-    private val recentItemsFlow = timeRangeFlow.flatMapLatest { range -> itemRepository.getRecentItemsFlow(range.days) }
+    val timeRange = timeRangeManager.timeRange
+    private val retrieveItemsFlow = timeRangeManager.timeRangeFlow.flatMapLatest { range -> itemRepository.getRecentItemsFlow(range.days) }
 
-    val statistics = combine(timeOfDayConfigFlow, recentItemsFlow){ timeOfDayConfig, items ->
+    val statistics = combine(timeOfDayConfigFlow, retrieveItemsFlow){ timeOfDayConfig, items ->
         withContext(Dispatchers.Default) {
             StatCalculator(timeOfDayConfig).calculateAll(items)
         }
@@ -40,9 +39,7 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
-            preferencesRepository.updateData {
-                it.copy(timeRangeStatistics = range)
-            }
+            timeRangeManager.setSelectedRange(range)
         }
     }
 }

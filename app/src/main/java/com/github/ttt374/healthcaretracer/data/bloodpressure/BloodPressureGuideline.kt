@@ -64,6 +64,12 @@ sealed class BloodPressureGuideline(val name: String, // val categories: List<Bl
         return categories.reversed().firstOrNull { bp?.upper in it.upperRange && bp?.lower in it.lowerRange } ?:
                 categories.reversed().firstOrNull { bp?.upper in it.upperRange || bp?.lower in it.lowerRange } ?: BloodPressureCategory.Invalid
     }
+    fun getCategoryUpper(value: Int): BloodPressureCategory {
+        return categories.firstOrNull { value in it.upperRange } ?: BloodPressureCategory.Invalid
+    }
+    fun getCategoryLower(value: Int): BloodPressureCategory {
+        return categories.firstOrNull { value in it.lowerRange } ?: BloodPressureCategory.Invalid
+    }
 //    fun getCategory(value: Int, isUpper: Boolean): BloodPressureCategory {
 //        return categories.firstOrNull { if (isUpper) value in it.upperRange else value in it.lowerRange } ?: BloodPressureCategory.Invalid
 //    }

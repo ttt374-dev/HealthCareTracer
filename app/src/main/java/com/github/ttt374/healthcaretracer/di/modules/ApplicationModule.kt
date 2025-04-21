@@ -34,8 +34,8 @@ object ApplicationModule {
     fun providePreferencesRepository(@ApplicationContext context: Context) = PreferencesRepository(context)
 
     @Provides
-    fun provideChartRepository(itemRepository: ItemRepository, configRepository: ConfigRepository) =
-        ChartRepository(itemRepository, configRepository)
+    fun provideChartRepository(itemRepository: ItemRepository) =
+        ChartRepository(itemRepository)
 
     @Provides
     fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()

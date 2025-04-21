@@ -36,9 +36,9 @@ fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPr
                     append("-")
                 }
             }
-            appendBp(upper, guideline.getCategory(bp).color)
+            appendBp(upper, guideline.getCategoryUpper(upper).color)
             append("/")
-            appendBp(lower, guideline.getCategory(bp).color)
+            appendBp(lower, guideline.getCategoryLower(lower).color)
 
             if (showUnit){
                 pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))

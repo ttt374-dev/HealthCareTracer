@@ -15,10 +15,10 @@ import java.time.ZoneId
 class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
     fun calculateAll(items: List<Item>): StatisticsData {
         return StatisticsData(
-            bloodPressure = calculateStat(items) { it.bp },
-            pulse = calculateStat(items) { it.pulse?.toDouble() },
-            bodyWeight = calculateStat(items) { it.bodyWeight },
-            bodyTemperature = calculateStat(items) { it.bodyTemperature },
+            bloodPressure = calculateStat(items) { it.vitals.bp },
+            pulse = calculateStat(items) { it.vitals.pulse?.toDouble() },
+            bodyWeight = calculateStat(items) { it.vitals.bodyWeight },
+            bodyTemperature = calculateStat(items) { it.vitals.bodyTemperature },
             meGap = getMeStats(items)
         )
     }

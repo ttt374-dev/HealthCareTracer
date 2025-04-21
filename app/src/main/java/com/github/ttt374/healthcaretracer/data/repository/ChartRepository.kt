@@ -20,10 +20,10 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 fun DailyItem.toChartableItem() =
-    ChartableItem(bpUpper = bp?.upper?.toDouble(), bpLower = bp?.lower?.toDouble(), pulse = pulse, bodyTemperature = bodyTemperature, bodyWeight = bodyWeight)
+    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse, bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
 
 fun Item.toChartableItem() =
-    ChartableItem(bpUpper = bp?.upper?.toDouble(), bpLower = bp?.lower?.toDouble(), pulse = pulse?.toDouble(), bodyTemperature = bodyTemperature, bodyWeight = bodyWeight)
+    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse?.toDouble(), bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,

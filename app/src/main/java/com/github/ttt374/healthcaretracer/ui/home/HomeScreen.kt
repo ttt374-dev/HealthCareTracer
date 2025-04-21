@@ -146,8 +146,8 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         //val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
         //val bp = Pair(dailyItem.bpLower, dailyItem.bpLower).toBloodPressure()
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-        Text(dailyItem.bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
-        Text(dailyItem.pulse?.toInt().toPulseString(), textAlign = TextAlign.End)
+        Text(dailyItem.vitals.bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
+        Text(dailyItem.vitals.pulse?.toInt().toPulseString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
         ItemRow(item, guideline, timeOfDayConfig, navigateToEdit, )
@@ -158,7 +158,7 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
             timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
             navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
-    val bp = item.bp
+    val bp = item.vitals.bp
     //val bp = BloodPressure(item.bppper, item.bpLower)
 
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
@@ -179,14 +179,14 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
 
             Spacer(modifier = Modifier.width(16.dp))
             Text(bp.toAnnotatedString(guideline = guideline))
-            Text(item.pulse.toPulseString())
+            Text(item.vitals.pulse.toPulseString())
             Spacer(modifier = Modifier.weight(1f)) // 左右の間に余白を作る
-            Text(item.bodyWeight.toBodyWeightString())
-            Text(item.bodyTemperature.toBodyTemperatureString())
+            Text(item.vitals.bodyWeight.toBodyWeightString())
+            Text(item.vitals.bodyTemperature.toBodyTemperatureString())
         }
 
         Row {
-            if (item.bp == null){
+            if (item.vitals.bp == null){
                 Text("-")
             } else {
                 //val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)

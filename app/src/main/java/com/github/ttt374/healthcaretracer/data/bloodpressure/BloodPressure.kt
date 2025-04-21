@@ -9,18 +9,20 @@ import androidx.compose.ui.unit.sp
 import androidx.room.TypeConverter
 import com.github.ttt374.healthcaretracer.ui.statics.toAnnotatedString
 
-sealed interface StatComputable
+//sealed interface StatComputable
+//
+////data class BloodPressure(val upper: Double, val lower: Double) : StatComputable
+//
+//// Double にも対応させる
+//@JvmInline
+//value class StatDouble(val value: Double) : StatComputable
 
-//data class BloodPressure(val upper: Double, val lower: Double) : StatComputable
+data class BloodPressure(val upper: Int, val lower: Int)
+//{ //} : StatComputable {
+//    val systolic = upper
+//    val diastolic = lower
+//}
 
-// Double にも対応させる
-@JvmInline
-value class StatDouble(val value: Double) : StatComputable
-
-data class BloodPressure(val upper: Int, val lower: Int) : StatComputable {
-    val systolic = upper
-    val diastolic = lower
-}
 fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
     val bp = this
     return this?.let {

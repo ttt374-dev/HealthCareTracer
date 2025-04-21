@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,13 +28,18 @@ fun List<Item>.groupByDate(): List<DailyItem> {
         .map { (date, dailyItems) ->
             DailyItem(
                 date = date,
-                bp = (dailyItems.map { it.bp?.upper }.averageOrNull() to dailyItems.map { it.bp?.lower }.averageOrNull())
-                    .toBloodPressure(),
-                pulse = dailyItems.map { it.pulse }.averageOrNull(),
-                bodyWeight = dailyItems.map { it.bodyWeight }.averageOrNull(),
-                bodyTemperature = dailyItems.map { it.bodyTemperature }.averageOrNull(),
+                vitals = dailyItems.toAveragedVitals(),
                 items = dailyItems
             )
         }.sortedBy { it.date }
 }
 
+fun List<Item>.toAveragedVitals(): Vitals {
+    return Vitals(
+        bp = (map { it.vitals.bp?.upper }.averageOrNull() to map { it.vitals.bp?.lower }.averageOrNull())
+            .toBloodPressure(),
+        pulse = map { it.vitals.pulse }.averageOrNull(),
+        bodyWeight = map { it.vitals.bodyWeight }.averageOrNull(),
+        bodyTemperature = map { it.vitals.bodyTemperature }.averageOrNull(),
+    )
+}

@@ -127,7 +127,7 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.date.dayOfMonth.toString())
-            dailyItem?.bp?.let { bp ->
+            dailyItem?.vitals?.bp?.let { bp ->
                 Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
             }
             //if (dailyItem != null){

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.opencsv.CSVReader
 import com.opencsv.CSVWriter
@@ -43,11 +44,11 @@ class ExportDataUseCase( private val itemRepository: ItemRepository) {
                 val data = arrayOf(
                     item.id.toString(),
                     formatter.format(item.measuredAt),
-                    item.bp?.upper.toString(),
-                    item.bp?.lower.toString(),
-                    item.pulse.toString(),
-                    item.bodyWeight.toString(),
-                    item.bodyTemperature.toString(),
+                    item.vitals.bp?.upper.toString(),
+                    item.vitals.bp?.lower.toString(),
+                    item.vitals.pulse.toString(),
+                    item.vitals.bodyWeight.toString(),
+                    item.vitals.bodyTemperature.toString(),
                     item.location,
                     item.memo,
                 )
@@ -103,13 +104,15 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
                         continue
                     }
 
+
                     val item = Item(
                         measuredAt = Instant.parse(line[headerIndexMap.getValue("measuredAt")]),
-                        bp = (line[headerIndexMap.getValue("BP upper")].toIntOrNull() to line[headerIndexMap.getValue("BP lower")].toIntOrNull()).toBloodPressure(),
-                        //bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
-                        pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toIntOrNull() },
-                        bodyWeight = headerIndexMap["body weight"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
-                        bodyTemperature = headerIndexMap["body temperature"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
+                        vitals = Vitals(
+                            bp = (line[headerIndexMap.getValue("BP upper")].toIntOrNull() to line[headerIndexMap.getValue("BP lower")].toIntOrNull()).toBloodPressure(),
+                            //bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
+                            pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
+                            bodyWeight = headerIndexMap["body weight"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
+                            bodyTemperature = headerIndexMap["body temperature"]?.let { line.getOrNull(it)?.toDoubleOrNull() }),
                         location = headerIndexMap["location"]?.let { line.getOrNull(it) } ?: "",
                         memo = headerIndexMap["memo"]?.let { line.getOrNull(it) } ?: ""
                     )

@@ -85,11 +85,11 @@ fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -
     }
 }
 sealed class StatType (val resId: Int){
-    abstract fun <T> getValue(stat: StatValue<T>): T?
+    abstract fun <T> getDisplayValue(stat: StatValue<T>): T?
 
-    data object Average: StatType(R.string.average){ override fun <T> getValue(stat: StatValue<T>) = stat.avg }
-    data object Max: StatType(R.string.max){ override fun <T> getValue(stat: StatValue<T>) = stat.max }
-    data object Min: StatType(R.string.min){ override fun <T> getValue(stat: StatValue<T>) = stat.min }
+    data object Average: StatType(R.string.average){ override fun <T> getDisplayValue(stat: StatValue<T>) = stat.avg }
+    data object Max: StatType(R.string.max){ override fun <T> getDisplayValue(stat: StatValue<T>) = stat.max }
+    data object Min: StatType(R.string.min){ override fun <T> getDisplayValue(stat: StatValue<T>) = stat.min }
 
     companion object {
         val entries = listOf(Average, Max, Min)
@@ -108,26 +108,12 @@ fun StatisticsBaseRow(label: String, format: @Composable (StatType) -> Annotated
 @Composable
 fun StatisticsHeadersRow(title: String){
     StatisticsBaseRow(title, { stringResource(it.resId).toAnnotatedString()}, stringResource(R.string.count), FontWeight.Bold)
-//    Row {
-//        Text(title, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-//        StatType.entries.forEach {
-//            Text(stringResource(it.resId), Modifier.weight(1f))
-//        }
-//        Text(stringResource(R.string.count), Modifier.weight(0.7f))
-//    }
     HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
 }
 
 @Composable
 fun <T> StatisticsRow(label: String, statValue: StatValue<T>, format: (T?) -> AnnotatedString = { v -> v.toAnnotatedString()}) {
-    StatisticsBaseRow(label, { format(it.getValue(statValue))}, statValue.count.toString())
-//    Row {
-//        Text(label, modifier = Modifier.weight(1f))
-//        StatType.entries.forEach {
-//            Text(format(it.getValue(statValue)), Modifier.weight(1f))
-//        }
-//        Text(statValue.count.toString(), Modifier.weight(0.7f))
-//    }
+    StatisticsBaseRow(label, { format(it.getDisplayValue(statValue))}, statValue.count.toString())
 }
 
 internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)

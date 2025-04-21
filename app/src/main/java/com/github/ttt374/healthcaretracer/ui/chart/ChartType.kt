@@ -5,7 +5,10 @@ import androidx.compose.ui.graphics.Color
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
+import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.repository.Config
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -21,27 +24,27 @@ data class ChartSeries(val seriesDef: SeriesDef = SeriesDef.BpUpper, val actualE
 //
 //data class ColorPalette (val primary: Color = Color.Unspecified, val secondary: Color)
 
-data class ChartableItem (
-    val bpUpper: Double? = null,
-    val bpLower: Double? = null,
-    val pulse: Double? = null,
-    val bodyTemperature: Double? = null,
-    val bodyWeight: Double? = null,
-)
+//data class ChartableItem (
+//    val bpUpper: Double? = null,
+//    val bpLower: Double? = null,
+//    val pulse: Double? = null,
+//    val bodyTemperature: Double? = null,
+//    val bodyWeight: Double? = null,
+//)
 
 sealed class SeriesDef(
     @StringRes val labelResId: Int?,
     @StringRes val targetLabelResId: Int? = null,
     //val color: Color = Color.Unspecified,
-    val takeValue: (ChartableItem) -> Double?
+    val takeValue: (Vitals) -> Double?
 ){
-    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper,  { it.bpUpper} )
-    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower,  { it.bpLower} )
+    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper,  { it.bp?.upper?.toDouble()} )
+    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower,  { it.bp?.lower?.toDouble()} )
     data object Pulse: SeriesDef(R.string.pulse, null,  { it.pulse })
     data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
     data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
 
-    fun createTargetEntries(targetValues: ChartableItem, entries: List<Entry>): List<Entry> {
+    fun createTargetEntries(targetValues: Vitals, entries: List<Entry>): List<Entry> {
         val targetValue = takeValue.invoke(targetValues)?.toFloat() ?: return emptyList()
         if (entries.isEmpty()) return emptyList()
 

@@ -1,8 +1,10 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
 import com.github.ttt374.healthcaretracer.ui.chart.ChartType
@@ -19,11 +21,11 @@ import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 
-fun DailyItem.toChartableItem() =
-    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse, bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
+//fun DailyItem.toChartableItem() =
+//    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse, bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
 
-fun Item.toChartableItem() =
-    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse?.toDouble(), bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
+//fun Item.toChartableItem() =
+//    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse?.toDouble(), bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
@@ -45,11 +47,11 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
 //        getDailyItemsFlow(timeRange).map { list -> list.toEntries({ it.date.atStartOfDay(zoneId).toInstant(zoneId) }, { takeValue(it) }) }
 
     private val targetValuesFlow = configRepository.dataFlow.map {
-        it.toChartableItem()
+        it.toVitals()
     }
     private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange): Flow<ChartSeries> {
         return targetValuesFlow.flatMapLatest { targetValues ->
-            getEntriesFlow(takeValue = { seriesDef.takeValue(it.toChartableItem()) }, timeRange).map {
+            getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange).map {
             //getEntriesFlow(takeValue = { seriesDef.takeDailyValue(it) }, timeRange).map {
                 ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it))
             }
@@ -77,6 +79,11 @@ fun <T> List<T>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), getTime: (T) 
         }
     }
 }
+private fun Config.toVitals() = Vitals(
+    bp = BloodPressure(targetBpUpper, targetBpLower),
+    bodyWeight = targetBodyWeight
+)
+
 
 //fun List<Item>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (Item) -> Double?): List<Entry> {
 //    return mapNotNull { item ->
@@ -85,10 +92,6 @@ fun <T> List<T>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), getTime: (T) 
 //        }
 //    }
 //}
-private fun Config.toChartableItem(): ChartableItem = ChartableItem(
-    bpUpper = targetBpUpper.toDouble(),
-    bpLower = targetBpLower.toDouble(),
-    bodyWeight = targetBodyWeight
-)
+
 inline fun <reified T> List<Flow<T>>.combineList(): Flow<List<T>> =
     combine(*toTypedArray()) { it.toList() }

@@ -52,7 +52,6 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     val selectedChartType by chartViewModel.selectedChartType.collectAsState()
     val timeRange by chartViewModel.timeRange.collectAsState()
 
-
     val pagerState = rememberPagerState(
         initialPage = ChartType.entries.indexOf(selectedChartType),
         pageCount = { ChartType.entries.size }

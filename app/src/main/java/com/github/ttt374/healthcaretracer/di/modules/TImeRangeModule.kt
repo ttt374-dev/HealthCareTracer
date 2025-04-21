@@ -1,22 +1,11 @@
 package com.github.ttt374.healthcaretracer.di.modules
 
-import android.content.Context
-import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
-import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
-import com.github.ttt374.healthcaretracer.data.item.ItemDao
-import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
-import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.shared.TimeRangeManager
-import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
-import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
-
 import javax.inject.Qualifier
 
 @Qualifier

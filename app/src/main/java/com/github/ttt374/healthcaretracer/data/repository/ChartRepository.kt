@@ -34,8 +34,8 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
 //    }
     private fun getItemsFlow(timeRange: TimeRange) =
         itemRepository.getRecentItemsFlow(timeRange.days)
-    private fun getDailyItemsFlow(timeRange: TimeRange) =
-        itemRepository.getRecentItemsFlow(timeRange.days).map { items -> items.groupByDate()}
+//    private fun getDailyItemsFlow(timeRange: TimeRange) =
+//        itemRepository.getRecentItemsFlow(timeRange.days).map { items -> items.groupByDate()}
 
     private fun getEntriesFlow(takeValue: (Item) -> Double?, timeRange: TimeRange) =
         getItemsFlow(timeRange).map { list -> list.toEntries(getTime = { it.measuredAt}, takeValue = { takeValue(it) } )}

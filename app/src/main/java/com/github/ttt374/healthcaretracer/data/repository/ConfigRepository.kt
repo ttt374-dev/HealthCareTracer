@@ -17,8 +17,6 @@ import javax.inject.Singleton
 @Serializable  // (with = ConfigSerializer::class)
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-    //val morningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(4, 0), LocalTime.of(11,59)),
-    //val eveningRange: LocalTimeRange = LocalTimeRange(LocalTime.of(17, 0), LocalTime.of(2, 59)),
     val timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
 
     val targetBpUpper: Int = 120,
@@ -28,11 +26,8 @@ data class Config (
     //val localeTag: String = "en_US"
 )
 
-//@Serializable
 data class LocalTimeRange(
-    //@Serializable(with=LocalTimeSerializer::class)
     val start: LocalTime = LocalTime.of(0, 0),
-    //@Serializable(with=LocalTimeSerializer::class)
     val endInclusive: LocalTime = LocalTime.of(23, 59)
 ) {
     operator fun contains(time: LocalTime): Boolean {

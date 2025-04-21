@@ -94,13 +94,5 @@ object BloodPressureGuidelineSerializer : KSerializer<BloodPressureGuideline> {
         return BloodPressureGuideline.entries.find { it.name == name }
             ?: throw SerializationException("Unknown guideline name: $name")
     }
-//    override fun deserialize(decoder: Decoder): BloodPressureGuideline {
-//        return when (val name = decoder.decodeString()) {
-//            "AHA/ACC" -> BloodPressureGuideline.AHAACC
-//            "JSH2019" -> BloodPressureGuideline.JSH2019
-//            "ESC/ESH" -> BloodPressureGuideline.ESCESH
-//            else -> throw SerializationException("Unknown guideline name: $name")
-//        }
-//    }
 }
 

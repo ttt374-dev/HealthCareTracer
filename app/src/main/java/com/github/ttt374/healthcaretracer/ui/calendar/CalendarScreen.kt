@@ -130,9 +130,6 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
             dailyItem?.vitals?.bp?.let { bp ->
                 Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
             }
-            //if (dailyItem != null){
-            //    Text(dailyItem?.bp?.toAnnotatedString(showUnit = false) ?: AnnotatedString(""), fontSize = 10.sp)
-            //}
         }
     }
 }

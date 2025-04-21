@@ -16,7 +16,6 @@ import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
 
-
 /////////////////////////////
 class GenericSerializer<T : Any>(
     private val serializer: KSerializer<T>,
@@ -33,7 +32,6 @@ class GenericSerializer<T : Any>(
             defaultValue
         }
     }
-
     override suspend fun writeTo(t: T, output: OutputStream) {
         try {
             val jsonString = json.encodeToString(serializer, t)

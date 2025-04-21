@@ -25,7 +25,6 @@ fun ConfirmDialog(
         }
     }
 ){
-
     AlertDialog(onDismissRequest = onCancel,
         confirmButton =  confirmButton,
         dismissButton = {

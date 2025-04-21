@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
@@ -43,17 +42,13 @@ class ChartViewModel @Inject constructor(private val chartRepository: ChartRepos
         Triple(type, range, targetValues)}.flatMapLatest {(type, range, targetValues) ->
         chartRepository.getChartDataFlow(type, range, targetValues)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData())
-        //.flatMapLatest { type, range -> chartRepository.getChartDataFlow(type, range) }
-
 
     fun onPageChanged(index: Int) {
         _selectedChartType.value = ChartType.entries[index]
     }
-
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
             timeRangeManager.setSelectedRange(range)
         }
     }
-
 }

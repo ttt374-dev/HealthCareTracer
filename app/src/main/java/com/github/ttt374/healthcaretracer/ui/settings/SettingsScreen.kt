@@ -224,7 +224,6 @@ fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, c
     val confirmButtonFocusRequester = remember { FocusRequester() }
     //val focusManager = FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, confirmButtonFocusRequester))
 
-
     ConfirmDialog(title = { Text(stringResource(R.string.targetBp))},
         text = {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -252,9 +251,6 @@ fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, c
 @Composable
 fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Modifier){
     Column (modifier=modifier.border(1.dp, Color.Black).padding(4.dp)) {
-//        Row {
-//            Text(guideline.name)
-//        }
         listOf(guideline.normal, guideline.elevated, guideline.htn1, guideline.htn2, guideline.htn3).forEach { cat ->
             Row (Modifier.border(1.dp, Color.Gray.copy(alpha = 0.3f), shape = RectangleShape)){
                 Text(stringResource(cat.nameLabel), Modifier.weight(1f))
@@ -262,7 +258,6 @@ fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Mo
                 Text(cat.lowerRange.toDisplayString(), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
             }
         }
-
     }
 }
 internal fun IntRange.toDisplayString(): String {

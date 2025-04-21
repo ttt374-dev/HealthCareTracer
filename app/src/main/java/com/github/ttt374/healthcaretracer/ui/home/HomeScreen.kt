@@ -109,7 +109,6 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
         CustomTopAppBar(
             stringResource(R.string.home),
             menuItems = listOf(
-                //MenuItem("export", onClick = { homeViewModel.exportData() }),
                 MenuItem("export", onClick = { exportFilePickerDialogState.open() }),
                 MenuItem("import", onClick = { importFilePickerDialogState.open() })
             )
@@ -137,14 +136,11 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-                 //morningTimeRange: LocalTimeRange = LocalTimeRange(), eveningTimeRange: LocalTimeRange = LocalTimeRange(),
                  timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
                  navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
-        //val bp = BloodPressure(dailyItem.avgBpUpper?.toInt(), dailyItem.avgBpLower?.toInt())
-        //val bp = Pair(dailyItem.bpLower, dailyItem.bpLower).toBloodPressure()
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
         Text(dailyItem.vitals.bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
         Text(dailyItem.vitals.pulse?.toInt().toPulseString(), textAlign = TextAlign.End)
@@ -159,7 +155,6 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
             navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     val bp = item.vitals.bp
-    //val bp = BloodPressure(item.bppper, item.bpLower)
 
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
@@ -189,8 +184,6 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
             if (item.vitals.bp == null){
                 Text("-")
             } else {
-                //val htnGrade = BloodPressureCategory.getCategory(item.bpUpper, item.bpLower)
-                //with (bp.htnCategory()){
                 guideline.getCategory(bp).let {
                     Text(stringResource(it.nameLabel), color=it.color)
                     //Text(it.name, color=it.color)

@@ -70,7 +70,7 @@ internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, padd
     HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(top = paddingTop))
 }
 @Composable
-fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString = { v -> v.toAnnotatedString()} ) {
+fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString = { v -> toAnnotatedString() } ) {
     Column {
         StatisticsHeadersRow(title)
 
@@ -112,11 +112,11 @@ fun StatisticsHeadersRow(title: String){
 }
 
 @Composable
-fun <T> StatisticsRow(label: String, statValue: StatValue<T>, format: (T?) -> AnnotatedString = { v -> v.toAnnotatedString()}) {
+fun <T> StatisticsRow(label: String, statValue: StatValue<T>, format: (T?) -> AnnotatedString = { v -> toAnnotatedString() }) {
     StatisticsBaseRow(label, { format(it.getDisplayValue(statValue))}, statValue.count.toString())
 }
 
 //internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
 //internal fun BloodPressure?.toAnnotatedString(): AnnotatedString = toAnnotatedString()
-internal fun <T> T?.toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
+internal fun toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
 

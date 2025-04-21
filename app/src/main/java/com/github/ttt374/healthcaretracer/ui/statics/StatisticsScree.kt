@@ -116,7 +116,7 @@ fun <T> StatisticsRow(label: String, statValue: StatValue<T>, format: (T?) -> An
     StatisticsBaseRow(label, { format(it.getDisplayValue(statValue))}, statValue.count.toString())
 }
 
-internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
-internal fun BloodPressure?.toAnnotatedString(): AnnotatedString = toAnnotatedString()
+//internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
+//internal fun BloodPressure?.toAnnotatedString(): AnnotatedString = toAnnotatedString()
 internal fun <T> T?.toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
 

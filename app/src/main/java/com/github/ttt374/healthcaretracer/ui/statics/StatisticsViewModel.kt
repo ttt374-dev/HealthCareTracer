@@ -35,15 +35,6 @@ class StatisticsViewModel @Inject constructor (itemRepository: ItemRepository, c
     val statistics = combine(timeOfDayConfigFlow, recentItemsFlow){ timeOfDayConfig, items ->
         withContext(Dispatchers.Default) {
             StatCalculator(timeOfDayConfig).calculateAll(items)
-//            val calculator = StatCalculator(timeOfDayConfig)
-
-//            StatisticsData(
-//                bloodPressure = calculator.calculateStat(items, { BloodPressure(it.bpUpper, it.bpLower) }),
-//                pulse = calculator.calculateStat(items,  { it.pulse?.toDouble() }),
-//                bodyWeight = calculator.calculateStat(items,  { it.bodyWeight }),
-//                bodyTemperature = calculator.calculateStat(items,  { it.bodyTemperature }),
-//                meGap = calculator.getMeStats(items)
-//            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
 

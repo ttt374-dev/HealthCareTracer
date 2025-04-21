@@ -16,7 +16,7 @@ class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
     fun calculateAll(items: List<Item>): StatisticsData {
         return StatisticsData(
             bloodPressure = calculateStat(items) { it.vitals.bp },
-            pulse = calculateStat(items) { it.vitals.pulse?.toDouble() },
+            pulse = calculateStat(items) { it.vitals.pulse },
             bodyWeight = calculateStat(items) { it.vitals.bodyWeight },
             bodyTemperature = calculateStat(items) { it.vitals.bodyTemperature },
             meGap = getMeStats(items)

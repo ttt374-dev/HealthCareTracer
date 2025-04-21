@@ -2,13 +2,11 @@ package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
-import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
 import com.github.ttt374.healthcaretracer.ui.chart.ChartType
-import com.github.ttt374.healthcaretracer.ui.chart.ChartableItem
 import com.github.ttt374.healthcaretracer.ui.chart.SeriesDef
 import com.github.ttt374.healthcaretracer.ui.common.TimeRange
 import com.github.ttt374.healthcaretracer.ui.home.groupByDate

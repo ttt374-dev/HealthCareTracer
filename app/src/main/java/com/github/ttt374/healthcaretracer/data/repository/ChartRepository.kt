@@ -13,7 +13,6 @@ import com.github.ttt374.healthcaretracer.ui.home.groupByDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.ZoneId
@@ -27,7 +26,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
-                                          private val configRepository: ConfigRepository,
+                                          //private val configRepository: ConfigRepository,
 ){
 
 //    private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
@@ -44,19 +43,18 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
 //    private fun getEntriesFlow(takeValue: (DailyItem) -> Double?, timeRange: TimeRange) =
 //        getDailyItemsFlow(timeRange).map { list -> list.toEntries({ it.date.atStartOfDay(zoneId).toInstant(zoneId) }, { takeValue(it) }) }
 
-    private val targetValuesFlow = configRepository.dataFlow.map {
-        it.toVitals()
-    }
-    private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange): Flow<ChartSeries> {
-        return targetValuesFlow.flatMapLatest { targetValues ->
-            getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange).map {
-            //getEntriesFlow(takeValue = { seriesDef.takeDailyValue(it) }, timeRange).map {
+
+    private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
+//        return getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange){ entries ->
+//            ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries))
+//        }
+        return getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange).map {
                 ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it))
-            }
         }
+
     }
-    fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange): Flow<ChartData> {
-        return chartType.seriesDefList.map {getChartSeriesFlow(it, timeRange) }.combineList().map {
+    fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
+        return chartType.seriesDefList.map {getChartSeriesFlow(it, timeRange, targetValues) }.combineList().map {
             ChartData(chartType, it)
         }
     }
@@ -77,7 +75,7 @@ fun <T> List<T>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), getTime: (T) 
         }
     }
 }
-private fun Config.toVitals() = Vitals(
+fun Config.toVitals() = Vitals(
     bp = BloodPressure(targetBpUpper, targetBpLower),
     bodyWeight = targetBodyWeight
 )

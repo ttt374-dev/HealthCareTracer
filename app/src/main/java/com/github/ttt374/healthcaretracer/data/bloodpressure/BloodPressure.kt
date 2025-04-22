@@ -7,7 +7,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
 import androidx.room.TypeConverter
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class BloodPressure(val upper: Int, val lower: Int)
 
 fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {

@@ -14,7 +14,7 @@ import androidx.compose.ui.window.DialogProperties
 fun ConfirmDialog(
     title: @Composable () ->  Unit = {},
     text: @Composable () -> Unit = {},
-    onConfirm: () -> Unit,
+    onConfirm: () -> Unit = {},
     onCancel: () -> Unit = { },
     confirmButtonLabel: String = "OK",
     dismissButtonLabel: String = "Cancel",

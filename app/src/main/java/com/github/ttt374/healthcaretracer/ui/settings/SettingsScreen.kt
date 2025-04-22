@@ -80,8 +80,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     //val targetBpState = rememberDialogState()
     if (targetVitalsDialogState[TargetVitals.BloodPressure]?.isOpen == true){
-        TargetBpDialog(config.targetBpUpper, config.targetBpLower, onConfirm = { upper, lower ->
-            viewModel.saveConfig(config.copy(targetBpUpper = upper, targetBpLower = lower))
+        TargetBpDialog(config.targetBp, onConfirm = { bp ->
+            viewModel.saveConfig(config.copy(targetBp = bp))
         }, closeDialog = { targetVitalsDialogState[TargetVitals.BloodPressure]?.close() })
     }
 
@@ -138,7 +138,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
             }
             SettingsRow(stringResource(TargetVitals.BloodPressure.resId)){
-                Text((config.targetBpUpper to config.targetBpLower).toBloodPressure().toAnnotatedString(config.bloodPressureGuideline), //"${config.targetBpUpper} / ${config.targetBpLower}",
+                Text(config.targetBp.toAnnotatedString(config.bloodPressureGuideline), //"${config.targetBpUpper} / ${config.targetBpLower}",
                     Modifier.clickable { targetVitalsDialogState[TargetVitals.BloodPressure]?.open() })
             }
             SettingsRow(stringResource(TargetVitals.BodyWeight.resId)){
@@ -164,9 +164,10 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
      }
 }
 @Composable
-fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, closeDialog: () -> Unit){
-    var bpUpperString by remember { mutableStateOf(bpUpper.toString())}
-    var bpLowerString by remember { mutableStateOf(bpLower.toString())}
+fun TargetBpDialog (bp: BloodPressure, onConfirm: (BloodPressure) -> Unit, closeDialog: () -> Unit){
+//fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, closeDialog: () -> Unit){
+    var bpUpperString by remember { mutableStateOf(bp.upper.toString())}
+    var bpLowerString by remember { mutableStateOf(bp.lower.toString())}
     val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
 
     // focus requesters
@@ -187,15 +188,16 @@ fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, c
                 OutlinedTextField(bpLowerString, { bpLowerString = it; if ((it.toIntOrNull() ?: 0) > MIN_BP) confirmButtonFocusRequester.requestFocus()},
                     Modifier.weight(1f).focusRequester(bpLowerFocusRequester), keyboardOptions = numberKeyboardOptions)
             }
-    }, confirmButton = {
+        },
+        confirmButton = {
             OutlinedButton(onClick = {
-                onConfirm(bpUpperString.toIntOrNull() ?: 0, bpLowerString.toIntOrNull() ?: 0); closeDialog()
+                onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)); closeDialog()
                 closeDialog() }, modifier = Modifier.focusRequester(confirmButtonFocusRequester).focusTarget()
             ) {
                 Text("OK")
             }
         },
-        onConfirm = { onConfirm(bpUpperString.toIntOrNull() ?: 0, bpLowerString.toIntOrNull() ?: 0); closeDialog() },
+        onConfirm = { onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)); closeDialog() },
         onCancel = { closeDialog() }
         )
 }

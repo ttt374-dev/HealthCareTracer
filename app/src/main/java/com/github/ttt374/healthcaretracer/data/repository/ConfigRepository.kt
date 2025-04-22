@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import android.content.Context
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
@@ -19,8 +20,9 @@ import javax.inject.Singleton
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
     val timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
-    val targetBpUpper: Int = 120,
-    val targetBpLower: Int = 80,
+//    val targetBpUpper: Int = 120,
+//    val targetBpLower: Int = 80,
+    val targetBp: BloodPressure = BloodPressure(120, 80),
     val targetBodyWeight: Double = 60.0,
 
     //val localeTag: String = "en_US"

@@ -62,7 +62,7 @@ internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRan
 //    return this.firstOrNull()?.measuredAt
 //}
 fun Config.toVitals() = Vitals(
-    bp = BloodPressure(targetBpUpper, targetBpLower),
+    bp = targetBp,
     bodyWeight = targetBodyWeight
 )
 inline fun <reified T> List<Flow<T>>.combineList(): Flow<List<T>> =

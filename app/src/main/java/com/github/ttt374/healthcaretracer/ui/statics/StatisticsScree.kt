@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.ui.statics
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -25,7 +24,6 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.repository.firstDate
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.ui.chart.firstDate
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
@@ -36,9 +34,9 @@ import java.time.Instant
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val timeRange by viewModel.timeRange.collectAsState()
-    val config by viewModel.config.collectAsState()
+    //val config by viewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline
-    val statistics by viewModel.statistics.collectAsState()
+    val statisticsData by viewModel.statisticsData.collectAsState()
 
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
@@ -48,20 +46,20 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 Row(modifier = Modifier.padding(4.dp)) {
                     TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
-                    Text(timeRange.toDisplayString( statistics.items.firstDate() ?: Instant.now()))
+                    Text(timeRange.toDisplayString( statisticsData.items.firstDate() ?: Instant.now()))
                 }
             }
             item {
                 CustomDivider()
-                StatisticsTable(stringResource(R.string.blood_pressure), statistics.bloodPressure,
+                StatisticsTable(stringResource(R.string.blood_pressure), statisticsData.bloodPressure,
                     takeValue = { v: BloodPressure? -> v?.toAnnotatedString(guideline, false) ?: AnnotatedString("-")})
-                val meGapStatValue = statistics.meGap.toStatValue()
+                val meGapStatValue = statisticsData.meGap.toStatValue()
                 StatisticsRow(stringResource(R.string.me_gap), meGapStatValue, { v -> v.toAnnotatedString("%.1f")})
             }
             items(listOf(
-                R.string.pulse to statistics.pulse,
-                R.string.bodyTemperature to statistics.bodyTemperature,
-                R.string.bodyWeight to statistics.bodyWeight))
+                R.string.pulse to statisticsData.pulse,
+                R.string.bodyTemperature to statisticsData.bodyTemperature,
+                R.string.bodyWeight to statisticsData.bodyWeight))
             { (resId, stat) ->
                 CustomDivider()
                 StatisticsTable(stringResource(resId), stat,  { v -> AnnotatedString(v.toDisplayString("%.1f"))})

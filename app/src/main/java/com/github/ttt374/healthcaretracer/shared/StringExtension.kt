@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.ui.common
+package com.github.ttt374.healthcaretracer.shared
 
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle

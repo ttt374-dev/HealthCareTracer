@@ -36,10 +36,12 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
+import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.shared.toDayPeriod
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.coroutines.launch
@@ -78,7 +80,6 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
                 TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
                 Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
             }
-
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 ChartType.entries.forEachIndexed { index, type ->
                     Tab(
@@ -204,22 +205,27 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     )
 
     return this.withIndex().flatMap { (index, series) ->
-    //return flatMap { series ->
-        //val color = series.seriesDef.color.adjustForMode(isSystemInDarkTheme())
         val label = series.seriesDef.labelResId?.let { stringResource(it) } ?: ""
         val targetLabel = series.seriesDef.targetLabelResId?.let { stringResource(it) } ?: ""
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(
-            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()).apply {
-                val colors = series.actualEntries.map { entry ->
-                    val instant = Instant.ofEpochMilli(entry.x.toLong())
-                    if (instant.isEvening()) color.adjustLightness(-0.2f).toArgb()
-                    else if (instant.isMorning()) color.adjustLightness(0.2f).toArgb()
-                    else color.toArgb()
-            }
-            circleColors = colors                                                                                      },
-            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
+//            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()).apply {
+//                val colors = series.actualEntries.map { entry ->
+//                    val instant = Instant.ofEpochMilli(entry.x.toLong())
+//
+//                    val delta = when (instant.toDayPeriod()) {  // TODO: TimeOfDayConfig, zoneid
+//                        DayPeriod.Morning -> 0.2f
+//                        DayPeriod.Evening -> -0.2f
+//                        else -> 0.0f
+//                    }
+//                    color.adjustLightness(delta).toArgb()
+//                }
+//                circleColors = colors
+//            },
+            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
+            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true
+            )
         )
     }
 }
@@ -228,14 +234,14 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
 //    return if (isSystemInDarkTheme()) color.toDarkMode() else color
 //}
 
-fun Instant.isMorning(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig()): Boolean {
-    val range = LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon)
-    return range.contains(this.toLocalTime())
-}
-fun Instant.isEvening(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig()): Boolean {
-    val range = LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)
-    return range.contains(this.toLocalTime())
-}
+//fun Instant.isMorning(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(), zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
+//    val range = LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon)
+//    return range.contains(this.toLocalTime(zoneId))
+//}
+//fun Instant.isEvening(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(), zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
+//    val range = LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)
+//    return range.contains(this.toLocalTime(zoneId))
+//}
 
 fun Color.adjustForMode(isDarkMode: Boolean = false): Color {
     return if (isDarkMode) this.toDarkMode() else this

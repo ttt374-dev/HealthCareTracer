@@ -3,13 +3,14 @@ package com.github.ttt374.healthcaretracer.ui.statics
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.calculateMeGap
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
-import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
-import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
-import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
-import com.github.ttt374.healthcaretracer.ui.common.maxOrNull
-import com.github.ttt374.healthcaretracer.ui.common.minOrNull
-import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
+import com.github.ttt374.healthcaretracer.shared.DayPeriod
+import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.shared.averageOrNull
+import com.github.ttt374.healthcaretracer.shared.maxOrNull
+import com.github.ttt374.healthcaretracer.shared.minOrNull
+import com.github.ttt374.healthcaretracer.shared.toDayPeriod
 import java.time.Instant
 import java.time.ZoneId
 
@@ -35,26 +36,23 @@ object StatCalculator { // (private val timeOfDayConfig: TimeOfDayConfig) {
         }
 
         val grouped = valuesWithTime.groupBy { (item, _) ->
-            item.measuredAt.toTimeOfDay(config = timeOfDayConfig)
+            item.measuredAt.toDayPeriod(config = timeOfDayConfig)
         }
 
         return StatTimeOfDay(
             all = valuesWithTime.map { it.second }.toStatValue(),
-            morning = grouped[TimeOfDay.Morning].orEmpty().map { it.second }.toStatValue(),
-            afternoon = grouped[TimeOfDay.Afternoon].orEmpty().map { it.second }.toStatValue(),
-            evening = grouped[TimeOfDay.Evening].orEmpty().map { it.second }.toStatValue()
+            morning = grouped[DayPeriod.Morning].orEmpty().map { it.second }.toStatValue(),
+            afternoon = grouped[DayPeriod.Afternoon].orEmpty().map { it.second }.toStatValue(),
+            evening = grouped[DayPeriod.Evening].orEmpty().map { it.second }.toStatValue()
         )
     }
 
     private fun calculateMeGapStats(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): List<Double> {
         val zone = ZoneId.systemDefault()
         return items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
-            .map { (date, dailyItems) ->
-                DailyItem(date = date, items = dailyItems).meGap(
-                    zone,
-                    LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon),
-                    LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)
-                )
+            .map { (_, dailyItems) ->
+                dailyItems.calculateMeGap(timeOfDayConfig, zone)
+                //DailyItem(date = date, items = dailyItems).meGap(timeOfDayConfig, zone)
             }.filterNotNull()
     }
 }

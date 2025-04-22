@@ -45,20 +45,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
-import com.github.ttt374.healthcaretracer.ui.common.TimeOfDay
-import com.github.ttt374.healthcaretracer.ui.common.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.shared.DayPeriod
+import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
-import com.github.ttt374.healthcaretracer.ui.common.toBodyTemperatureString
-import com.github.ttt374.healthcaretracer.ui.common.toBodyWeightString
-import com.github.ttt374.healthcaretracer.ui.common.toPulseString
-import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
+import com.github.ttt374.healthcaretracer.shared.toBodyTemperatureString
+import com.github.ttt374.healthcaretracer.shared.toBodyWeightString
+import com.github.ttt374.healthcaretracer.shared.toPulseString
+import com.github.ttt374.healthcaretracer.shared.toDayPeriod
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -159,9 +158,9 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
-            when (item.measuredAt.toTimeOfDay(config = timeOfDayConfig)){
-                TimeOfDay.Morning -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
-                TimeOfDay.Evening -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
+            when (item.measuredAt.toDayPeriod(config = timeOfDayConfig)){
+                DayPeriod.Morning -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
+                DayPeriod.Evening -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
                 else -> {}
             }
 //            item.measuredAt.toLocalTime().let {

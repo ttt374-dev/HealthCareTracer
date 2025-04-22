@@ -7,7 +7,7 @@ import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
-import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
+import com.github.ttt374.healthcaretracer.shared.averageOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map

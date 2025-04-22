@@ -1,13 +1,12 @@
-package com.github.ttt374.healthcaretracer.ui.common
+package com.github.ttt374.healthcaretracer.shared
 
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 
-fun <T: Number> List<T?>.averageOrNull(): Double? {
-    val filtered = this.filterNotNull()
-    return if (filtered.isEmpty()) null else filtered.map { it.toDouble() }.average()
-}
-
-
+//fun <T: Number> List<T?>.averageOrNull(): Double? {
+//    val filtered = this.filterNotNull()
+//    return if (filtered.isEmpty()) null else filtered.map { it.toDouble() }.average()
+//}
+//
 
 @Suppress("UNCHECKED_CAST")
 fun <E> List<E>.averageOrNull(): E? {

@@ -8,15 +8,11 @@ import com.github.ttt374.healthcaretracer.data.repository.toTargetEntries
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import java.time.Instant
 
-data class ChartData(val chartType: ChartType = ChartType.Default, val chartSeriesList: List<ChartSeries> = emptyList())
+data class ChartData(val chartType: ChartType, val chartSeriesList: List<ChartSeries> = emptyList())
 data class ChartSeries(val seriesDef: SeriesDef = SeriesDef.BpUpper, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry> = emptyList())
 
-fun List<Entry>.firstDate(): Instant? {
-    return this.minByOrNull { it.x }?.x?.toLong()?.toInstant()
-}
-
 fun List<ChartSeries>.firstDate(): Instant? {
-    return this.flatMap { it.actualEntries }.firstDate()
+    return this.flatMap { it.actualEntries }.minByOrNull { it.x }?.x?.toLong()?.toInstant()
 }
 
 sealed class SeriesDef(
@@ -45,10 +41,10 @@ enum class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<Ser
     Pulse(R.string.pulse, listOf(SeriesDef.Pulse)),
     BodyTemperature(R.string.bodyTemperature, listOf(SeriesDef.BodyTemperature)),
     BodyWeight(R.string.bodyWeight, listOf(SeriesDef.BodyWeight));
-
-    companion object {
-        val Default = BloodPressure
-    }
+//
+//    companion object {
+//        val Default = BloodPressure
+//    }
 }
 
 //sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){

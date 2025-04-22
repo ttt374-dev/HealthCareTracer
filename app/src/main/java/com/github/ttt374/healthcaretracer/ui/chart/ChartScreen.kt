@@ -28,13 +28,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
-import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -46,7 +46,6 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
 
 fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
 
@@ -55,7 +54,6 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     val chartData by chartViewModel.chartData.collectAsState()
     val selectedChartType by chartViewModel.selectedChartType.collectAsState()
     val timeRange by chartViewModel.timeRange.collectAsState()
-    //val dataRange by chartViewModel.dataRange.collectAsState()
 
     val pagerState = rememberPagerState(
         initialPage = ChartType.entries.indexOf(selectedChartType),
@@ -67,7 +65,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
 
     LaunchedEffect(Unit) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
-            chartViewModel.onPageChanged(page)
+            page.toChartType()?.let { chartViewModel.setChartType(it) }
         }
     }
 
@@ -78,14 +76,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
         Column(modifier = Modifier.padding(innerPadding)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
-//                val fullStartDate = chartData.chartSeriesList
-//                                .flatMap { it.actualEntries }
-//                                .minByOrNull { it.x }?.x?.toLong()?.toInstant() ?: Instant.now()
-//                    //.minByOrNull { it.x }?.x?.toLong()?.toInstant()?: Instant.now()
-                //val fullStartDate = chartData.chartSeriesList.firstOrNull()?.actualEntries?.firstOrNull()?.x?.toLong()?.toInstant() ?: Instant.now()
-                //val fullStartDate = chartData.chartSeriesList.flatMap { it.actualEntries }.minByOrNull( it.x )?.actualEntries?.firstOrNull()?.x?.toLong()?.toInstant() ?: Instant.now()
                 Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
-                //Text(timeRange.toDisplayString(chartData.startDate() ?: Instant.now()))
             }
 
             TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -110,6 +101,10 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
 }
 
 ////////////
+internal fun Int.toChartType(): ChartType? {
+    return if (this in ChartType.entries.indices) ChartType.entries.getOrNull(this) else null
+}
+
 private fun LineChart.setupValueFormatter(datePattern: String){
     val formatter = DateTimeFormatter.ofPattern(datePattern)
     xAxis.valueFormatter = object : ValueFormatter() {
@@ -125,8 +120,6 @@ fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yy
     val dataStart = data?.xMin?.toLong() ?: return
     val end = data?.xMax?.toLong() ?: return
 
-    //val now = System.currentTimeMillis()
-    //val start = timeRange.days?.let { days -> now - TimeUnit.DAYS.toMillis(days) } ?: dataStart
     val start = timeRange.startDate()?.toEpochMilli() ?: dataStart
     val totalDays = ((end - start) / 86400000L).coerceAtLeast(1)
     val daysPerLabel = (totalDays / 10).coerceAtLeast(1)
@@ -141,6 +134,8 @@ fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yy
         this.labelRotationAngle = labelRotationAngle
         setAvoidFirstLastClipping(true)
         axisMinimum = start.toFloat()
+        // X軸のラベル間隔を調整
+        setLabelCount(5, true) // ラベル数を減らしてみる
     }
 
     axisLeft.apply {
@@ -148,6 +143,14 @@ fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yy
         spaceBottom = 40f
     }
     axisRight.isEnabled = false
+
+    // 凡例の位置を調整
+    legend.apply {
+        verticalAlignment = Legend.LegendVerticalAlignment.TOP
+        horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+        orientation = Legend.LegendOrientation.HORIZONTAL
+    }
+
     setupValueFormatter(datePattern)
     invalidate()
 }
@@ -200,7 +203,6 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
         MaterialTheme.colorScheme.surfaceVariant
     )
 
-
     return this.withIndex().flatMap { (index, series) ->
     //return flatMap { series ->
         //val color = series.seriesDef.color.adjustForMode(isSystemInDarkTheme())
@@ -215,10 +217,8 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
                     if (instant.isEvening()) color.adjustLightness(-0.2f).toArgb()
                     else if (instant.isMorning()) color.adjustLightness(0.2f).toArgb()
                     else color.toArgb()
-                }
-                circleColors = colors
-
-                                                                                      },
+            }
+            circleColors = colors                                                                                      },
             LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
         )
     }

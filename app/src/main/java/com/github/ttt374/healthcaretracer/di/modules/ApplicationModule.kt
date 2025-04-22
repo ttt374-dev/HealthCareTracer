@@ -7,6 +7,7 @@ import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.ui.chart.ChartType
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import dagger.Module
@@ -14,6 +15,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 
@@ -33,9 +35,9 @@ object ApplicationModule {
     @Provides
     fun providePreferencesRepository(@ApplicationContext context: Context) = PreferencesRepository(context)
 
-    @Provides
-    fun provideChartRepository(itemRepository: ItemRepository) =
-        ChartRepository(itemRepository)
+//    @Provides
+//    fun provideChartRepository(itemRepository: ItemRepository, configRepository: ConfigRepository) =
+//        ChartRepository(itemRepository, configRepository)
 
     @Provides
     fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()
@@ -49,3 +51,19 @@ object ApplicationModule {
     @Provides
     fun provideImportDataUseCase(itemRepository: ItemRepository) = ImportDataUseCase(itemRepository)
 }
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class DefaultChartType
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ChartTypeModule {
+
+    @Provides
+    @DefaultChartType
+    fun provideDefaultChartType(): ChartType {
+        return ChartType.BloodPressure // ← ここを切り替えられる！
+    }
+}
+

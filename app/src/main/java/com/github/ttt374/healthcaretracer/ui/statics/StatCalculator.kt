@@ -19,7 +19,8 @@ class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
             pulse = calculateStat(items) { it.vitals.pulse },
             bodyWeight = calculateStat(items) { it.vitals.bodyWeight },
             bodyTemperature = calculateStat(items) { it.vitals.bodyTemperature },
-            meGap = getMeStats(items)
+            meGap = getMeStats(items),
+            items = items
         )
     }
     private fun <T> calculateStat(items: List<Item>, takeValue: (Item) -> T?): StatTimeOfDay<T> {
@@ -71,6 +72,7 @@ data class StatisticsData(
     val bodyWeight: StatTimeOfDay<Double> = StatTimeOfDay(),
     val bodyTemperature: StatTimeOfDay<Double> = StatTimeOfDay(),
     val meGap: List<Double> = emptyList(),
+    val items: List<Item> = emptyList(),
 )
 
 fun <T> List<T>.toStatValue() =

@@ -44,4 +44,10 @@ interface ItemDao {
 
     @Query("SELECT DISTINCT location FROM items ORDER by location")
     fun getAllLocationsFlow(): Flow<List<String>>
+
+    @Query("SELECT * FROM items ORDER BY measuredAt ASC LIMIT 1")
+    suspend fun getFirstItem(): Item?
+
+    suspend fun getFirstDate(): Instant? = getFirstItem()?.measuredAt
+
 }

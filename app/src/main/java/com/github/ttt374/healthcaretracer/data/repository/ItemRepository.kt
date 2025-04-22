@@ -42,4 +42,5 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
             else -> itemDao.getItemsFromFlow(Instant.now().minus(days, ChronoUnit.DAYS))
         }
     }
+    //suspend fun getFirstDate(): Instant? = itemDao.getFirstDate()
 }

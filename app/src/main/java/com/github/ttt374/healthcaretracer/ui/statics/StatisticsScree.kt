@@ -23,16 +23,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
+import com.github.ttt374.healthcaretracer.data.repository.firstDate
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
+import com.github.ttt374.healthcaretracer.ui.chart.firstDate
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.common.toAnnotatedString
 import com.github.ttt374.healthcaretracer.ui.common.toDisplayString
+import java.time.Instant
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
-    val selectedRange by viewModel.timeRange.collectAsState()
+    val timeRange by viewModel.timeRange.collectAsState()
     val config by viewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline
     val statistics by viewModel.statistics.collectAsState()
@@ -43,8 +46,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
             item {
-                Box(modifier = Modifier.padding(4.dp)) {
-                    TimeRangeDropdown(selectedRange, onRangeSelected = { viewModel.setSelectedRange(it) })
+                Row(modifier = Modifier.padding(4.dp)) {
+                    TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
+                    Text(timeRange.toDisplayString( statistics.items.firstDate() ?: Instant.now()))
                 }
             }
             item {

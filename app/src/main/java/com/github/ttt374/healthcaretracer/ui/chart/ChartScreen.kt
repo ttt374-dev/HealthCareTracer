@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.ui.chart
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -17,12 +18,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -31,6 +34,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
+import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -42,12 +46,16 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
+
+fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
 
 @Composable
 fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val chartData by chartViewModel.chartData.collectAsState()
     val selectedChartType by chartViewModel.selectedChartType.collectAsState()
     val timeRange by chartViewModel.timeRange.collectAsState()
+    //val dataRange by chartViewModel.dataRange.collectAsState()
 
     val pagerState = rememberPagerState(
         initialPage = ChartType.entries.indexOf(selectedChartType),
@@ -68,7 +76,17 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
         bottomBar = { CustomBottomAppBar(appNavigator) })
     { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
+//                val fullStartDate = chartData.chartSeriesList
+//                                .flatMap { it.actualEntries }
+//                                .minByOrNull { it.x }?.x?.toLong()?.toInstant() ?: Instant.now()
+//                    //.minByOrNull { it.x }?.x?.toLong()?.toInstant()?: Instant.now()
+                //val fullStartDate = chartData.chartSeriesList.firstOrNull()?.actualEntries?.firstOrNull()?.x?.toLong()?.toInstant() ?: Instant.now()
+                //val fullStartDate = chartData.chartSeriesList.flatMap { it.actualEntries }.minByOrNull( it.x )?.actualEntries?.firstOrNull()?.x?.toLong()?.toInstant() ?: Instant.now()
+                Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
+                //Text(timeRange.toDisplayString(chartData.startDate() ?: Instant.now()))
+            }
 
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 ChartType.entries.forEachIndexed { index, type ->
@@ -85,7 +103,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
             }
             // 選択されたタブに応じて異なるグラフを表示
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
-                HealthChart(chartData.chartSeriesList)
+                HealthChart(chartData.chartSeriesList, timeRange)
             }
         }
     }
@@ -101,11 +119,15 @@ private fun LineChart.setupValueFormatter(datePattern: String){
         }
     }
 }
-fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount: Int = 10) {
+fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yyyy/M/d", maxLabelCount: Int = 10) {
     description.isEnabled = false
 
-    val start = data?.xMin?.toLong() ?: return
+    val dataStart = data?.xMin?.toLong() ?: return
     val end = data?.xMax?.toLong() ?: return
+
+    //val now = System.currentTimeMillis()
+    //val start = timeRange.days?.let { days -> now - TimeUnit.DAYS.toMillis(days) } ?: dataStart
+    val start = timeRange.startDate()?.toEpochMilli() ?: dataStart
     val totalDays = ((end - start) / 86400000L).coerceAtLeast(1)
     val daysPerLabel = (totalDays / 10).coerceAtLeast(1)
     val granularityMillis = daysPerLabel * 86400000f
@@ -118,6 +140,7 @@ fun LineChart.setupChartAdaptive(datePattern: String = "yyyy/M/d", maxLabelCount
         setLabelCount(maxLabelCount, false)
         this.labelRotationAngle = labelRotationAngle
         setAvoidFirstLastClipping(true)
+        axisMinimum = start.toFloat()
     }
 
     axisLeft.apply {
@@ -136,6 +159,7 @@ fun LineDataSet.applyStyle(color: Int? = null, lineWidth: Float = 2f, circleRadi
         valueTextColor = color
     }
     this.circleRadius = circleRadius
+    setDrawValues(false)
 
     if (isTarget) {
         enableDashedLine(15f, 10f, 0f)
@@ -148,7 +172,7 @@ fun LineDataSet.applyStyle(color: Int? = null, lineWidth: Float = 2f, circleRadi
     }
 }
 @Composable
-fun HealthChart(chartSeriesList: List<ChartSeries>) {
+fun HealthChart(chartSeriesList: List<ChartSeries>, timeRange: TimeRange) {
     val list = chartSeriesList.toLineDataSets()
     val isDarkMode = isSystemInDarkTheme()
     AndroidView(
@@ -160,7 +184,7 @@ fun HealthChart(chartSeriesList: List<ChartSeries>) {
             chart.apply {
                 this.legend.textColor = Color.Black.adjustForMode(isDarkMode).toArgb()
             }
-            chart.setupChartAdaptive()
+            chart.setupChartAdaptive(timeRange)
         }
     )
 }
@@ -188,14 +212,11 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
             LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()).apply {
                 val colors = series.actualEntries.map { entry ->
                     val instant = Instant.ofEpochMilli(entry.x.toLong())
-                    //val timeOfDayConfig = TimeOfDayConfig()
-                    if (instant.isMorning()) Color.Blue.toArgb() else
-                        if (instant.isEvening()) Color.Red.toArgb() else
-                            Color.Black.toArgb()
-
-
+                    if (instant.isEvening()) color.adjustLightness(-0.2f).toArgb()
+                    else if (instant.isMorning()) color.adjustLightness(0.2f).toArgb()
+                    else color.toArgb()
                 }
-                //setCircleColors(colors)
+                circleColors = colors
 
                                                                                       },
             LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
@@ -226,6 +247,15 @@ fun Color.toDarkMode(): Color {
     val b = 1f - blue
     return Color(r, g, b, alpha * 0.5f)
 }
+
+fun Color.adjustLightness(delta: Float): Color {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(this.toArgb(), hsl)
+    hsl[2] = (hsl[2] + delta).coerceIn(0f, 1f) // 明度を加減
+    return Color(ColorUtils.HSLToColor(hsl))
+}
+
+
 //fun Color.toDarkMode(): Color {
 //    val hsv = FloatArray(3)
 //    // Color を ARGB Int に変換し、HSV に変換

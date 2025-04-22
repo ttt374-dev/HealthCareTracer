@@ -9,10 +9,10 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
 import com.github.ttt374.healthcaretracer.ui.chart.ChartType
 import com.github.ttt374.healthcaretracer.ui.chart.SeriesDef
-import com.github.ttt374.healthcaretracer.ui.home.groupByDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.ZoneId
@@ -28,17 +28,16 @@ import javax.inject.Inject
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
                                           //private val configRepository: ConfigRepository,
 ){
-
 //    private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
 //        itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
 //    }
-    private fun getItemsFlow(timeRange: TimeRange) =
-        itemRepository.getRecentItemsFlow(timeRange.days)
+    fun getAllItemsFlow() = itemRepository.getAllItemsFlow()
+    private fun getRecentItemsFlow(timeRange: TimeRange) = itemRepository.getRecentItemsFlow(timeRange.days)
 //    private fun getDailyItemsFlow(timeRange: TimeRange) =
 //        itemRepository.getRecentItemsFlow(timeRange.days).map { items -> items.groupByDate()}
 
     private fun getEntriesFlow(takeValue: (Item) -> Double?, timeRange: TimeRange) =
-        getItemsFlow(timeRange).map { list -> list.toEntries(getTime = { it.measuredAt}, takeValue = { takeValue(it) } )}
+        getRecentItemsFlow(timeRange).map { list -> list.toEntries(getTime = { it.measuredAt}, takeValue = { takeValue(it) } )}
 
 //    private fun getEntriesFlow(takeValue: (DailyItem) -> Double?, timeRange: TimeRange) =
 //        getDailyItemsFlow(timeRange).map { list -> list.toEntries({ it.date.atStartOfDay(zoneId).toInstant(zoneId) }, { takeValue(it) }) }
@@ -49,15 +48,19 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
 //            ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries))
 //        }
         return getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange).map {
-                ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it))
+            ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it, timeRange))
         }
 
     }
     fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
-        return chartType.seriesDefList.map {getChartSeriesFlow(it, timeRange, targetValues) }.combineList().map {
-            ChartData(chartType, it)
+        return itemRepository.getAllItemsFlow().flatMapLatest { items ->
+            chartType.seriesDefList.map { getChartSeriesFlow(it, timeRange, targetValues) }.combineList().map {
+                ChartData(chartType, it)
+            }
         }
     }
+//    suspend fun getFullStartDate(): Instant? =
+//        itemRepository.getFirstDate()
     //suspend fun updatePreferences (transform: suspend (t: Preferences) -> Preferences) = preferencesRepository.updateData(transform)
 
 }
@@ -74,6 +77,9 @@ fun <T> List<T>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), getTime: (T) 
             Entry(getTime(item).toEpochMilli().toFloat(), value)
         }
     }
+}
+fun List<Item>.firstDate(): Instant? {
+    return this.firstOrNull()?.measuredAt
 }
 fun Config.toVitals() = Vitals(
     bp = BloodPressure(targetBpUpper, targetBpLower),

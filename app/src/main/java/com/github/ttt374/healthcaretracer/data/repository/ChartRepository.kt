@@ -29,15 +29,6 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, co
         return getEntriesFlow({ seriesDef.takeValue(it) }, timeRange)
             .map { entries -> seriesDef.createSeries(entries, targetValues, timeRange) }
     }
-
-    //    private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-//        return getEntriesFlow(takeValue = { seriesDef.takeValue(it) }, timeRange).map { entries ->
-//            val targetValue = seriesDef.takeValue.invoke(targetValues)
-//            val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange)} ?: emptyList()
-//            ChartSeries(seriesDef, entries, targetEntries)
-//            //ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries, timeRange))
-//        }
-//    }
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
@@ -45,7 +36,6 @@ class ChartRepository @Inject constructor(val itemRepository: ItemRepository, co
                 ChartData(chartType, it)
             }
         }
-
     }
 }
 fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
@@ -55,7 +45,7 @@ fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
         }
     }
 }
-fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
+internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
     if (isEmpty()) return emptyList()
     val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
 
@@ -68,9 +58,9 @@ fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List
         Entry(endX, targetValue.toFloat())
     )
 }
-fun List<Item>.firstDate(): Instant? {
-    return this.firstOrNull()?.measuredAt
-}
+//fun List<Item>.firstDate(): Instant? {
+//    return this.firstOrNull()?.measuredAt
+//}
 fun Config.toVitals() = Vitals(
     bp = BloodPressure(targetBpUpper, targetBpLower),
     bodyWeight = targetBodyWeight

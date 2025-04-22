@@ -10,6 +10,7 @@ import com.github.ttt374.healthcaretracer.ui.common.averageOrNull
 import com.github.ttt374.healthcaretracer.ui.common.maxOrNull
 import com.github.ttt374.healthcaretracer.ui.common.minOrNull
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
+import java.time.Instant
 import java.time.ZoneId
 
 //object StatCalculator {
@@ -24,7 +25,8 @@ object StatCalculator { // (private val timeOfDayConfig: TimeOfDayConfig) {
             bodyWeight = calculateStat(items, timeOfDayConfig) { it.vitals.bodyWeight },
             bodyTemperature = calculateStat(items, timeOfDayConfig) { it.vitals.bodyTemperature },
             meGap = calculateMeGapStats(items, timeOfDayConfig),
-            items = items
+            //items = items
+            firstDate = items.firstOrNull()?.measuredAt
         )
     }
     private fun <T> calculateStat(items: List<Item>, timeOfDayConfig: TimeOfDayConfig, takeValue: (Item) -> T?): StatTimeOfDay<T> {
@@ -76,8 +78,8 @@ data class StatisticsData(
     val bodyWeight: StatTimeOfDay<Double> = StatTimeOfDay(),
     val bodyTemperature: StatTimeOfDay<Double> = StatTimeOfDay(),
     val meGap: List<Double> = emptyList(),
-    val items: List<Item> = emptyList(),
+    //val items: List<Item> = emptyList(),
+    val firstDate: Instant? = null,
 )
-
 fun <T> List<T>.toStatValue() =
     StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())

@@ -22,7 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.repository.firstDate
+import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -46,7 +46,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 Row(modifier = Modifier.padding(4.dp)) {
                     TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
-                    Text(timeRange.toDisplayString( statisticsData.items.firstDate() ?: Instant.now()))
+                    Text(timeRange.toDisplayString( statisticsData.firstDate ?: Instant.now()))
                 }
             }
             item {
@@ -86,6 +86,7 @@ fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -
         }
     }
 }
+
 sealed class StatType (val resId: Int){
     abstract fun <T> getDisplayValue(stat: StatValue<T>): T?
 

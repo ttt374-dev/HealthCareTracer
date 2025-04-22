@@ -102,7 +102,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
 
 ////////////
 internal fun Int.toChartType(): ChartType? {
-    return if (this in ChartType.entries.indices) ChartType.entries.getOrNull(this) else null
+    return ChartType.entries.getOrNull(this)
 }
 
 private fun LineChart.setupValueFormatter(datePattern: String){

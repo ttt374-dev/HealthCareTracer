@@ -48,6 +48,6 @@ interface ItemDao {
     @Query("SELECT * FROM items ORDER BY measuredAt ASC LIMIT 1")
     suspend fun getFirstItem(): Item?
 
-    suspend fun getFirstDate(): Instant? = getFirstItem()?.measuredAt
+    //suspend fun getFirstDate(): Instant? = getFirstItem()?.measuredAt
 
 }

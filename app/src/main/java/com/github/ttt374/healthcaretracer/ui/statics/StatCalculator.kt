@@ -12,18 +12,22 @@ import com.github.ttt374.healthcaretracer.ui.common.minOrNull
 import com.github.ttt374.healthcaretracer.ui.common.toTimeOfDay
 import java.time.ZoneId
 
-class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
-    fun calculateAll(items: List<Item>): StatisticsData {
+//object StatCalculator {
+//    fun calculateAll(timeOfDayConfig: TimeOfDayConfig, items: List<Item>): StatisticsData { ... }
+//}
+
+object StatCalculator { // (private val timeOfDayConfig: TimeOfDayConfig) {
+    fun calculateAll(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): StatisticsData {
         return StatisticsData(
-            bloodPressure = calculateStat(items) { it.vitals.bp },
-            pulse = calculateStat(items) { it.vitals.pulse },
-            bodyWeight = calculateStat(items) { it.vitals.bodyWeight },
-            bodyTemperature = calculateStat(items) { it.vitals.bodyTemperature },
-            meGap = getMeStats(items),
+            bloodPressure = calculateStat(items, timeOfDayConfig) { it.vitals.bp },
+            pulse = calculateStat(items, timeOfDayConfig) { it.vitals.pulse },
+            bodyWeight = calculateStat(items, timeOfDayConfig) { it.vitals.bodyWeight },
+            bodyTemperature = calculateStat(items, timeOfDayConfig) { it.vitals.bodyTemperature },
+            meGap = getMeStats(items, timeOfDayConfig),
             items = items
         )
     }
-    private fun <T> calculateStat(items: List<Item>, takeValue: (Item) -> T?): StatTimeOfDay<T> {
+    private fun <T> calculateStat(items: List<Item>, timeOfDayConfig: TimeOfDayConfig, takeValue: (Item) -> T?): StatTimeOfDay<T> {
         val valuesWithTime = items.mapNotNull { item ->
             takeValue(item)?.let { item to it }
         }
@@ -40,7 +44,7 @@ class StatCalculator(private val timeOfDayConfig: TimeOfDayConfig) {
         )
     }
 
-    private fun getMeStats(items: List<Item>): List<Double> {
+    private fun getMeStats(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): List<Double> {
         val zone = ZoneId.systemDefault()
         return items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
             .map { (date, dailyItems) ->

@@ -34,7 +34,7 @@ import java.time.Instant
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val timeRange by viewModel.timeRange.collectAsState()
-    //val config by viewModel.config.collectAsState()
+    val config by viewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline
     val statisticsData by viewModel.statisticsData.collectAsState()
 

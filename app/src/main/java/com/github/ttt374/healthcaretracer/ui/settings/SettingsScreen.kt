@@ -41,9 +41,12 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuidel
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
+import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.DialogState
+import com.github.ttt374.healthcaretracer.ui.common.DialogStateImpl
 import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
@@ -68,23 +71,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             viewModel.saveConfig(config.copy(targetBpUpper = upper, targetBpLower = lower))
         }, closeDialog = { targetBpState.close() })
     }
-//    val targetBpUpperState = rememberDialogState()
-//    if (targetBpUpperState.isOpen)
-//        TextFieldDialog(config.targetBpUpper.toString(),
-//            onConfirm = {
-//                viewModel.saveConfig(config.copy(targetBpUpper = it.toInt()))
-//            },
-//            closeDialog = { targetBpUpperState.close() },
-//            keyboardOptions = numberKeyboardOptions,
-//        )
-//
-//    val targetBpLowerState = rememberDialogState()
-//    if (targetBpLowerState.isOpen)
-//        TextFieldDialog(config.targetBpLower.toString(), onConfirm = {
-//            viewModel.saveConfig(config.copy(targetBpLower = it.toInt()))
-//        },
-//            closeDialog = { targetBpLowerState.close() },
-//            keyboardOptions = numberKeyboardOptions)
 
     val targetBodyWeightState = rememberDialogState()
     if (targetBodyWeightState.isOpen)
@@ -94,36 +80,59 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             closeDialog = { targetBodyWeightState.close() },
             keyboardOptions = decimalKeyboardOptions)
 
-    val morningStartState = rememberDialogState()
-    if (morningStartState.isOpen){
-        LocalTimeDialog(config.timeOfDayConfig.morning,
-            onTimeSelected = {
-                val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
-                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
-            },
-            onDismiss = { morningStartState.close()})
+
+    @Composable
+    fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
+        return remember {
+            DayPeriod.entries.associateWith { DialogStateImpl() }
+        }
     }
-    val afternoonStartState = rememberDialogState()
-    if (afternoonStartState.isOpen){
-        LocalTimeDialog(config.timeOfDayConfig.afternoon,
-            onTimeSelected = {
-                val timeOfDayConfig = config.timeOfDayConfig.copy(afternoon = it)
-                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
-            },
-            onDismiss = { afternoonStartState.close()})
+
+    val dayPeriodDialogState = rememberDayPeriodDialogStates()
+    //val morningStartState = rememberDialogState()
+    //if (morningStartState.isOpen){
+
+    DayPeriod.entries.forEach { dayPeriod ->
+        if (dayPeriodDialogState[dayPeriod]?.isOpen == true){
+            LocalTimeDialog(config.timeOfDayConfig[dayPeriod],
+                onTimeSelected = {
+                    //val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
+                    val timeOfDayConfig = config.timeOfDayConfig.update(dayPeriod, it)
+                    viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+                },
+                onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
+        }
     }
-    val eveningStartState = rememberDialogState()
-    if (eveningStartState.isOpen){
-        LocalTimeDialog(config.timeOfDayConfig.evening,
-            onTimeSelected = {
-                val timeOfDayConfig = config.timeOfDayConfig.copy(evening = it)
-                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
-            },
-            onDismiss = { eveningStartState.close()})
-    }
+//
+//    if (dayPeriodDialogState[DayPeriod.Morning]?.isOpen == true){
+//        LocalTimeDialog(config.timeOfDayConfig[DayPeriod.Morning],
+//            onTimeSelected = {
+//                //val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
+//                val timeOfDayConfig = config.timeOfDayConfig.update(DayPeriod.Morning, it)
+//                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+//            },
+//            onDismiss = { dayPeriodDialogState[DayPeriod.Morning]?.close()})
+//    }
+//    //val afternoonStartState = rememberDialogState()
+//    if (dayPeriodDialogState[DayPeriod.Afternoon]?.isOpen == true){
+//        LocalTimeDialog(config.timeOfDayConfig[DayPeriod.Afternoon],
+//            onTimeSelected = {
+//                val timeOfDayConfig = config.timeOfDayConfig.update(DayPeriod.Afternoon, it)
+//                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+//            },
+//            onDismiss = { dayPeriodDialogState[DayPeriod.Afternoon]?.close()})
+//    }
+//    //val eveningStartState = rememberDialogState()
+//    if (dayPeriodDialogState[DayPeriod.Evening]?.isOpen == true){
+//        LocalTimeDialog(config.timeOfDayConfig[DayPeriod.Evening],
+//            onTimeSelected = {
+//                val timeOfDayConfig = config.timeOfDayConfig.update(DayPeriod.Evening, it)
+//                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
+//            },
+//            onDismiss = { dayPeriodDialogState[DayPeriod.Evening]?.close()})
+//    }
 
     //val localeSelectorState = rememberDialogState()
-
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
     ///
     Scaffold(
@@ -137,11 +146,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                     if (bpGuidelineState.isOpen) Icon(Icons.Filled.ExpandLess, "close") else
                         Icon(Icons.Filled.ExpandMore, "expand")
                 }
-//                BpGuidelineDropMenu(bpGuidelineState.isOpen, onSelected = { selected ->
-//                    val guideline = BloodPressureGuideline.bloodPressureGuidelines.find { it.name == selected } ?: BloodPressureGuideline.Default
-//                    viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
-//                    bpGuidelineState.close()
-//                }, onDismissRequest = { bpGuidelineState.close() })
             }
             if (bpGuidelineState.isOpen){
                 HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
@@ -153,61 +157,24 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             }
             SettingsRow(stringResource(R.string.targetBp)){
                 Text("${config.targetBpUpper} / ${config.targetBpLower}", Modifier.clickable { targetBpState.open() })
-
-//                Text(config.targetBpUpper.toString(), Modifier.clickable { targetBpUpperState.open() })
-//                Text(" / ")
-//                Text(config.targetBpLower.toString(), Modifier.clickable { targetBpLowerState.open() })
             }
             SettingsRow("${stringResource(R.string.targetBodyWeight)} (Kg)"){
                 Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
             }
-            SettingsRow(stringResource(R.string.morning)){
-                Text(config.timeOfDayConfig.morning.format(localTimeFormat), Modifier.clickable { morningStartState.open() })
+            DayPeriod.entries.forEach { dayPeriod ->
+                SettingsRow(stringResource(dayPeriod.resId)){
+                    Text(config.timeOfDayConfig[dayPeriod].format(localTimeFormat),
+                    //Text(dayPeriod.takeStartValue(config.timeOfDayConfig).format(localTimeFormat),
+                        modifier = Modifier.clickable { dayPeriodDialogState[dayPeriod]?.open() })
+                }
             }
-            SettingsRow(stringResource(R.string.afternoon)){
-                Text(config.timeOfDayConfig.afternoon.format(localTimeFormat), Modifier.clickable { afternoonStartState.open() })
-            }
-            SettingsRow(stringResource(R.string.evening)){
-                Text(config.timeOfDayConfig.evening.format(localTimeFormat), Modifier.clickable { eveningStartState.open() })
-            }
-//            SettingsRow(stringResource(R.string.morning_range)){
-//                Text(config.morningRange.start.format(localTimeFormat), Modifier.clickable { morningRangeStartState.open()})
-//                Text(" - ")
-//                Text(config.morningRange.endInclusive.format(localTimeFormat), Modifier.clickable { morningRangeEndState.open() })
-//            }
-//
-//            SettingsRow(stringResource(R.string.evening_range)){
-//                Text(config.eveningRange.start.format(localTimeFormat), Modifier.clickable { eveningRangeStartState.open() })
-//                Text(" - ")
-//                Text(config.eveningRange.endInclusive.format(localTimeFormat), Modifier.clickable { eveningRangeEndState.open() })
-//            }
-//            SettingsRow(stringResource(R.string.language)) {
-//                val locale = Locale.forLanguageTag(config.localeTag)
-//
-//                Text(locale.getDisplayLanguage(locale), Modifier.clickable { localeSelectorState.open() })
-//                if (localeSelectorState.isOpen){
-//                    LanguageDropMenu(localeSelectorState.isOpen, config.localeTag,
-//                        { newLocaleTag ->
-//                            val newLocale = Locale.forLanguageTag(newLocaleTag)
-//                            val localesChangedToDefault = AppCompatDelegate.getApplicationLocales()
-//                            val createdLocale = LocaleListCompat.create(locale)
-//                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.create(newLocale))
-//                            val listcompat = LocaleListCompat.forLanguageTags("en")
-//                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
-//                            val localesChangedToDefaultChanged = AppCompatDelegate.getApplicationLocales()
-//                            viewModel.saveConfig(config.copy(localeTag = newLocaleTag )); localeSelectorState.close() },
-//                        onDismissRequest = { localeSelectorState.close()})
-//                }
-//            }
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
     }
 }
 @Composable
 fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit ){
-    Row(modifier= Modifier
-        .padding(4.dp)
-        .clickable(onClick != null) { onClick?.invoke() }) {
+    Row(modifier= Modifier.padding(4.dp).clickable(onClick != null) { onClick?.invoke() }) {
         Text(label, Modifier.weight(1f))
         content()
      }

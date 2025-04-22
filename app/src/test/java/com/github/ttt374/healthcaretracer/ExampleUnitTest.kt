@@ -65,22 +65,26 @@ class BloodPressureCategoryTest() {
 class DayPeriodTest {
     @Test
     fun timeOfDayTest(){
-        val config = TimeOfDayConfig(LocalTime.of(6, 0), LocalTime.of(13, 0), LocalTime.of(18, 0))
+        val timeOfDayConfig = TimeOfDayConfig(
+            mapOf(DayPeriod.Morning to LocalTime.of(6, 0),
+                DayPeriod.Afternoon to LocalTime.of(13, 0),
+                DayPeriod.Evening to LocalTime.of(18, 0))
+        )
         val zoneId = ZoneId.of("UTC")
         Instant.parse("2024-01-01T07:00:00Z").let {
-            assertTrue(it.toDayPeriod(zoneId, config) == DayPeriod.Morning)
-            assertFalse(it.toDayPeriod(zoneId, config) == DayPeriod.Afternoon)
-            assertFalse(it.toDayPeriod(zoneId, config) == DayPeriod.Evening)
+            assertTrue(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning)
+            assertFalse(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Afternoon)
+            assertFalse(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening)
         }
         Instant.parse("2024-01-01T15:00:00Z").let {
-            assertFalse(it.toDayPeriod(zoneId, config) == DayPeriod.Morning)
-            assertTrue(it.toDayPeriod(zoneId, config) == DayPeriod.Afternoon)
-            assertFalse(it.toDayPeriod(zoneId, config) == DayPeriod.Evening)
+            assertFalse(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning)
+            assertTrue(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Afternoon)
+            assertFalse(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening)
         }
         Instant.parse("2024-01-01T23:00:00Z").let {
-            assertFalse(it.toDayPeriod(zoneId, config) == DayPeriod.Morning)
-            assertFalse(it.toDayPeriod(zoneId, config) == DayPeriod.Afternoon)
-            assertTrue(it.toDayPeriod(zoneId, config) == DayPeriod.Evening)
+            assertFalse(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning)
+            assertFalse(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Afternoon)
+            assertTrue(it.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening)
         }
     }
 }

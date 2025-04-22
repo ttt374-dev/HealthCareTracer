@@ -9,8 +9,6 @@ import javax.inject.Singleton
 data class Preferences(
     val timeRangeChart: TimeRange = TimeRange.Default,
     val timeRangeStatistics: TimeRange = TimeRange.Default,
-
-    //val chartType: ChartType = ChartType.Default
 )
 
 @Singleton

@@ -18,33 +18,36 @@ import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 
-class ChartRepository @Inject constructor(val itemRepository: ItemRepository){
-    private fun getRecentItemsFlow(timeRange: TimeRange) = itemRepository.getRecentItemsFlow(timeRange.days)
-
+class ChartRepository @Inject constructor(val itemRepository: ItemRepository, configRepository: ConfigRepository){
+    private val targetValuesFlow = configRepository.dataFlow.map {
+        it.toVitals()
+    }
     private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
-        getRecentItemsFlow(timeRange).map { list -> list.toEntries(takeValue = { vitals -> takeValue(vitals) } )}
+        itemRepository.getRecentItemsFlow(timeRange.days).map { list -> list.toEntries(takeValue)}
 
     private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-        return getEntriesFlow(takeValue = { seriesDef.takeValue(it) }, timeRange).map { entries ->
-            val targetValue = seriesDef.takeValue.invoke(targetValues)
-            val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange)} ?: emptyList()
-            ChartSeries(seriesDef, entries, targetEntries)
-            //ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries, timeRange))
-        }
+        return getEntriesFlow({ seriesDef.takeValue(it) }, timeRange)
+            .map { entries -> seriesDef.createSeries(entries, targetValues, timeRange) }
     }
-    fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
-        return chartType.seriesDefList.map { def -> getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
-            ChartData(chartType, it)
-        }
-    }
-}
-//fun <T> List<T>.toEntries(getTime: (T) -> Instant, takeValue: (T) -> Double?): List<Entry> {
-//    return mapNotNull { item ->
-//        takeValue(item)?.toFloat()?.let { value ->
-//            Entry(getTime(item).toEpochMilli().toFloat(), value)
+
+    //    private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
+//        return getEntriesFlow(takeValue = { seriesDef.takeValue(it) }, timeRange).map { entries ->
+//            val targetValue = seriesDef.takeValue.invoke(targetValues)
+//            val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange)} ?: emptyList()
+//            ChartSeries(seriesDef, entries, targetEntries)
+//            //ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries, timeRange))
 //        }
 //    }
-//}
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange): Flow<ChartData> {
+        return targetValuesFlow.flatMapLatest { targetValues ->
+            chartType.seriesDefList.map { def -> getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
+                ChartData(chartType, it)
+            }
+        }
+
+    }
+}
 fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
     return mapNotNull { item ->
         takeValue(item.vitals)?.toFloat()?.let { value ->
@@ -53,7 +56,10 @@ fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
     }
 }
 fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
+    if (isEmpty()) return emptyList()
     val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
+
+//    val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
     //val startX = entries.first().x
     val endX = last().x
 

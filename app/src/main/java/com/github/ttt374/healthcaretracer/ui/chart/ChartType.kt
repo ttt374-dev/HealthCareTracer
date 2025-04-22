@@ -4,21 +4,19 @@ import androidx.annotation.StringRes
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.repository.toTargetEntries
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import java.time.Instant
-import java.util.concurrent.TimeUnit
 
-data class ChartData(val chartType: ChartType = ChartType.Default, val chartSeriesList: List<ChartSeries> = emptyList()){
-//    fun startDate(): Instant? {
-//        return chartSeriesList
-//            .flatMap { it.actualEntries }
-//            .minByOrNull { it.x }?.x?.toLong()?.toInstant()
-//    }
-}
+data class ChartData(val chartType: ChartType = ChartType.Default, val chartSeriesList: List<ChartSeries> = emptyList())
 data class ChartSeries(val seriesDef: SeriesDef = SeriesDef.BpUpper, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry> = emptyList())
 
+fun List<Entry>.firstDate(): Instant? {
+    return this.minByOrNull { it.x }?.x?.toLong()?.toInstant()
+}
+
 fun List<ChartSeries>.firstDate(): Instant? {
-    return this.flatMap { it.actualEntries }.minByOrNull { it.x }?.x?.toLong()?.toInstant()
+    return this.flatMap { it.actualEntries }.firstDate()
 }
 
 sealed class SeriesDef(
@@ -33,33 +31,36 @@ sealed class SeriesDef(
     data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
     data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
 
-//    fun createTargetEntries(targetValues: Vitals, entries: List<Entry>, timeRange: TimeRange): List<Entry> {
-//        val targetValue = takeValue.invoke(targetValues)?.toFloat() ?: return emptyList()
-//        if (entries.isEmpty()) return emptyList()
-//
-//        //val now = System.currentTimeMillis()
-//        //val startX = timeRange.days?.let { days -> now - TimeUnit.DAYS.toMillis(days).toFloat() } ?: entries.first().x
-//        val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: entries.first().x
-//        //val startX = entries.first().x
-//        val endX = entries.last().x
-//
-//        return listOf(
-//            Entry(startX, targetValue),
-//            Entry(endX, targetValue)
-//        )
-//    }
+    fun createSeries(entries: List<Entry>, targetValues: Vitals, timeRange: TimeRange
+    ): ChartSeries {
+        val targetValue = takeValue(targetValues)
+        val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange) }.orEmpty()
+        return ChartSeries(this, entries, targetEntries)
+    }
+
 }
 
-sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
-    data object BloodPressure : ChartType(R.string.blood_pressure,
-        listOf(SeriesDef.BpUpper, SeriesDef.BpLower))
-    data object Pulse: ChartType(R.string.pulse, listOf(SeriesDef.Pulse))
-    data object BodyTemperature: ChartType(R.string.bodyTemperature, listOf(SeriesDef.BodyTemperature))
-    data object BodyWeight: ChartType(R.string.bodyWeight, listOf(SeriesDef.BodyWeight))
+enum class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
+    BloodPressure(R.string.blood_pressure, listOf(SeriesDef.BpUpper, SeriesDef.BpLower)),
+    Pulse(R.string.pulse, listOf(SeriesDef.Pulse)),
+    BodyTemperature(R.string.bodyTemperature, listOf(SeriesDef.BodyTemperature)),
+    BodyWeight(R.string.bodyWeight, listOf(SeriesDef.BodyWeight));
 
     companion object {
         val Default = BloodPressure
-        val entries
-            get() = listOf(BloodPressure, Pulse, BodyTemperature, BodyWeight)
     }
 }
+
+//sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
+//    data object BloodPressure : ChartType(R.string.blood_pressure,
+//        listOf(SeriesDef.BpUpper, SeriesDef.BpLower))
+//    data object Pulse: ChartType(R.string.pulse, listOf(SeriesDef.Pulse))
+//    data object BodyTemperature: ChartType(R.string.bodyTemperature, listOf(SeriesDef.BodyTemperature))
+//    data object BodyWeight: ChartType(R.string.bodyWeight, listOf(SeriesDef.BodyWeight))
+//
+//    companion object {
+//        val Default = BloodPressure
+//        val entries
+//            get() = listOf(BloodPressure, Pulse, BodyTemperature, BodyWeight)
+//    }
+//}

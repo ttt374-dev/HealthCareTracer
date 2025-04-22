@@ -21,23 +21,20 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
-//data class DataRange(val firstDate: Instant? = null, val lastDate: Instant? = null) // , val startDate: Instant, val endDate: Instant){
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
-                                         configRepository: ConfigRepository,
                                          @ChartTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
     val timeRange = timeRangeManager.timeRange
     private val _selectedChartType: MutableStateFlow<ChartType> = MutableStateFlow(ChartType.Default)
     val selectedChartType: StateFlow<ChartType> = _selectedChartType.asStateFlow()
-    private val targetValuesFlow = configRepository.dataFlow.map {
-        it.toVitals()
-    }
-    val chartData = combine(selectedChartType, timeRange, targetValuesFlow){ type, range, targetValues ->
-        Triple(type, range, targetValues)}.flatMapLatest {(type, range, targetValues) ->
-        chartRepository.getChartDataFlow(type, range, targetValues)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(), )
+
+    val chartData = timeRange.flatMapLatest { timeRange ->
+        selectedChartType.flatMapLatest { type ->
+            chartRepository.getChartDataFlow(type, timeRange)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData())
 
     fun onPageChanged(index: Int) {
         _selectedChartType.value = ChartType.entries[index]

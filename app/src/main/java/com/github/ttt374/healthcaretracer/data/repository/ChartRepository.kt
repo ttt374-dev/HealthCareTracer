@@ -18,65 +18,49 @@ import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 
-//fun DailyItem.toChartableItem() =
-//    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse, bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
-
-//fun Item.toChartableItem() =
-//    ChartableItem(bpUpper = vitals.bp?.upper?.toDouble(), bpLower = vitals.bp?.lower?.toDouble(), pulse = vitals.pulse?.toDouble(), bodyTemperature = vitals.bodyTemperature, bodyWeight = vitals.bodyWeight)
-
-@OptIn(ExperimentalCoroutinesApi::class)
-class ChartRepository @Inject constructor(val itemRepository: ItemRepository,
-                                          //private val configRepository: ConfigRepository,
-){
-//    private val dailyItemsFlow = preferencesRepository.dataFlow.map { it.timeRangeChart }.flatMapLatest { range ->
-//        itemRepository.getRecentItemsFlow(range.days).map { items -> items.groupByDate()}
-//    }
-    fun getAllItemsFlow() = itemRepository.getAllItemsFlow()
+class ChartRepository @Inject constructor(val itemRepository: ItemRepository){
     private fun getRecentItemsFlow(timeRange: TimeRange) = itemRepository.getRecentItemsFlow(timeRange.days)
-//    private fun getDailyItemsFlow(timeRange: TimeRange) =
-//        itemRepository.getRecentItemsFlow(timeRange.days).map { items -> items.groupByDate()}
 
-    private fun getEntriesFlow(takeValue: (Item) -> Double?, timeRange: TimeRange) =
-        getRecentItemsFlow(timeRange).map { list -> list.toEntries(getTime = { it.measuredAt}, takeValue = { takeValue(it) } )}
-
-//    private fun getEntriesFlow(takeValue: (DailyItem) -> Double?, timeRange: TimeRange) =
-//        getDailyItemsFlow(timeRange).map { list -> list.toEntries({ it.date.atStartOfDay(zoneId).toInstant(zoneId) }, { takeValue(it) }) }
-
+    private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
+        getRecentItemsFlow(timeRange).map { list -> list.toEntries(takeValue = { vitals -> takeValue(vitals) } )}
 
     private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-//        return getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange){ entries ->
-//            ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries))
-//        }
-        return getEntriesFlow(takeValue = { seriesDef.takeValue(it.vitals) }, timeRange).map {
-            ChartSeries(seriesDef, it, seriesDef.createTargetEntries(targetValues, it, timeRange))
+        return getEntriesFlow(takeValue = { seriesDef.takeValue(it) }, timeRange).map { entries ->
+            val targetValue = seriesDef.takeValue.invoke(targetValues)
+            val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange)} ?: emptyList()
+            ChartSeries(seriesDef, entries, targetEntries)
+            //ChartSeries(seriesDef, entries, seriesDef.createTargetEntries(targetValues, entries, timeRange))
         }
-
     }
     fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
-        return itemRepository.getAllItemsFlow().flatMapLatest { items ->
-            chartType.seriesDefList.map { getChartSeriesFlow(it, timeRange, targetValues) }.combineList().map {
-                ChartData(chartType, it)
-            }
+        return chartType.seriesDefList.map { def -> getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
+            ChartData(chartType, it)
         }
     }
-//    suspend fun getFullStartDate(): Instant? =
-//        itemRepository.getFirstDate()
-    //suspend fun updatePreferences (transform: suspend (t: Preferences) -> Preferences) = preferencesRepository.updateData(transform)
-
 }
-//fun List<DailyItem>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (DailyItem) -> Double?): List<Entry> {
-//    return mapNotNull { dailyItem ->
-//        takeValue(dailyItem)?.toFloat()?.let { value ->
-//            Entry(dailyItem.date.atStartOfDay(zoneId).toInstant().toEpochMilli().toFloat(), value)
+//fun <T> List<T>.toEntries(getTime: (T) -> Instant, takeValue: (T) -> Double?): List<Entry> {
+//    return mapNotNull { item ->
+//        takeValue(item)?.toFloat()?.let { value ->
+//            Entry(getTime(item).toEpochMilli().toFloat(), value)
 //        }
 //    }
 //}
-fun <T> List<T>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), getTime: (T) -> Instant, takeValue: (T) -> Double?): List<Entry> {
+fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
     return mapNotNull { item ->
-        takeValue(item)?.toFloat()?.let { value ->
-            Entry(getTime(item).toEpochMilli().toFloat(), value)
+        takeValue(item.vitals)?.toFloat()?.let { value ->
+            Entry(item.measuredAt.toEpochMilli().toFloat(), value)
         }
     }
+}
+fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
+    val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
+    //val startX = entries.first().x
+    val endX = last().x
+
+    return listOf(
+        Entry(startX, targetValue.toFloat()),
+        Entry(endX, targetValue.toFloat())
+    )
 }
 fun List<Item>.firstDate(): Instant? {
     return this.firstOrNull()?.measuredAt
@@ -85,15 +69,5 @@ fun Config.toVitals() = Vitals(
     bp = BloodPressure(targetBpUpper, targetBpLower),
     bodyWeight = targetBodyWeight
 )
-
-
-//fun List<Item>.toEntries(zoneId: ZoneId = ZoneId.systemDefault(), takeValue: (Item) -> Double?): List<Entry> {
-//    return mapNotNull { item ->
-//        takeValue(item)?.toFloat()?.let { value ->
-//            Entry(item.measuredAt.toEpochMilli().toFloat(), value)
-//        }
-//    }
-//}
-
 inline fun <reified T> List<Flow<T>>.combineList(): Flow<List<T>> =
     combine(*toTypedArray()) { it.toList() }

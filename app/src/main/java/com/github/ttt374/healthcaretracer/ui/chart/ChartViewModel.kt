@@ -26,31 +26,18 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
-                                         private val configRepository: ConfigRepository,
+                                         configRepository: ConfigRepository,
                                          @ChartTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
     val timeRange = timeRangeManager.timeRange
     private val _selectedChartType: MutableStateFlow<ChartType> = MutableStateFlow(ChartType.Default)
     val selectedChartType: StateFlow<ChartType> = _selectedChartType.asStateFlow()
-
-//    private val dataRangeFlow = chartRepository.getAllItemsFlow().map {
-//        DataRange(firstDate = it.firstOrNull()?.measuredAt,
-//            lastDate = it.lastOrNull()?.measuredAt,
-//        )
-//    }
-//    val dataRange = dataRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DataRange())
-
     private val targetValuesFlow = configRepository.dataFlow.map {
         it.toVitals()
     }
-//    fun onChartTypeSelected(type: ChartType) {
-//        _selectedChartType.value = type
-//    }
-
     val chartData = combine(selectedChartType, timeRange, targetValuesFlow){ type, range, targetValues ->
         Triple(type, range, targetValues)}.flatMapLatest {(type, range, targetValues) ->
         chartRepository.getChartDataFlow(type, range, targetValues)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(), )
-
 
     fun onPageChanged(index: Int) {
         _selectedChartType.value = ChartType.entries[index]

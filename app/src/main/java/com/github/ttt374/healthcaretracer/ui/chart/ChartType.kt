@@ -33,21 +33,21 @@ sealed class SeriesDef(
     data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
     data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
 
-    fun createTargetEntries(targetValues: Vitals, entries: List<Entry>, timeRange: TimeRange): List<Entry> {
-        val targetValue = takeValue.invoke(targetValues)?.toFloat() ?: return emptyList()
-        if (entries.isEmpty()) return emptyList()
-
-        //val now = System.currentTimeMillis()
-        //val startX = timeRange.days?.let { days -> now - TimeUnit.DAYS.toMillis(days).toFloat() } ?: entries.first().x
-        val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: entries.first().x
-        //val startX = entries.first().x
-        val endX = entries.last().x
-
-        return listOf(
-            Entry(startX, targetValue),
-            Entry(endX, targetValue)
-        )
-    }
+//    fun createTargetEntries(targetValues: Vitals, entries: List<Entry>, timeRange: TimeRange): List<Entry> {
+//        val targetValue = takeValue.invoke(targetValues)?.toFloat() ?: return emptyList()
+//        if (entries.isEmpty()) return emptyList()
+//
+//        //val now = System.currentTimeMillis()
+//        //val startX = timeRange.days?.let { days -> now - TimeUnit.DAYS.toMillis(days).toFloat() } ?: entries.first().x
+//        val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: entries.first().x
+//        //val startX = entries.first().x
+//        val endX = entries.last().x
+//
+//        return listOf(
+//            Entry(startX, targetValue),
+//            Entry(endX, targetValue)
+//        )
+//    }
 }
 
 sealed class ChartType(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){

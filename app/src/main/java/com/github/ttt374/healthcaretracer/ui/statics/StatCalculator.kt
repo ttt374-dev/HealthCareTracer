@@ -23,7 +23,7 @@ object StatCalculator { // (private val timeOfDayConfig: TimeOfDayConfig) {
             pulse = calculateStat(items, timeOfDayConfig) { it.vitals.pulse },
             bodyWeight = calculateStat(items, timeOfDayConfig) { it.vitals.bodyWeight },
             bodyTemperature = calculateStat(items, timeOfDayConfig) { it.vitals.bodyTemperature },
-            meGap = getMeStats(items, timeOfDayConfig),
+            meGap = calculateMeGapStats(items, timeOfDayConfig),
             items = items
         )
     }
@@ -44,7 +44,7 @@ object StatCalculator { // (private val timeOfDayConfig: TimeOfDayConfig) {
         )
     }
 
-    private fun getMeStats(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): List<Double> {
+    private fun calculateMeGapStats(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): List<Double> {
         val zone = ZoneId.systemDefault()
         return items.groupBy { it.measuredAt.atZone(zone).toLocalDate() }
             .map { (date, dailyItems) ->

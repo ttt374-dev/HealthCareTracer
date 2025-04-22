@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
@@ -34,16 +33,11 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
-import com.github.ttt374.healthcaretracer.shared.toDayPeriod
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
-import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -254,12 +248,12 @@ fun Color.toDarkMode(): Color {
     return Color(r, g, b, alpha * 0.5f)
 }
 
-fun Color.adjustLightness(delta: Float): Color {
-    val hsl = FloatArray(3)
-    ColorUtils.colorToHSL(this.toArgb(), hsl)
-    hsl[2] = (hsl[2] + delta).coerceIn(0f, 1f) // 明度を加減
-    return Color(ColorUtils.HSLToColor(hsl))
-}
+//fun Color.adjustLightness(delta: Float): Color {
+//    val hsl = FloatArray(3)
+//    ColorUtils.colorToHSL(this.toArgb(), hsl)
+//    hsl[2] = (hsl[2] + delta).coerceIn(0f, 1f) // 明度を加減
+//    return Color(ColorUtils.HSLToColor(hsl))
+//}
 
 
 //fun Color.toDarkMode(): Color {

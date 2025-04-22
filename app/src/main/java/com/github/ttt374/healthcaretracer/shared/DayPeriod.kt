@@ -33,23 +33,34 @@ enum class DayPeriod(val resId: Int) {
 @Serializable
 data class TimeOfDayConfig(
     val timeMap: Map<DayPeriod, @Serializable(with = LocalTimeSerializer::class) LocalTime> =
+        //DayPeriod.entries.associateWith { LocalTime.of(9, 0) }
         mapOf(
             DayPeriod.Morning to LocalTime.of(5, 0),
             DayPeriod.Afternoon to LocalTime.of(12, 0),
             DayPeriod.Evening to LocalTime.of(18, 0),
         )  // TODO: default
 ) {
-//    init {  // TODO: initial check
-//        val missing = DayPeriod.entries - timeMap.keys
-//        require(missing.isEmpty()) {
-//            "TimeOfDayConfig is missing values for: ${missing.joinToString()}"
-//        }
-//    }
+    init {  // TODO: initial check
+        val missing = DayPeriod.entries - timeMap.keys
+        require(missing.isEmpty()) {
+            "TimeOfDayConfig is missing values for: ${missing.joinToString()}"
+        }
+    }
     operator fun get(period: DayPeriod): LocalTime =
         timeMap[period] ?: error("Missing config for $period")
 
     fun update(period: DayPeriod, newTime: LocalTime): TimeOfDayConfig =
         copy(timeMap = timeMap + (period to newTime))
+
+
+    companion object {
+        fun from(map: Map<DayPeriod, LocalTime>): TimeOfDayConfig {
+            require(map.size == DayPeriod.entries.size && DayPeriod.entries.all { it in map }) {
+                "TimeOfDayConfig must contain values for all DayPeriods."
+            }
+            return TimeOfDayConfig(map)
+        }
+    }
 }
 
 

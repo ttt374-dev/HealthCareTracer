@@ -37,11 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.DayPeriod
+import com.github.ttt374.healthcaretracer.shared.withSubscript
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -55,6 +59,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+enum class TargetVitals(val resId: Int) { BloodPressure(R.string.targetBp), BodyWeight(R.string.targetBodyWeight) }
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
@@ -65,19 +70,27 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     val bpGuidelineState = rememberDialogState()
 
-    val targetBpState = rememberDialogState()
-    if (targetBpState.isOpen){
+
+
+    @Composable
+    fun rememberTargetDialogStates(): Map<TargetVitals, DialogState> {
+        return remember { TargetVitals.entries.associateWith { DialogStateImpl() }}
+    }
+    val targetVitalsDialogState = rememberTargetDialogStates()
+
+    //val targetBpState = rememberDialogState()
+    if (targetVitalsDialogState[TargetVitals.BloodPressure]?.isOpen == true){
         TargetBpDialog(config.targetBpUpper, config.targetBpLower, onConfirm = { upper, lower ->
             viewModel.saveConfig(config.copy(targetBpUpper = upper, targetBpLower = lower))
-        }, closeDialog = { targetBpState.close() })
+        }, closeDialog = { targetVitalsDialogState[TargetVitals.BloodPressure]?.close() })
     }
 
-    val targetBodyWeightState = rememberDialogState()
-    if (targetBodyWeightState.isOpen)
+    //val targetBodyWeightState = rememberDialogState()
+    if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true)
         TextFieldDialog(config.targetBodyWeight.toString(), onConfirm = {
             viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
         },
-            closeDialog = { targetBodyWeightState.close() },
+            closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
             keyboardOptions = decimalKeyboardOptions)
 
 
@@ -89,8 +102,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
 
     val dayPeriodDialogState = rememberDayPeriodDialogStates()
-    //val morningStartState = rememberDialogState()
-    //if (morningStartState.isOpen){
 
     DayPeriod.entries.forEach { dayPeriod ->
         if (dayPeriodDialogState[dayPeriod]?.isOpen == true){
@@ -103,35 +114,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
     }
-//
-//    if (dayPeriodDialogState[DayPeriod.Morning]?.isOpen == true){
-//        LocalTimeDialog(config.timeOfDayConfig[DayPeriod.Morning],
-//            onTimeSelected = {
-//                //val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
-//                val timeOfDayConfig = config.timeOfDayConfig.update(DayPeriod.Morning, it)
-//                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
-//            },
-//            onDismiss = { dayPeriodDialogState[DayPeriod.Morning]?.close()})
-//    }
-//    //val afternoonStartState = rememberDialogState()
-//    if (dayPeriodDialogState[DayPeriod.Afternoon]?.isOpen == true){
-//        LocalTimeDialog(config.timeOfDayConfig[DayPeriod.Afternoon],
-//            onTimeSelected = {
-//                val timeOfDayConfig = config.timeOfDayConfig.update(DayPeriod.Afternoon, it)
-//                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
-//            },
-//            onDismiss = { dayPeriodDialogState[DayPeriod.Afternoon]?.close()})
-//    }
-//    //val eveningStartState = rememberDialogState()
-//    if (dayPeriodDialogState[DayPeriod.Evening]?.isOpen == true){
-//        LocalTimeDialog(config.timeOfDayConfig[DayPeriod.Evening],
-//            onTimeSelected = {
-//                val timeOfDayConfig = config.timeOfDayConfig.update(DayPeriod.Evening, it)
-//                viewModel.saveConfig(config.copy(timeOfDayConfig = timeOfDayConfig))
-//            },
-//            onDismiss = { dayPeriodDialogState[DayPeriod.Evening]?.close()})
-//    }
-
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
     ///
@@ -155,11 +137,13 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                     } )
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
             }
-            SettingsRow(stringResource(R.string.targetBp)){
-                Text("${config.targetBpUpper} / ${config.targetBpLower}", Modifier.clickable { targetBpState.open() })
+            SettingsRow(stringResource(TargetVitals.BloodPressure.resId)){
+                Text((config.targetBpUpper to config.targetBpLower).toBloodPressure().toAnnotatedString(config.bloodPressureGuideline), //"${config.targetBpUpper} / ${config.targetBpLower}",
+                    Modifier.clickable { targetVitalsDialogState[TargetVitals.BloodPressure]?.open() })
             }
-            SettingsRow("${stringResource(R.string.targetBodyWeight)} (Kg)"){
-                Text(config.targetBodyWeight.toString(), Modifier.clickable {  targetBodyWeightState.open() })
+            SettingsRow(stringResource(TargetVitals.BodyWeight.resId)){
+                Text(config.targetBodyWeight.toString().withSubscript("Kg"),
+                    Modifier.clickable {  targetVitalsDialogState[TargetVitals.BodyWeight]?.open() })
             }
             DayPeriod.entries.forEach { dayPeriod ->
                 SettingsRow(stringResource(dayPeriod.resId)){
@@ -267,20 +251,20 @@ fun LocalTimeDialog(localTime: LocalTime, onTimeSelected: (LocalTime) -> Unit, o
         onTimeSelected = { onTimeSelected(it.atZone(zone).toLocalTime())},
         onDismiss = onDismiss)
 }
-@Composable
-fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected: (LocalTimeRange) -> Unit, onDismiss: () -> Unit){
-    val zone = ZoneId.systemDefault()
-    if (isStart){
-        TimePickerDialog(range.start.atDate(LocalDate.now()).atZone(zone).toInstant(),
-            onTimeSelected = { onTimeSelected(range.copy(start = it.atZone(zone).toLocalTime()))},
-            onDismiss = onDismiss)
-    } else {
-        TimePickerDialog(range.endInclusive.atDate(LocalDate.now()).atZone(zone).toInstant(),
-            onTimeSelected = { onTimeSelected(range.copy(endInclusive = it.atZone(zone).toLocalTime()))},
-            onDismiss = onDismiss)
-    }
-}
-
+//@Composable
+//fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected: (LocalTimeRange) -> Unit, onDismiss: () -> Unit){
+//    val zone = ZoneId.systemDefault()
+//    if (isStart){
+//        TimePickerDialog(range.start.atDate(LocalDate.now()).atZone(zone).toInstant(),
+//            onTimeSelected = { onTimeSelected(range.copy(start = it.atZone(zone).toLocalTime()))},
+//            onDismiss = onDismiss)
+//    } else {
+//        TimePickerDialog(range.endInclusive.atDate(LocalDate.now()).atZone(zone).toInstant(),
+//            onTimeSelected = { onTimeSelected(range.copy(endInclusive = it.atZone(zone).toLocalTime()))},
+//            onDismiss = onDismiss)
+//    }
+//}
+//
 
 //@Composable
 //fun LanguageDropMenu(expanded: Boolean, currentLanguageTag: String, onSelected: (String) -> Unit, onDismissRequest: () -> Unit ){

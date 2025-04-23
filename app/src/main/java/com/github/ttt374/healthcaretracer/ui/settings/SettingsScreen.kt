@@ -40,9 +40,7 @@ import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
-import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.shared.withSubscript
@@ -80,15 +78,19 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     //val targetBpState = rememberDialogState()
     if (targetVitalsDialogState[TargetVitals.BloodPressure]?.isOpen == true){
-        TargetBpDialog(config.targetBp, onConfirm = { bp ->
-            viewModel.saveConfig(config.copy(targetBp = bp))
+        TargetBpDialog(config.targetVitals.bp, onConfirm = { bp ->
+            val newVitals = config.targetVitals.copy(bp = bp)
+            viewModel.saveConfig(config.copy(targetVitals = newVitals))
+            //viewModel.saveConfig(config.copy(targetBp = bp))
         }, closeDialog = { targetVitalsDialogState[TargetVitals.BloodPressure]?.close() })
     }
 
     //val targetBodyWeightState = rememberDialogState()
     if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true)
-        TextFieldDialog(config.targetBodyWeight.toString(), onConfirm = {
-            viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
+        TextFieldDialog(config.targetVitals.bodyWeight.toString(), onConfirm = {
+            val newVitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
+            viewModel.saveConfig(config.copy(targetVitals = newVitals))
+            //viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
         },
             closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
             keyboardOptions = decimalKeyboardOptions)
@@ -138,11 +140,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
             }
             SettingsRow(stringResource(TargetVitals.BloodPressure.resId)){
-                Text(config.targetBp.toAnnotatedString(config.bloodPressureGuideline), //"${config.targetBpUpper} / ${config.targetBpLower}",
+                Text(config.targetVitals.bp.toAnnotatedString(config.bloodPressureGuideline), //"${config.targetBpUpper} / ${config.targetBpLower}",
                     Modifier.clickable { targetVitalsDialogState[TargetVitals.BloodPressure]?.open() })
             }
             SettingsRow(stringResource(TargetVitals.BodyWeight.resId)){
-                Text(config.targetBodyWeight.toString().withSubscript("Kg"),
+                Text(config.targetVitals.bodyWeight.toString().withSubscript("Kg"),
                     Modifier.clickable {  targetVitalsDialogState[TargetVitals.BodyWeight]?.open() })
             }
             DayPeriod.entries.forEach { dayPeriod ->
@@ -164,10 +166,10 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
      }
 }
 @Composable
-fun TargetBpDialog (bp: BloodPressure, onConfirm: (BloodPressure) -> Unit, closeDialog: () -> Unit){
+fun TargetBpDialog (bp: BloodPressure?, onConfirm: (BloodPressure) -> Unit, closeDialog: () -> Unit){
 //fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, closeDialog: () -> Unit){
-    var bpUpperString by remember { mutableStateOf(bp.upper.toString())}
-    var bpLowerString by remember { mutableStateOf(bp.lower.toString())}
+    var bpUpperString by remember { mutableStateOf(bp?.upper.toString())}
+    var bpLowerString by remember { mutableStateOf(bp?.lower.toString())}
     val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
 
     // focus requesters

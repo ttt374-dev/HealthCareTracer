@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureConverter
+import kotlinx.serialization.Serializable
 import java.time.Instant
 
 //const val MIN_PULSE = 30
@@ -13,6 +14,7 @@ import java.time.Instant
 const val MIN_BP = 50
 //const val MAX_BP = 260
 
+@Serializable
 data class Vitals(
     val bp: BloodPressure? = null,
     val pulse: Double? = null,

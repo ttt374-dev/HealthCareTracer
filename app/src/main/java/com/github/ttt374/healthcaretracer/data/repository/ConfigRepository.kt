@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.data.repository
 import android.content.Context
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
 import kotlinx.serialization.KSerializer
@@ -22,29 +23,30 @@ data class Config (
     val timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
 //    val targetBpUpper: Int = 120,
 //    val targetBpLower: Int = 80,
-    val targetBp: BloodPressure = BloodPressure(120, 80),
-    val targetBodyWeight: Double = 60.0,
+    //val targetBp: BloodPressure = BloodPressure(120, 80),
+    //val targetBodyWeight: Double = 60.0,
+    val targetVitals: Vitals = Vitals(bp = BloodPressure(120, 80), bodyWeight = 60.0)
 
     //val localeTag: String = "en_US"
 )
 
-data class LocalTimeRange(
-    val start: LocalTime = LocalTime.of(0, 0),
-    val endInclusive: LocalTime = LocalTime.of(23, 59)
-) {
-    operator fun contains(time: LocalTime): Boolean {
-        return if (start <= endInclusive) {
-            time in start..endInclusive  // 普通の範囲
-        } else {
-            time >= start || time <= endInclusive  // 0時をまたぐ場合（例: 22:00〜02:00）
-        }
-    }
-    override fun toString(): String = "$start..$endInclusive"
-    fun toClosedRange(): ClosedRange<LocalTime> = object : ClosedRange<LocalTime> {
-        override val start = this@LocalTimeRange.start
-        override val endInclusive = this@LocalTimeRange.endInclusive
-    }
-}
+//data class LocalTimeRange(
+//    val start: LocalTime = LocalTime.of(0, 0),
+//    val endInclusive: LocalTime = LocalTime.of(23, 59)
+//) {
+//    operator fun contains(time: LocalTime): Boolean {
+//        return if (start <= endInclusive) {
+//            time in start..endInclusive  // 普通の範囲
+//        } else {
+//            time >= start || time <= endInclusive  // 0時をまたぐ場合（例: 22:00〜02:00）
+//        }
+//    }
+//    override fun toString(): String = "$start..$endInclusive"
+////    fun toClosedRange(): ClosedRange<LocalTime> = object : ClosedRange<LocalTime> {
+////        override val start = this@LocalTimeRange.start
+////        override val endInclusive = this@LocalTimeRange.endInclusive
+////    }
+//}
 
 @Serializable
 object LocalTimeSerializer : KSerializer<LocalTime> {

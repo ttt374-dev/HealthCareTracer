@@ -34,7 +34,7 @@ fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPr
                 pop() // 明示的に `pop()` を追加
             }
         }
-    }?: toAnnotatedString()
+    }?: AnnotatedString("-/-")
 }
 
 fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure? {

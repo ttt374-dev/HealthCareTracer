@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 class ChartRepository @Inject constructor(val itemRepository: ItemRepository, configRepository: ConfigRepository){
     private val targetValuesFlow = configRepository.dataFlow.map {
-        it.toVitals()
+        it.targetVitals
     }
     private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
         itemRepository.getRecentItemsFlow(timeRange.days).map { list -> list.toEntries(takeValue)}
@@ -61,9 +61,9 @@ internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRan
 //fun List<Item>.firstDate(): Instant? {
 //    return this.firstOrNull()?.measuredAt
 //}
-fun Config.toVitals() = Vitals(
-    bp = targetBp,
-    bodyWeight = targetBodyWeight
-)
+//fun Config.toVitals() = Vitals(
+//    bp = targetBp,
+//    bodyWeight = targetBodyWeight
+//)
 inline fun <reified T> List<Flow<T>>.combineList(): Flow<List<T>> =
     combine(*toTypedArray()) { it.toList() }

@@ -2,16 +2,16 @@ package com.github.ttt374.healthcaretracer
 
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.repository.LocalTimeRange
 import com.github.ttt374.healthcaretracer.shared.DayPeriod
 import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.shared.toDayPeriod
-import com.github.ttt374.healthcaretracer.ui.entry.toLocalTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
@@ -91,27 +91,40 @@ class DayPeriodTest {
 class MorningEveningTest {
     @Test
     fun morningEveningTest() {
+        val timeOfDayConfig = TimeOfDayConfig(
+            mapOf(
+                DayPeriod.Morning to LocalTime.of(5, 0),
+                DayPeriod.Afternoon to LocalTime.of(12, 0),
+                DayPeriod.Evening to LocalTime.of(18, 0),
+            )
+        )
 //        val dateTime = ZonedDateTime.of(2024, 1, 1, 8, 0, 0, 0, ZoneId.systemDefault())
 //        val instant = dateTime.toInstant()
 
-        val morningTimeRange = LocalTimeRange(LocalTime.of(7, 0), LocalTime.of(12, 0))
-        val eveningTimeRange = LocalTimeRange(LocalTime.of(18, 0), LocalTime.of(2, 0))
+//        val morningTimeRange = LocalTimeRange(LocalTime.of(7, 0), LocalTime.of(12, 0))
+//        val eveningTimeRange = LocalTimeRange(LocalTime.of(18, 0), LocalTime.of(2, 0))
         val zoneId = ZoneId.of("UTC")
-
+//
         Instant.parse("2024-01-01T08:00:00Z").let {
-            assertTrue(morningTimeRange.contains(it.toLocalTime(zoneId)))
-            assertFalse(eveningTimeRange.contains(it.toLocalTime(zoneId)))
+            assertEquals(DayPeriod.Morning, it.toDayPeriod(timeOfDayConfig, zoneId))
+            assertNotEquals(DayPeriod.Evening, it.toDayPeriod(timeOfDayConfig, zoneId))
 //            assertTrue(it.isMorning(zoneId))
 //            assertFalse(it.isEvening(zoneId))
         }
         Instant.parse("2024-01-01T02:00:00Z").let {
-            assertFalse(morningTimeRange.contains(it.toLocalTime(zoneId)))
-            assertTrue(eveningTimeRange.contains(it.toLocalTime(zoneId)))
+            assertNotEquals(DayPeriod.Morning, it.toDayPeriod(timeOfDayConfig, zoneId))
+            assertEquals(DayPeriod.Evening, it.toDayPeriod(timeOfDayConfig, zoneId))
+
+//            assertFalse(morningTimeRange.contains(it.toLocalTime(zoneId)))
+//            assertTrue(eveningTimeRange.contains(it.toLocalTime(zoneId)))
 
         }
         Instant.parse("2024-01-01T15:00:00Z").let {
-            assertFalse(morningTimeRange.contains(it.toLocalTime(zoneId)))
-            assertFalse(eveningTimeRange.contains(it.toLocalTime(zoneId)))
+            assertNotEquals(DayPeriod.Morning, it.toDayPeriod(timeOfDayConfig, zoneId))
+            assertNotEquals(DayPeriod.Evening, it.toDayPeriod(timeOfDayConfig, zoneId))
+
+//            assertFalse(morningTimeRange.contains(it.toLocalTime(zoneId)))
+//            assertFalse(eveningTimeRange.contains(it.toLocalTime(zoneId)))
         }
     }
 }

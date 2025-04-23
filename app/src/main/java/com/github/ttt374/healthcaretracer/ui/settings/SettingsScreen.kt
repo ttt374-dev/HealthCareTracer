@@ -43,6 +43,7 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.DayPeriod
+import com.github.ttt374.healthcaretracer.shared.toBodyWeightString
 import com.github.ttt374.healthcaretracer.shared.withSubscript
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -140,11 +141,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
             }
             SettingsRow(stringResource(TargetVitals.BloodPressure.resId)){
-                Text(config.targetVitals.bp.toAnnotatedString(config.bloodPressureGuideline), //"${config.targetBpUpper} / ${config.targetBpLower}",
+                Text(config.targetVitals.bp.toAnnotatedString(config.bloodPressureGuideline),
                     Modifier.clickable { targetVitalsDialogState[TargetVitals.BloodPressure]?.open() })
             }
             SettingsRow(stringResource(TargetVitals.BodyWeight.resId)){
-                Text(config.targetVitals.bodyWeight.toString().withSubscript("Kg"),
+                Text(config.targetVitals.bodyWeight.toBodyWeightString(),
                     Modifier.clickable {  targetVitalsDialogState[TargetVitals.BodyWeight]?.open() })
             }
             DayPeriod.entries.forEach { dayPeriod ->

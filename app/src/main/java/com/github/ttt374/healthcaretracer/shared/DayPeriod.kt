@@ -13,23 +13,6 @@ enum class DayPeriod(val resId: Int) {
     Evening(R.string.evening);
 }
 
-//enum class DayPeriod(val resId: Int, val takeStartValue: (TimeOfDayConfig) -> LocalTime) {
-//    Morning(R.string.morning, { it.morning }),
-//    Afternoon(R.string.afternoon, { it.afternoon} ),
-//    Evening(R.string.evening, { it.evening });
-//}
-
-//@Serializable
-//data class TimeOfDayConfig(
-//    @Serializable(with= LocalTimeSerializer::class)
-//    val morning: LocalTime = LocalTime.of(5, 0),
-//    @Serializable(with= LocalTimeSerializer::class)
-//    val afternoon: LocalTime = LocalTime.of(12, 0),
-//    @Serializable(with= LocalTimeSerializer::class)
-//    val evening: LocalTime = LocalTime.of(18, 0)
-//){
-//    operator fun get(period: DayPeriod): LocalTime = period.takeStartValue(this)
-//}
 @Serializable
 data class TimeOfDayConfig(
     val timeMap: Map<DayPeriod, @Serializable(with = LocalTimeSerializer::class) LocalTime> =
@@ -52,7 +35,6 @@ data class TimeOfDayConfig(
     fun update(period: DayPeriod, newTime: LocalTime): TimeOfDayConfig =
         copy(timeMap = timeMap + (period to newTime))
 
-
     companion object {
         fun from(map: Map<DayPeriod, LocalTime>): TimeOfDayConfig {
             require(map.size == DayPeriod.entries.size && DayPeriod.entries.all { it in map }) {
@@ -62,7 +44,6 @@ data class TimeOfDayConfig(
         }
     }
 }
-
 
 fun Instant.toDayPeriod(config: TimeOfDayConfig, zoneId: ZoneId = ZoneId.systemDefault()): DayPeriod {
     val time = this.atZone(zoneId).toLocalTime()

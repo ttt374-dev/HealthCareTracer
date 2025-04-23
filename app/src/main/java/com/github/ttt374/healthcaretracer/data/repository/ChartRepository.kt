@@ -48,9 +48,6 @@ fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
 internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
     if (isEmpty()) return emptyList()
     val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
-
-//    val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
-    //val startX = entries.first().x
     val endX = last().x
 
     return listOf(
@@ -58,12 +55,6 @@ internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRan
         Entry(endX, targetValue.toFloat())
     )
 }
-//fun List<Item>.firstDate(): Instant? {
-//    return this.firstOrNull()?.measuredAt
-//}
-//fun Config.toVitals() = Vitals(
-//    bp = targetBp,
-//    bodyWeight = targetBodyWeight
-//)
+
 inline fun <reified T> List<Flow<T>>.combineList(): Flow<List<T>> =
     combine(*toTypedArray()) { it.toList() }

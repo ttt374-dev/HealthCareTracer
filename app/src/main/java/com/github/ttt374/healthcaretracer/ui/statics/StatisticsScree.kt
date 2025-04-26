@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -51,7 +52,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
             item {
-                Row(modifier = Modifier.padding(4.dp)) {
+                Row(modifier = Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
                     TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
                     Text(timeRange.toDisplayString( firstDate))
                 }

@@ -202,8 +202,8 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     )
 
     return this.withIndex().flatMap { (index, series) ->
-        val label = series.metricDef.resId?.let { stringResource(it) } ?: ""
-        val targetLabel = series.metricDef.resId?.let { stringResource(it) } ?: ""
+        val label = series.metricDef.resId.let { stringResource(it) } ?: ""
+        val targetLabel = series.metricDef.targetResId?.let { stringResource(it) } ?: ""
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(

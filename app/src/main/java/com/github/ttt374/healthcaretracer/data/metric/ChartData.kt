@@ -1,11 +1,7 @@
-package com.github.ttt374.healthcaretracer.ui.chart
+package com.github.ttt374.healthcaretracer.data.metric
 
-import androidx.annotation.StringRes
 import com.github.mikephil.charting.data.Entry
-import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.item.MetricCategory
-import com.github.ttt374.healthcaretracer.data.item.MetricDef
-import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.ui.chart.toInstant
 import java.time.Instant
 
 data class ChartData(val metricCategory: MetricCategory, val chartSeriesList: List<ChartSeries> = emptyList())
@@ -15,26 +11,26 @@ fun List<ChartSeries>.firstDate(): Instant? {
     return this.flatMap { it.actualEntries }.minByOrNull { it.x }?.x?.toLong()?.toInstant()
 }
 
-sealed class SeriesDef(
-    @StringRes val labelResId: Int?,
-    @StringRes val targetLabelResId: Int? = null,
-    //val color: Color = Color.Unspecified,
-    val takeValue: (Vitals) -> Double?
-){
-    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper,  { it.bp?.upper?.toDouble()} )
-    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower,  { it.bp?.lower?.toDouble()} )
-    data object Pulse: SeriesDef(R.string.pulse, null,  { it.pulse })
-    data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
-    data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
-
-//    fun createSeries(entries: List<Entry>, targetValues: Vitals, timeRange: TimeRange
-//    ): ChartSeries {
-//        val targetValue = takeValue(targetValues)
-//        val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange) }.orEmpty()
-//        return ChartSeries(this, entries, targetEntries)
-//    }
-
-}
+//sealed class SeriesDef(
+//    @StringRes val labelResId: Int?,
+//    @StringRes val targetLabelResId: Int? = null,
+//    //val color: Color = Color.Unspecified,
+//    val takeValue: (Vitals) -> Double?
+//){
+//    data object BpUpper: SeriesDef(R.string.bpUpper, R.string.targetBpUpper,  { it.bp?.upper?.toDouble()} )
+//    data object BpLower: SeriesDef(R.string.bpLower, R.string.targetBpLower,  { it.bp?.lower?.toDouble()} )
+//    data object Pulse: SeriesDef(R.string.pulse, null,  { it.pulse })
+//    data object BodyTemperature: SeriesDef(R.string.bodyTemperature, null, takeValue = { it.bodyTemperature })
+//    data object BodyWeight: SeriesDef(R.string.bodyWeight, R.string.targetBodyWeight,  takeValue = { it.bodyWeight } )
+//
+////    fun createSeries(entries: List<Entry>, targetValues: Vitals, timeRange: TimeRange
+////    ): ChartSeries {
+////        val targetValue = takeValue(targetValues)
+////        val targetEntries = targetValue?.let { entries.toTargetEntries(it, timeRange) }.orEmpty()
+////        return ChartSeries(this, entries, targetEntries)
+////    }
+//
+//}
 
 //enum class MetricCategory(@StringRes val labelResId: Int, val seriesDefList: List<SeriesDef>){
 //    BloodPressure(R.string.blood_pressure, listOf(SeriesDef.BpUpper, SeriesDef.BpLower)),

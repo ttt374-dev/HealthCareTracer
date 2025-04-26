@@ -2,7 +2,8 @@ package com.github.ttt374.healthcaretracer.ui.chart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.item.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.ChartData
+import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
 import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
 import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.di.modules.DefaultMetricCategory

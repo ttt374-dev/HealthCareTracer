@@ -1,7 +1,8 @@
-package com.github.ttt374.healthcaretracer.data.item
+package com.github.ttt374.healthcaretracer.data.metric
 
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import java.time.Instant
 
 data class MeasuredValue(

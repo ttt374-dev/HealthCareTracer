@@ -2,15 +2,14 @@ package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.item.Item
-import com.github.ttt374.healthcaretracer.data.item.MeasuredValue
-import com.github.ttt374.healthcaretracer.data.item.MetricCategory
-import com.github.ttt374.healthcaretracer.data.item.MetricDef
-import com.github.ttt374.healthcaretracer.data.item.MetricDefRegistry
+import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricDef
+import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.item.Vitals
-import com.github.ttt374.healthcaretracer.data.item.toEntry
+import com.github.ttt374.healthcaretracer.data.metric.toEntry
 import com.github.ttt374.healthcaretracer.shared.TimeRange
-import com.github.ttt374.healthcaretracer.ui.chart.ChartData
-import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
+import com.github.ttt374.healthcaretracer.data.metric.ChartData
+import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -22,8 +21,8 @@ class ChartRepository @Inject constructor(val metricRepository: MetricRepository
     private val targetValuesFlow = configRepository.dataFlow.map {
         it.targetVitals
     }
-    private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
-        itemRepository.getRecentItemsFlow(timeRange.days).map { list -> list.toEntries(takeValue)}
+//    private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
+//        itemRepository.getRecentItemsFlow(timeRange.days).map { list -> list.toEntries(takeValue)}
 
 //    private fun getMeasuredValuesFlow(selector: (Vitals) -> Double?, days: Long? = null) =
 //        itemRepository.getRecentItemsFlow(days).map { list -> list.mapNotNull { item -> selector(item.vitals)?.let { MeasuredValue(item.measuredAt, it) }}}
@@ -50,13 +49,13 @@ class ChartRepository @Inject constructor(val metricRepository: MetricRepository
         }
     }
 }
-fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
-    return mapNotNull { item ->
-        takeValue(item.vitals)?.toFloat()?.let { value ->
-            Entry(item.measuredAt.toEpochMilli().toFloat(), value)
-        }
-    }
-}
+//fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
+//    return mapNotNull { item ->
+//        takeValue(item.vitals)?.toFloat()?.let { value ->
+//            Entry(item.measuredAt.toEpochMilli().toFloat(), value)
+//        }
+//    }
+//}
 internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
     if (isEmpty()) return emptyList()
     val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x

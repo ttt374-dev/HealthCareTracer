@@ -2,10 +2,9 @@ package com.github.ttt374.healthcaretracer.ui.metric
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.item.MeasuredValue
-import com.github.ttt374.healthcaretracer.data.item.MetricDef
-import com.github.ttt374.healthcaretracer.data.item.MetricDefRegistry
-import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
+import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.metric.MetricDef
+import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.repository.MetricRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted

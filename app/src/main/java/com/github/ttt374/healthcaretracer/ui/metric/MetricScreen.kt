@@ -10,9 +10,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.ttt374.healthcaretracer.data.item.MetricCategory
-import com.github.ttt374.healthcaretracer.data.item.MetricDefRegistry
-import com.github.ttt374.healthcaretracer.data.item.toEntry
+import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
+import com.github.ttt374.healthcaretracer.data.metric.toEntry
 
 @Composable
 fun MetricScreen(viewModel: MetricViewModel = hiltViewModel()) {

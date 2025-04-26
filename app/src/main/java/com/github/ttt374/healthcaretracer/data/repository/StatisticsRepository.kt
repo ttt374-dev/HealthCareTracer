@@ -45,4 +45,6 @@ class StatisticsRepository @Inject constructor(private val metricRepository: Met
                 StatCalculator.calculateAll(items, timeOfDayConfig)
             }
         }.flowOn(Dispatchers.Default)
+
+
 }

@@ -47,6 +47,8 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         flow.collectAsState()
 
     }
+    val firstDate by viewModel.firstDateFlow.collectAsState()
+
 //    val pulseDef = MetricDefRegistry.getById("pulse")!!
 //    //val statValueMap by viewModel.statValue().collectAsState()
 //    //val dayPeriodStatValueMap by viewModel.dayPeriodStatValueMap.collectAsState()
@@ -59,7 +61,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             item {
                 Row(modifier = Modifier.padding(4.dp)) {
                     TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
-                    Text(timeRange.toDisplayString( statisticsData.firstDate ?: Instant.now()))
+                    Text(timeRange.toDisplayString( firstDate))
                 }
             }
             items(MetricCategory.entries){ category ->

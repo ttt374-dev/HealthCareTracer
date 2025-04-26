@@ -28,7 +28,7 @@ enum class MetricCategory(val resId: Int) {
     BLOOD_PRESSURE(R.string.blood_pressure),
     HEART(R.string.pulse),
     TEMPERATURE(R.string.bodyTemperature),
-    WEIGHT(R.string.bodyWeight),
+    WEIGHT(R.string.bodyWeight);
 }
 object MetricDefRegistry {
     val defs: List<MetricDef> = listOf(

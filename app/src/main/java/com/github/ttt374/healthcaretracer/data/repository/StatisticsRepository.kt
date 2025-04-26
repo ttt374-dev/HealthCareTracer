@@ -20,13 +20,16 @@ class StatisticsRepository @Inject constructor(private val metricRepository: Met
     private val timeOfDayConfigFlow = configRepository.dataFlow.map { it.timeOfDayConfig }
 
     fun getStatValueFlow(metricDef: MetricDef, days: Long?): Flow<StatValue> {
-        return metricRepository.getMetricFlow(metricDef, days).map { list ->
-            list.map { it.value }.toStatValue()
+//        itemRepository.getRecentItemsFlow(days).map { items ->
+//            items.mapNotNull { item -> metricDef.selector(item.vitals) }.toStatValue()
+//        }
+        return metricRepository.getMeasuredValuesFlow(metricDef, days).map { items ->
+            items.map { it.value }.toStatValue()
         }
     }
     fun getDayPeriodStatValueFlow(metricDef: MetricDef, days: Long?): Flow<Map<DayPeriod, StatValue>> {
         return timeOfDayConfigFlow.flatMapLatest { timeOfDayConfig ->
-            metricRepository.getMetricFlow(metricDef, days).map { list ->
+            metricRepository.getMeasuredValuesFlow(metricDef, days).map { list ->
                 val grouped = list.groupBy { (measuredAt, _) ->
                     measuredAt.toDayPeriod(config = timeOfDayConfig)
                 }
@@ -36,11 +39,9 @@ class StatisticsRepository @Inject constructor(private val metricRepository: Met
             }
         }
     }
-    fun getMeasuredValuesFlow(metricDef: MetricDef, days: Long?): Flow<List<MeasuredValue>> {
-        return itemRepository.getRecentItemsFlow(days).mapNotNull { items -> items.toMeasuredValue(metricDef) }
-    }
-}
-fun List<Item>.toMeasuredValue(metricDef: MetricDef) = toMeasuredValue(metricDef.selector)
-fun List<Item>.toMeasuredValue(selector: (Vitals) -> Double?) = this.mapNotNull { item ->
-    selector(item.vitals)?.let { MeasuredValue(item.measuredAt, it) }
+    fun getMeasuredValuesFlow(metricDef: MetricDef, days: Long?) = metricRepository.getMeasuredValuesFlow(metricDef, days) // delegate to metric repository
+
+//    fun getMeasuredValuesFlow(metricDef: MetricDef, days: Long?): Flow<List<MeasuredValue>> {
+//        return itemRepository.getRecentItemsFlow(days).mapNotNull { items -> items.toMeasuredValue(metricDef) }
+//    }
 }

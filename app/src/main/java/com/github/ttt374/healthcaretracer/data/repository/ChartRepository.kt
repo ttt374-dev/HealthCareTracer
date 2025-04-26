@@ -18,7 +18,7 @@ import javax.inject.Inject
 class ChartRepository @Inject constructor(private val metricRepository: MetricRepository, configRepository: ConfigRepository){
     private val targetValuesFlow = configRepository.dataFlow.map { it.targetVitals }
     private fun getChartSeriesFlow(metricDef: MetricDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-        return metricRepository.getMetricFlow(metricDef, timeRange.days).map { list ->
+        return metricRepository.getMeasuredValuesFlow(metricDef, timeRange.days).map { list ->
             val entries = list.toEntry()
             val targetEntries = metricDef.selector(targetValues)?.let { entries.toTargetEntries(it, timeRange)}
             ChartSeries(metricDef, entries, targetEntries)

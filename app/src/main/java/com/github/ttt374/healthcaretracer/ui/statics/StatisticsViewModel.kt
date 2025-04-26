@@ -3,7 +3,6 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
@@ -14,13 +13,16 @@ import com.github.ttt374.healthcaretracer.data.repository.StatisticsRepository
 import com.github.ttt374.healthcaretracer.di.modules.StatisticsTimeRange
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -53,10 +55,18 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
     val firstDate: StateFlow<Instant> = itemRepository.getAllItemsFlow().map { it.firstOrNull()?.measuredAt ?: Instant.now() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Instant.now())
 
-    fun measuredValues(metricDef: MetricDef): StateFlow<List<MeasuredValue>> =
+    val meGapStatValue: StateFlow<StatValue> =
+        configRepository.dataFlow.flatMapLatest { config ->
+            val bpUpperDef = MetricDefRegistry.getById("bp_upper") ?: return@flatMapLatest flowOf(StatValue())
+            getMeasuredValuesFlow(bpUpperDef).map { measuredValues ->
+                measuredValues.toMeGapStatValue(config.timeOfDayConfig)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
+
+    private fun getMeasuredValuesFlow(metricDef: MetricDef): Flow<List<MeasuredValue>> =
         timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
             statisticsRepository.getMeasuredValuesFlow(metricDef, range.days)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {

@@ -47,8 +47,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     }
     val firstDate by viewModel.firstDate.collectAsState()
 
-    val upperDef = MetricDefRegistry.getById("bp_upper")!!
-    val bpUpperMeasuredValues by viewModel.measuredValues(upperDef).collectAsState()
+//    val upperDef = MetricDefRegistry.getById("bp_upper") ?: throw  IllegalArgumentException("illegal Def id: 'bp_upper'")
+//    val bpUpperMeasuredValues by viewModel.getMeasuredValues(upperDef).collectAsState()
+    val meGapStatValue by viewModel.meGapStatValue.collectAsState()
 
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
@@ -73,7 +74,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                     }
                 }
                 if (category == MetricCategory.BLOOD_PRESSURE){
-                    val meGapStatValue = bpUpperMeasuredValues.toMeGapStatValue(config.timeOfDayConfig)
+                    //val meGapStatValue = bpUpperMeasuredValues.toMeGapStatValue(config.timeOfDayConfig)
                     StatValueRow(stringResource(R.string.me_gap), meGapStatValue)
 
                 }

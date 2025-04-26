@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.map
 class StatisticsRepository @Inject constructor(private val metricRepository: MetricRepository, val itemRepository: ItemRepository, configRepository: ConfigRepository) {
     private val timeOfDayConfigFlow = configRepository.dataFlow.map { it.timeOfDayConfig }
 
-    fun getStatValueFlow(metricDef: MetricDef, days: Long?): Flow<StatValue<Double>> {
+    fun getStatValueFlow(metricDef: MetricDef, days: Long?): Flow<StatValue> {
         return metricRepository.getMetricFlow(metricDef, days).map { list ->
             list.map { it.value }.toStatValue()
         }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getDayPeriodStatValueFlow(metricDef: MetricDef, days: Long?): Flow<Map<DayPeriod, StatValue<Double>>> {
+    fun getDayPeriodStatValueFlow(metricDef: MetricDef, days: Long?): Flow<Map<DayPeriod, StatValue>> {
         return timeOfDayConfigFlow.flatMapLatest { timeOfDayConfig ->
             metricRepository.getMetricFlow(metricDef, days).map { list ->
                 val grouped = list.groupBy { (measuredAt, _) ->

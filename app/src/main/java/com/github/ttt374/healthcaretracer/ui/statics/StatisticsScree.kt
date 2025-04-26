@@ -45,10 +45,6 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     }
     val firstDate by viewModel.firstDateFlow.collectAsState()
 
-//    val pulseDef = MetricDefRegistry.getById("pulse")!!
-//    //val statValueMap by viewModel.statValue().collectAsState()
-//    //val dayPeriodStatValueMap by viewModel.dayPeriodStatValueMap.collectAsState()
-
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
@@ -64,15 +60,21 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 MetricDefRegistry.getByCategory(category).forEach { def ->
                     CustomDivider()
                     StatValueHeadersRow(stringResource(def.resId))
-                    StatValueRow(stringResource(R.string.all), statValueStateMap[def]?.value)
+                    StatValueRow(stringResource(R.string.all), statValueStateMap[def]?.value!!) // TODO
                     dayPeriodStatValueStateMap[def]?.value?.mapValues { (period, statValue) ->
                         StatValueRow(stringResource(period.resId), statValue)
                     }
                 }
-
             }
         }
     }
+}
+enum class StatType (val resId: Int, val selector: (StatValue) -> Double?){
+    Average(R.string.average, { it.avg }),
+    Max(R.string.max, { it.max }),
+    Min(R.string.min, { it.min }),
+    Count(R.string.count, { it.count.toDouble() })
+
 }
 @Composable
 fun StatValueHeadersRow(label: String){
@@ -80,77 +82,25 @@ fun StatValueHeadersRow(label: String){
         val mod = Modifier.weight(1f)
         val modCount = Modifier.weight(0.7f)
         Text(label, mod, fontWeight = FontWeight.Bold)
-        listOf(R.string.average, R.string.max, R.string.min).forEach {
-            Text(stringResource(it), mod)
+        StatType.entries.forEach {
+            Text(stringResource(it.resId), mod)
         }
-        Text(stringResource(R.string.count), modCount)
+        Text(stringResource(StatType.Count.resId), modCount)
     }
 }
 @Composable
-fun StatValueRow(label: String, statValue: StatValue<Double>?, format: (Double?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}){
+fun StatValueRow(label: String, statValue: StatValue, format: (Double?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}){
     Row {
         val mod = Modifier.weight(1f)
         val modCount = Modifier.weight(0.7f)
         Text(label, mod)
-        listOf(statValue?.avg, statValue?.max, statValue?.min).forEach {
-            Text(format(it), mod)
+        StatType.entries.forEach { statType ->
+            Text(format(statType.selector(statValue)))
         }
-        Text(statValue?.count.toDisplayString(), modCount)
+        Text(statValue.count.toDisplayString(), modCount)
     }
 }
 @Composable
 internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingTop: Dp = 8.dp){
     HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(top = paddingTop))
 }
-//@Composable
-//fun <T> StatisticsTable(title: String, stat: StatTimeOfDay<T>, takeValue: (T?) -> AnnotatedString = { v -> toAnnotatedString() } ) {
-//    Column {
-//        StatisticsHeadersRow(title)
-//
-//        listOf(
-//            R.string.all to stat.all,
-//            R.string.morning to stat.morning,
-//            R.string.afternoon to stat.afternoon,
-//            R.string.evening to stat.evening
-//        ).forEach { (labelRes, value) ->
-//            StatisticsRow(stringResource(labelRes), value, takeValue)
-//        }
-//    }
-//}
-//
-//sealed class StatType (val resId: Int){
-//    abstract fun <T> getDisplayValue(stat: StatValue<T>): T?
-//
-//    data object Average: StatType(R.string.average){ override fun <T> getDisplayValue(stat: StatValue<T>) = stat.avg }
-//    data object Max: StatType(R.string.max){ override fun <T> getDisplayValue(stat: StatValue<T>) = stat.max }
-//    data object Min: StatType(R.string.min){ override fun <T> getDisplayValue(stat: StatValue<T>) = stat.min }
-//
-//    companion object {
-//        val entries = listOf(Average, Max, Min)
-//    }
-//}
-//@Composable
-//fun StatisticsBaseRow(label: String, format: @Composable (StatType) -> AnnotatedString, countString: String, fontWeight: FontWeight? = null, ){
-//    Row {
-//        Text(label, modifier = Modifier.weight(1f), fontWeight = fontWeight)
-//        StatType.entries.forEach {
-//            Text(format(it), Modifier.weight(1f))
-//        }
-//        Text(countString, Modifier.weight(0.7f))
-//    }
-//}
-//@Composable
-//fun StatisticsHeadersRow(title: String){
-//    StatisticsBaseRow(title, { stringResource(it.resId).toAnnotatedString()}, stringResource(R.string.count), FontWeight.Bold)
-//    HorizontalDivider(thickness = 1.5.dp, color = Color.LightGray)
-//}
-//
-//@Composable
-//fun <T> StatisticsRow(label: String, statValue: StatValue<T>, format: (T?) -> AnnotatedString = { v -> toAnnotatedString() }) {
-//    StatisticsBaseRow(label, { format(it.getDisplayValue(statValue))}, statValue.count.toString())
-//}
-//
-////internal fun Number.toAnnotatedString(format: String? = null): AnnotatedString = toAnnotatedString(format)
-////internal fun BloodPressure?.toAnnotatedString(): AnnotatedString = toAnnotatedString()
-//internal fun toAnnotatedString(): AnnotatedString { throw(UnsupportedOperationException("Unsupported type in toAnnotatedString() "))}// fallback or generic
-

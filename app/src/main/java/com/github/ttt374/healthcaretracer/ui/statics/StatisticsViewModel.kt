@@ -33,28 +33,15 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
                                                @StatisticsTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config()) // for config.guideline
     val timeRange = timeRangeManager.timeRange
-//    val statisticsData = timeRangeManager.timeRangeFlow.flatMapLatest { timeRange ->
-//        statisticsRepository.getStatisticsFlow(timeRange)
-//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
 
-//    fun statValue(metricDef: MetricDef): StateFlow<StatValue<Double>>{
-//        return timeRangeManager.timeRangeFlow.flatMapLatest { range ->
-//            statisticsRepository.getStatValueFlow(metricDef, range.days)
-//        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
-//    }
-//    fun dayPeriodStatValue(metricDef: MetricDef): StateFlow<Map<DayPeriod, StatValue<Double>>> =
-//        timeRange.flatMapLatest { range ->
-//            statisticsRepository.getDayPeriodStatValueFlow(metricDef, range.days)
-//        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
-
-    val statValueMap: Map<MetricDef, StateFlow<StatValue<Double>>> =
+    val statValueMap: Map<MetricDef, StateFlow<StatValue>> =
         MetricDefRegistry.defs.associateWith { def ->
             timeRangeManager.timeRangeFlow.flatMapLatest { range ->
                 statisticsRepository.getStatValueFlow(def, range.days)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
         }
 
-    val dayPeriodStatMap: Map<MetricDef, StateFlow<Map<DayPeriod, StatValue<Double>>>> =
+    val dayPeriodStatMap: Map<MetricDef, StateFlow<Map<DayPeriod, StatValue>>> =
         MetricDefRegistry.defs.associateWith { def ->
             timeRangeManager.timeRangeFlow.flatMapLatest { range ->
                 statisticsRepository.getDayPeriodStatValueFlow(def, range.days)

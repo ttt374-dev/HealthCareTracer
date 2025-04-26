@@ -17,35 +17,23 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class ChartRepository @Inject constructor(val metricRepository: MetricRepository, val itemRepository: ItemRepository, configRepository: ConfigRepository){
-    private val targetValuesFlow = configRepository.dataFlow.map {
-        it.targetVitals
-    }
-//    private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
-//        itemRepository.getRecentItemsFlow(timeRange.days).map { list -> list.toEntries(takeValue)}
-
-//    private fun getMeasuredValuesFlow(selector: (Vitals) -> Double?, days: Long? = null) =
-//        itemRepository.getRecentItemsFlow(days).map { list -> list.mapNotNull { item -> selector(item.vitals)?.let { MeasuredValue(item.measuredAt, it) }}}
-//
+class ChartRepository @Inject constructor(private val metricRepository: MetricRepository, configRepository: ConfigRepository){
+    private val targetValuesFlow = configRepository.dataFlow.map { it.targetVitals }
     private fun getChartSeriesFlow(metricDef: MetricDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
         return metricRepository.getMetricFlow(metricDef, timeRange.days).map { list ->
             val entries = list.toEntry()
-            ChartSeries(metricDef, list.toEntry(), entries.toTargetEntries(metricDef.selector(targetValues) ?: 0, timeRange)) // TODO nonnull ???
+            val targetEntries = metricDef.selector(targetValues)?.let { entries.toTargetEntries(it, timeRange)}
+            ChartSeries(metricDef, entries, targetEntries)
         }
-//
-//        return getEntriesFlow({ metricDef.selector(it) }, timeRange)
-//            .map { entries -> metricDef.createSeries(entries, targetValues, timeRange) }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getChartDataFlow(metricCategory: MetricCategory, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
             MetricDefRegistry.getByCategory(metricCategory).map { def ->
-                getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
+                getChartSeriesFlow(def, timeRange, targetValues)
+            }.combineList().map {
                 ChartData(metricCategory, it)
             }
-//            metricCategory.seriesDefList.map { def -> getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
-//                ChartData(metricCategory, it)
-//            }
         }
     }
 }

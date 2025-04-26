@@ -11,8 +11,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
-class StatisticsRepository @Inject constructor(private val itemRepository: ItemRepository, configRepository: ConfigRepository) {
+class StatisticsRepository @Inject constructor(private val metricRepository: MetricRepository, val itemRepository: ItemRepository, configRepository: ConfigRepository) {
     private val timeOfDayConfigFlow = configRepository.dataFlow.map { it.timeOfDayConfig }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getStatisticsFlow(timeRange: TimeRange): Flow<StatisticsData> =

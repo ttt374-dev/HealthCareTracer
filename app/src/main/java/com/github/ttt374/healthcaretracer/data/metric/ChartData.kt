@@ -5,7 +5,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.toInstant
 import java.time.Instant
 
 data class ChartData(val metricCategory: MetricCategory, val chartSeriesList: List<ChartSeries> = emptyList())
-data class ChartSeries(val metricDef: MetricDef, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry> = emptyList())
+data class ChartSeries(val metricDef: MetricDef, val actualEntries: List<Entry> = emptyList(), val targetEntries: List<Entry>? = null)
 
 fun List<ChartSeries>.firstDate(): Instant? {
     return this.flatMap { it.actualEntries }.minByOrNull { it.x }?.x?.toLong()?.toInstant()

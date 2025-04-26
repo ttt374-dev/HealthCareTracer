@@ -11,7 +11,7 @@ import com.github.ttt374.healthcaretracer.shared.minOrNull
 import com.github.ttt374.healthcaretracer.shared.toDayPeriod
 import java.time.Instant
 import java.time.ZoneId
-
+//
 object StatCalculator {
     fun calculateAll(items: List<Item>, timeOfDayConfig: TimeOfDayConfig): StatisticsData {
         return StatisticsData(

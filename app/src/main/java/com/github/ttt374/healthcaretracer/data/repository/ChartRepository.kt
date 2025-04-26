@@ -1,40 +1,52 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
+import com.github.ttt374.healthcaretracer.data.item.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.item.MetricCategory
+import com.github.ttt374.healthcaretracer.data.item.MetricDef
+import com.github.ttt374.healthcaretracer.data.item.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.item.toEntry
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.chart.ChartData
 import com.github.ttt374.healthcaretracer.ui.chart.ChartSeries
-import com.github.ttt374.healthcaretracer.ui.chart.ChartType
-import com.github.ttt374.healthcaretracer.ui.chart.SeriesDef
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import java.time.Instant
-import java.time.ZoneId
 import javax.inject.Inject
 
-class ChartRepository @Inject constructor(val itemRepository: ItemRepository, configRepository: ConfigRepository){
+class ChartRepository @Inject constructor(val metricRepository: MetricRepository, val itemRepository: ItemRepository, configRepository: ConfigRepository){
     private val targetValuesFlow = configRepository.dataFlow.map {
         it.targetVitals
     }
     private fun getEntriesFlow(takeValue: (Vitals) -> Double?, timeRange: TimeRange) =
         itemRepository.getRecentItemsFlow(timeRange.days).map { list -> list.toEntries(takeValue)}
 
-    private fun getChartSeriesFlow(seriesDef: SeriesDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-        return getEntriesFlow({ seriesDef.takeValue(it) }, timeRange)
-            .map { entries -> seriesDef.createSeries(entries, targetValues, timeRange) }
+//    private fun getMeasuredValuesFlow(selector: (Vitals) -> Double?, days: Long? = null) =
+//        itemRepository.getRecentItemsFlow(days).map { list -> list.mapNotNull { item -> selector(item.vitals)?.let { MeasuredValue(item.measuredAt, it) }}}
+//
+    private fun getChartSeriesFlow(metricDef: MetricDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
+        return metricRepository.getMetricFlow(metricDef, timeRange.days).map { list ->
+            val entries = list.toEntry()
+            ChartSeries(metricDef, list.toEntry(), entries.toTargetEntries(metricDef.selector(targetValues) ?: 0, timeRange)) // TODO nonnull ???
+        }
+//
+//        return getEntriesFlow({ metricDef.selector(it) }, timeRange)
+//            .map { entries -> metricDef.createSeries(entries, targetValues, timeRange) }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getChartDataFlow(chartType: ChartType, timeRange: TimeRange): Flow<ChartData> {
+    fun getChartDataFlow(metricCategory: MetricCategory, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
-            chartType.seriesDefList.map { def -> getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
-                ChartData(chartType, it)
+            MetricDefRegistry.getByCategory(metricCategory).map { def ->
+                getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
+                ChartData(metricCategory, it)
             }
+//            metricCategory.seriesDefList.map { def -> getChartSeriesFlow(def, timeRange, targetValues) }.combineList().map {
+//                ChartData(metricCategory, it)
+//            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,6 +14,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
+import com.github.ttt374.healthcaretracer.ui.metric.MetricScreen
 import com.github.ttt374.healthcaretracer.ui.settings.SettingsScreen
 import com.github.ttt374.healthcaretracer.ui.statics.StatisticsScreen
 import java.time.LocalDate
@@ -33,6 +35,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val appNavigator = AppNavigator(navController)
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
+    //NavHost(navController = navController, startDestination = "metric") {
         composable(Screen.Home.route) { HomeScreen(appNavigator = appNavigator) }
         composable(Screen.Entry.route) { EntryScreen(appNavigator = appNavigator)}
         composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
@@ -45,6 +48,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
         composable(Screen.Statistics.route) { StatisticsScreen(appNavigator=appNavigator)}
         composable(Screen.Settings.route) { SettingsScreen(appNavigator=appNavigator)}
+        composable("metric"){ MetricScreen()}
     }
 }
 class AppNavigator(private val navController: NavHostController){

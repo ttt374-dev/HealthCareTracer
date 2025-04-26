@@ -33,6 +33,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.item.MetricCategory
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.TimeRange
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
@@ -52,8 +53,8 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     val timeRange by chartViewModel.timeRange.collectAsState()
 
     val pagerState = rememberPagerState(
-        initialPage = ChartType.entries.indexOf(selectedChartType),
-        pageCount = { ChartType.entries.size }
+        initialPage = MetricCategory.entries.indexOf(selectedChartType),
+        pageCount = { MetricCategory.entries.size }
     )
 
     val coroutineScope = rememberCoroutineScope()
@@ -75,7 +76,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
                 Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
             }
             TabRow(selectedTabIndex = pagerState.currentPage) {
-                ChartType.entries.forEachIndexed { index, type ->
+                MetricCategory.entries.forEachIndexed { index, type ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = {
@@ -83,7 +84,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
                                 pagerState.animateScrollToPage(index)
                             }
                         },
-                        text = { Text(stringResource(type.labelResId)) }
+                        text = { Text(stringResource(type.resId)) }
                     )
                 }
             }
@@ -96,8 +97,8 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
 }
 
 ////////////
-internal fun Int.toChartType(): ChartType? {
-    return ChartType.entries.getOrNull(this)
+internal fun Int.toChartType(): MetricCategory? {
+    return MetricCategory.entries.getOrNull(this)
 }
 
 private fun LineChart.setupValueFormatter(datePattern: String){
@@ -199,8 +200,8 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     )
 
     return this.withIndex().flatMap { (index, series) ->
-        val label = series.seriesDef.labelResId?.let { stringResource(it) } ?: ""
-        val targetLabel = series.seriesDef.targetLabelResId?.let { stringResource(it) } ?: ""
+        val label = series.metricDef.resId?.let { stringResource(it) } ?: ""
+        val targetLabel = series.metricDef.resId?.let { stringResource(it) } ?: ""
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(

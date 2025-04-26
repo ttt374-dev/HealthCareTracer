@@ -23,6 +23,7 @@ import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
+import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.github.ttt374.healthcaretracer.shared.toDisplayString
@@ -44,7 +45,10 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         flow.collectAsState()
 
     }
-    val firstDate by viewModel.firstDateFlow.collectAsState()
+    val firstDate by viewModel.firstDate.collectAsState()
+
+    val upperDef = MetricDefRegistry.getById("bp_upper")!!
+    val bpUpperMeasuredValues by viewModel.measuredValues(upperDef).collectAsState()
 
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
@@ -67,6 +71,11 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                     dayPeriodStatValueStateMap[def]?.value?.forEach { (period, statValue) ->
                         StatValueRow(stringResource(period.resId), statValue)
                     }
+                }
+                if (category == MetricCategory.BLOOD_PRESSURE){
+                    val meGapStatValue = bpUpperMeasuredValues.toMeGapStatValue(config.timeOfDayConfig)
+                    StatValueRow(stringResource(R.string.me_gap), meGapStatValue)
+
                 }
             }
         }

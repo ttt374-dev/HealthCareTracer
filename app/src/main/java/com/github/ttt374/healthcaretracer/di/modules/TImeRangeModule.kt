@@ -1,7 +1,7 @@
 package com.github.ttt374.healthcaretracer.di.modules
 
 import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
-import com.github.ttt374.healthcaretracer.shared.TimeRangeManager
+import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,8 +23,8 @@ object TimeRangeModule {
     @StatisticsTimeRange
     fun provideStatisticsTimeRangeManager(
         preferencesRepository: PreferencesRepository
-    ): TimeRangeManager {
-        return TimeRangeManager(
+    ): TimeRangeRepository {
+        return TimeRangeRepository(
             preferencesRepository,
             getter = { it.timeRangeStatistics },
             updater = { prefs, range -> prefs.copy(timeRangeStatistics = range) }
@@ -35,8 +35,8 @@ object TimeRangeModule {
     @ChartTimeRange
     fun provideChartTimeRangeManager(
         preferencesRepository: PreferencesRepository
-    ): TimeRangeManager {
-        return TimeRangeManager(
+    ): TimeRangeRepository {
+        return TimeRangeRepository(
             preferencesRepository,
             getter = { it.timeRangeChart },
             updater = { prefs, range -> prefs.copy(timeRangeChart = range) }

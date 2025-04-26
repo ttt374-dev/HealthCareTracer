@@ -3,7 +3,7 @@ package com.github.ttt374.healthcaretracer.ui.statics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
@@ -12,9 +12,10 @@ import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.StatisticsRepository
 import com.github.ttt374.healthcaretracer.di.modules.StatisticsTimeRange
-import com.github.ttt374.healthcaretracer.shared.DayPeriod
-import com.github.ttt374.healthcaretracer.shared.TimeRange
-import com.github.ttt374.healthcaretracer.shared.TimeRangeManager
+import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
+import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.repository.TimeRange
+import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,30 +31,36 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsViewModel @Inject constructor (private val statisticsRepository: StatisticsRepository, configRepository: ConfigRepository,
                                                itemRepository: ItemRepository,
-                                               @StatisticsTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
+                                               @StatisticsTimeRange private val timeRangeRepository: TimeRangeRepository
+) : ViewModel() {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config()) // for config.guideline
-    val timeRange = timeRangeManager.timeRange
+    val timeRange = timeRangeRepository.timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
 
     val statValueMap: Map<MetricDef, StateFlow<StatValue>> =
         MetricDefRegistry.defs.associateWith { def ->
-            timeRangeManager.timeRangeFlow.flatMapLatest { range ->
+            timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
                 statisticsRepository.getStatValueFlow(def, range.days)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
         }
 
     val dayPeriodStatMap: Map<MetricDef, StateFlow<Map<DayPeriod, StatValue>>> =
         MetricDefRegistry.defs.associateWith { def ->
-            timeRangeManager.timeRangeFlow.flatMapLatest { range ->
+            timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
                 statisticsRepository.getDayPeriodStatValueFlow(def, range.days)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
         }
 
-    val firstDateFlow: StateFlow<Instant> = itemRepository.getAllItemsFlow().map { it.firstOrNull()?.measuredAt ?: Instant.now() }
+    val firstDate: StateFlow<Instant> = itemRepository.getAllItemsFlow().map { it.firstOrNull()?.measuredAt ?: Instant.now() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Instant.now())
+
+    fun measuredValues(metricDef: MetricDef): StateFlow<List<MeasuredValue>> =
+        timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
+            statisticsRepository.getMeasuredValuesFlow(metricDef, range.days)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
-            timeRangeManager.setSelectedRange(range)
+            timeRangeRepository.setSelectedRange(range)
         }
     }
 }

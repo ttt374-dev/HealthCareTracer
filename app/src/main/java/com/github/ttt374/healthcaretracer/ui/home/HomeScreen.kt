@@ -51,13 +51,13 @@ import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
-import com.github.ttt374.healthcaretracer.shared.DayPeriod
-import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
+import com.github.ttt374.healthcaretracer.data.metric.TimeOfDayConfig
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.shared.toBodyTemperatureString
 import com.github.ttt374.healthcaretracer.shared.toBodyWeightString
 import com.github.ttt374.healthcaretracer.shared.toPulseString
-import com.github.ttt374.healthcaretracer.shared.toDayPeriod
+import com.github.ttt374.healthcaretracer.data.metric.toDayPeriod
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

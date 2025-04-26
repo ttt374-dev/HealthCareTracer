@@ -2,10 +2,9 @@ package com.github.ttt374.healthcaretracer
 
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.shared.DayPeriod
-import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
-import com.github.ttt374.healthcaretracer.shared.TimeRange
-import com.github.ttt374.healthcaretracer.shared.toDayPeriod
+import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
+import com.github.ttt374.healthcaretracer.data.metric.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.data.metric.toDayPeriod
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -66,7 +65,8 @@ class DayPeriodTest {
     @Test
     fun timeOfDayTest(){
         val timeOfDayConfig = TimeOfDayConfig(
-            mapOf(DayPeriod.Morning to LocalTime.of(6, 0),
+            mapOf(
+                DayPeriod.Morning to LocalTime.of(6, 0),
                 DayPeriod.Afternoon to LocalTime.of(13, 0),
                 DayPeriod.Evening to LocalTime.of(18, 0))
         )

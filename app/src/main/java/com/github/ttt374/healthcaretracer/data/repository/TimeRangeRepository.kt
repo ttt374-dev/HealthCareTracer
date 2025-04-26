@@ -1,11 +1,7 @@
-package com.github.ttt374.healthcaretracer.shared
+package com.github.ttt374.healthcaretracer.data.repository
 
 import androidx.annotation.StringRes
-import androidx.compose.material3.Text
 import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.repository.Preferences
-import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
-import com.github.ttt374.healthcaretracer.ui.chart.toInstant
 import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,18 +16,18 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-class TimeRangeManager @Inject constructor(
+class TimeRangeRepository @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
     val getter: (Preferences) -> TimeRange,
     val updater: (Preferences, TimeRange) -> Preferences,
 ) {
     val timeRangeFlow: Flow<TimeRange> = preferencesRepository.dataFlow.map(getter)
-    val timeRange: StateFlow<TimeRange> = timeRangeFlow
-        .stateIn(
-            CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
-            SharingStarted.WhileSubscribed(5000),
-            TimeRange.Default
-        )
+//    val timeRange: StateFlow<TimeRange> = timeRangeFlow
+//        .stateIn(
+//            CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
+//            SharingStarted.WhileSubscribed(5000),
+//            TimeRange.Default
+//        )
 
     suspend fun setSelectedRange(range: TimeRange) {
         preferencesRepository.updateData {

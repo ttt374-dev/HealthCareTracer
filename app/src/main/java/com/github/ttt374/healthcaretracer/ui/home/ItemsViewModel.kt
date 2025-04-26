@@ -6,8 +6,8 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.metric.averageOrNull
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
-import com.github.ttt374.healthcaretracer.shared.averageOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -36,10 +36,10 @@ fun List<Item>.groupByDate(): List<DailyItem> {
 
 fun List<Item>.toAveragedVitals(): Vitals {
     return Vitals(
-        bp = (map { it.vitals.bp?.upper }.averageOrNull() to map { it.vitals.bp?.lower }.averageOrNull())
+        bp = (mapNotNull { it.vitals.bp?.upper?.toDouble() }.averageOrNull() to mapNotNull { it.vitals.bp?.lower?.toDouble() }.averageOrNull())
             .toBloodPressure(),
-        pulse = map { it.vitals.pulse }.averageOrNull(),
-        bodyWeight = map { it.vitals.bodyWeight }.averageOrNull(),
-        bodyTemperature = map { it.vitals.bodyTemperature }.averageOrNull(),
+        pulse = mapNotNull { it.vitals.pulse }.averageOrNull(),
+        bodyWeight = mapNotNull { it.vitals.bodyWeight }.averageOrNull(),
+        bodyTemperature = mapNotNull { it.vitals.bodyTemperature }.averageOrNull(),
     )
 }

@@ -1,8 +1,7 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
-import com.github.ttt374.healthcaretracer.shared.averageOrNull
-import com.github.ttt374.healthcaretracer.shared.maxOrNull
-import com.github.ttt374.healthcaretracer.shared.minOrNull
+
+import java.time.ZoneId
 
 //////////
 data class StatValue(
@@ -11,5 +10,32 @@ data class StatValue(
     val min: Double? = null,
     val count: Int = 0,
 )
-fun List<Double>.toStatValue() =
-    StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+
+fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+
+fun List<Double>.averageOrNull(): Double? =
+    this.takeIf { it.isNotEmpty() }?.average()
+
+fun List<MeasuredValue>.toMeGapStatValue(timeOfDayConfig: TimeOfDayConfig, zoneId: ZoneId = ZoneId.systemDefault()): StatValue {
+    return groupBy { it.measuredAt.atZone(zoneId).toLocalDate() }
+        .mapNotNull { (_, measuredValues) ->
+            measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning}.map { it.value }.averageOrNull()?.let { morningAvg ->
+                measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening}.map { it.value }.averageOrNull()?.let { eveningAvg ->
+                    morningAvg - eveningAvg
+                }
+            }
+        }.toStatValue()
+}
+
+//fun List<Item>.calculateMeGap(timeOfDayConfig: TimeOfDayConfig, zoneId: ZoneId) =
+//    filterDayPeriod(DayPeriod.Morning, timeOfDayConfig, zoneId).bpUpperAverageOrNull()?.let { morning ->
+//        filterDayPeriod(DayPeriod.Evening, timeOfDayConfig, zoneId).bpUpperAverageOrNull()?.let { evening ->
+//            morning - evening
+//        }
+//    }
+//fun List<Item>.filterDayPeriod(dayPeriod: DayPeriod, timeOfDayConfig: TimeOfDayConfig, zoneId: ZoneId) =
+//    filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == dayPeriod}
+//
+//fun List<Item>.bpUpperAverageOrNull() =
+//    mapNotNull { it.vitals.bp?.upper?.toDouble() }.averageOrNull()
+

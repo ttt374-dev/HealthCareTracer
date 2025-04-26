@@ -1,7 +1,6 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import android.content.Context
-import com.github.ttt374.healthcaretracer.shared.TimeRange
 import kotlinx.serialization.Serializable
 import javax.inject.Singleton
 

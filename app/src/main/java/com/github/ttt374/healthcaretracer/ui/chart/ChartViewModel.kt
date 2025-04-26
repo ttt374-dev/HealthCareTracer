@@ -7,8 +7,8 @@ import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
 import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
 import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.di.modules.DefaultMetricCategory
-import com.github.ttt374.healthcaretracer.shared.TimeRange
-import com.github.ttt374.healthcaretracer.shared.TimeRangeManager
+import com.github.ttt374.healthcaretracer.data.repository.TimeRange
+import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,14 +23,15 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
-                                         @ChartTimeRange private val timeRangeManager: TimeRangeManager,
+                                         @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
                                          @DefaultMetricCategory defaultMetricCategory: MetricCategory
 ) : ViewModel() {
-    val timeRange = timeRangeManager.timeRange
-    private val _selectedChartType: MutableStateFlow<MetricCategory> = MutableStateFlow(defaultMetricCategory)
+    val timeRangeFlow = timeRangeRepository.timeRangeFlow
+    val timeRange = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
+        private val _selectedChartType: MutableStateFlow<MetricCategory> = MutableStateFlow(defaultMetricCategory)
     val selectedChartType: StateFlow<MetricCategory> = _selectedChartType.asStateFlow()
 
-    val chartData = timeRange.flatMapLatest { timeRange ->
+    val chartData = timeRangeFlow.flatMapLatest { timeRange ->
         selectedChartType.flatMapLatest { type ->
             chartRepository.getChartDataFlow(type, timeRange)
         }
@@ -41,7 +42,7 @@ class ChartViewModel @Inject constructor(private val chartRepository: ChartRepos
     }
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
-            timeRangeManager.setSelectedRange(range)
+            timeRangeRepository.setSelectedRange(range)
         }
     }
 }

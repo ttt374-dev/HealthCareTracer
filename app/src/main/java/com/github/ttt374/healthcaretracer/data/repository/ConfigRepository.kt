@@ -4,7 +4,7 @@ import android.content.Context
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.item.Vitals
-import com.github.ttt374.healthcaretracer.shared.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.data.metric.TimeOfDayConfig
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind

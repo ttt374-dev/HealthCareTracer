@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.shared
+package com.github.ttt374.healthcaretracer.data.metric
 
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.repository.LocalTimeSerializer

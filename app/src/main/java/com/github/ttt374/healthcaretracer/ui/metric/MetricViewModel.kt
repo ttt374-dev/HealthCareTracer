@@ -21,14 +21,4 @@ class MetricViewModel  @Inject constructor(private val metricRepository: MetricR
     val metrics: Map<MetricDef, StateFlow<List<MeasuredValue>>> = MetricDefRegistry.defs.associateWith { def ->
         metricRepository.getMetricFlow(def, null).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList() )
     }
-//    val statFlows: Map<MetricDef, StateFlow<StatTimeOfDay>> = metrics.associateWith { metric ->
-//        metricRepository.getMetricFlow(metric, timeRange)
-//            .map { values ->
-//                StatTimeOfDay(
-//                    all = values.toStatValue(),
-//                    byPeriod = values.groupByPeriod(config.timeOfDayConfig)
-//                )
-//            }
-//            .stateIn(scope, SharingStarted.WhileSubscribed(), StatTimeOfDay())
-//    }
 }

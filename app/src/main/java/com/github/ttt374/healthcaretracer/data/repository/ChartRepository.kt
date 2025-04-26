@@ -37,13 +37,7 @@ class ChartRepository @Inject constructor(private val metricRepository: MetricRe
         }
     }
 }
-//fun List<Item>.toEntries(takeValue: (Vitals) -> Double?): List<Entry> {
-//    return mapNotNull { item ->
-//        takeValue(item.vitals)?.toFloat()?.let { value ->
-//            Entry(item.measuredAt.toEpochMilli().toFloat(), value)
-//        }
-//    }
-//}
+
 internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
     if (isEmpty()) return emptyList()
     val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x

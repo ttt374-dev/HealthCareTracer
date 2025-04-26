@@ -32,14 +32,4 @@ class StatisticsRepository @Inject constructor(private val metricRepository: Met
             }
         }
     }
-
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    fun getStatisticsFlow(timeRange: TimeRange): Flow<StatisticsData> =
-//        timeOfDayConfigFlow.flatMapLatest { timeOfDayConfig ->
-//            itemRepository.getRecentItemsFlow(timeRange.days).map { items ->
-//                StatCalculator.calculateAll(items, timeOfDayConfig)
-//            }
-//        }.flowOn(Dispatchers.Default)
-
-
 }

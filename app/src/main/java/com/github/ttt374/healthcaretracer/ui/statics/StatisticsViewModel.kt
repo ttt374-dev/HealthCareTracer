@@ -29,7 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsViewModel @Inject constructor (private val statisticsRepository: StatisticsRepository, configRepository: ConfigRepository,
-                                               private val itemRepository: ItemRepository,
+                                               itemRepository: ItemRepository,
                                                @StatisticsTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config()) // for config.guideline
     val timeRange = timeRangeManager.timeRange

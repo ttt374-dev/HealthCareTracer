@@ -60,8 +60,10 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 MetricDefRegistry.getByCategory(category).forEach { def ->
                     CustomDivider()
                     StatValueHeadersRow(stringResource(def.resId))
-                    StatValueRow(stringResource(R.string.all), statValueStateMap[def]?.value!!) // TODO
-                    dayPeriodStatValueStateMap[def]?.value?.mapValues { (period, statValue) ->
+                    statValueStateMap[def]?.value?.let { statValue ->
+                        StatValueRow(stringResource(R.string.all), statValue)
+                    }
+                    dayPeriodStatValueStateMap[def]?.value?.forEach { (period, statValue) ->
                         StatValueRow(stringResource(period.resId), statValue)
                     }
                 }
@@ -95,7 +97,7 @@ fun StatValueRow(label: String, statValue: StatValue, format: (Double?) -> Annot
         val modCount = Modifier.weight(0.7f)
         Text(label, mod)
         StatType.entries.forEach { statType ->
-            Text(format(statType.selector(statValue)))
+            Text(format(statType.selector(statValue)), mod)
         }
         Text(statValue.count.toDisplayString(), modCount)
     }

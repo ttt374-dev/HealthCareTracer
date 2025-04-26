@@ -3,9 +3,6 @@ package com.github.ttt374.healthcaretracer.data.metric
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.Vitals
-import com.github.ttt374.healthcaretracer.shared.averageOrNull
-import com.github.ttt374.healthcaretracer.shared.maxOrNull
-import com.github.ttt374.healthcaretracer.shared.minOrNull
 import java.time.Instant
 
 data class MeasuredValue(
@@ -17,8 +14,6 @@ fun MeasuredValue.toEntry() = Entry(measuredAt.toEpochMilli().toFloat(), value.t
 fun List<MeasuredValue>.toEntry(): List<Entry> {
     return map { it.toEntry() }
 }
-// TODO
-
 
 data class MetricDef(
     val id: String,

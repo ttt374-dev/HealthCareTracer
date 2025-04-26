@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
+import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
@@ -32,9 +33,9 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
                                                @StatisticsTimeRange private val timeRangeManager: TimeRangeManager) : ViewModel() {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config()) // for config.guideline
     val timeRange = timeRangeManager.timeRange
-    val statisticsData = timeRangeManager.timeRangeFlow.flatMapLatest { timeRange ->
-        statisticsRepository.getStatisticsFlow(timeRange)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
+//    val statisticsData = timeRangeManager.timeRangeFlow.flatMapLatest { timeRange ->
+//        statisticsRepository.getStatisticsFlow(timeRange)
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatisticsData())
 
 //    fun statValue(metricDef: MetricDef): StateFlow<StatValue<Double>>{
 //        return timeRangeManager.timeRangeFlow.flatMapLatest { range ->

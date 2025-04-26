@@ -19,26 +19,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
-import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
+import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.github.ttt374.healthcaretracer.shared.toDisplayString
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
-import java.time.Instant
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val timeRange by viewModel.timeRange.collectAsState()
     val config by viewModel.config.collectAsState()
-    val guideline = config.bloodPressureGuideline
-    val statisticsData by viewModel.statisticsData.collectAsState()
+//    val guideline = config.bloodPressureGuideline
+//    val statisticsData by viewModel.statisticsData.collectAsState()
 
     val statValueStateMap = viewModel.statValueMap.mapValues { (_, flow) ->
         flow.collectAsState()

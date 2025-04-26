@@ -3,6 +3,9 @@ package com.github.ttt374.healthcaretracer.data.metric
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.shared.averageOrNull
+import com.github.ttt374.healthcaretracer.shared.maxOrNull
+import com.github.ttt374.healthcaretracer.shared.minOrNull
 import java.time.Instant
 
 data class MeasuredValue(
@@ -75,5 +78,4 @@ object MetricDefRegistry {
     fun getById(id: String): MetricDef? =
         defs.find { it.id == id }
 }
-
 

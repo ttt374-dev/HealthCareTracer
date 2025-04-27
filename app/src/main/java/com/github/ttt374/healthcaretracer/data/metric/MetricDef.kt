@@ -23,7 +23,13 @@ data class MetricDef(
     val targetResId: Int?,
     val category: MetricCategory,
     val selector: (Vitals) -> Double?,
-    val format: (Double?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}
+    val format: (Number?) -> AnnotatedString = { value ->
+        when (value){
+            is Int -> value.toAnnotatedString("%d")
+            is Double -> value.toAnnotatedString("%.1f")
+            else ->  value?.toString()?.toAnnotatedString() ?: "".toAnnotatedString()
+        }
+    }
 )
 enum class MetricCategory(val resId: Int) {
     BLOOD_PRESSURE(R.string.blood_pressure),

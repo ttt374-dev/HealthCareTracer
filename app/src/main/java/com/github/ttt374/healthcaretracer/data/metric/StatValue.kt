@@ -25,15 +25,6 @@ fun List<MeasuredValue>.toMeGapStatValue(dayPeriodCOnfig: DayPeriodConfig, zoneI
                     morningAvg - eveningAvg
                 }
             }
-//            if (morningAvg != null && eveningAvg != null) morningAvg - eveningAvg else null
-//            val morningAvg = periodMap[DayPeriod.Morning]?.map { it.value }?.averageOrNull()
-//            val eveningAvg = periodMap[DayPeriod.Evening]?.map { it.value }?.averageOrNull()
-//            if (morningAvg != null && eveningAvg != null) morningAvg - eveningAvg else null
-//            measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning}.map { it.value }.averageOrNull()?.let { morningAvg ->
-//                measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening}.map { it.value }.averageOrNull()?.let { eveningAvg ->
-//                    morningAvg - eveningAvg
-//                }
-//            }
         }.toStatValue()
 }
 

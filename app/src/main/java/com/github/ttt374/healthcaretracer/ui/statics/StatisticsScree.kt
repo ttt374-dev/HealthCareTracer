@@ -84,12 +84,11 @@ fun MetricDefStatValueTable(metricDef: MetricDef, allStatValue: StatValue, dayPe
         StatValueRow(stringResource(period.resId), statValue, metricDef.format)
     }
 }
-enum class StatType (val resId: Int, val selector: (StatValue) -> Double?, val weight: Float = 1f){
+enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val weight: Float = 1f){
     Average(R.string.average, { it.avg }),
     Max(R.string.max, { it.max }),
     Min(R.string.min, { it.min }),
-    Count(R.string.count, { it.count.toDouble() }, 0.7f)
-
+    Count(R.string.count, { it.count }, 0.7f);
 }
 @Composable
 fun StatValueHeadersRow(label: String){
@@ -104,7 +103,7 @@ fun StatValueHeadersRow(label: String){
     }
 }
 @Composable
-fun StatValueRow(label: String, statValue: StatValue, format: (Double?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}){
+fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}){
     Row {
         Text(label, Modifier.weight(1f))
         StatType.entries.forEach { statType ->

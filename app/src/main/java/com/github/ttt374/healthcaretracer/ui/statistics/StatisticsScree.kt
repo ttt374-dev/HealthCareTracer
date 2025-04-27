@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
@@ -32,18 +33,25 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 
+data class StatValueData (val all: StatValue, val byPeriod: Map<DayPeriod, StatValue>)
+
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val timeRange by viewModel.timeRange.collectAsState()
     val statValueStateMap = viewModel.statValueMap.mapValues { (_, flow) ->
-        flow.collectAsState()
+        flow.collectAsState().value
     }
     val dayPeriodStatValueStateMap = viewModel.dayPeriodStatMap.mapValues { (_, flow) ->
-        flow.collectAsState()
-
+        flow.collectAsState().value
     }
+
     val firstDate by viewModel.firstDate.collectAsState()
     val meGapStatValue by viewModel.meGapStatValue.collectAsState()
+
+    val statValueDataMap: Map<MetricDef, StatValueData> = statValueStateMap.mapValues { (key, all) ->
+        val byPeriod = dayPeriodStatValueStateMap[key] ?: emptyMap()
+        StatValueData(all = all, byPeriod = byPeriod)
+    }
 
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
@@ -58,11 +66,12 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             }
             items(MetricCategory.entries){ category ->
                 MetricDefRegistry.getByCategory(category).forEach { def ->
-                    statValueStateMap[def]?.value?.let { allStatValue ->
-                        dayPeriodStatValueStateMap[def]?.value?.let { dayPeriodStatValues ->
-                            MetricDefStatValueTable(def, allStatValue, dayPeriodStatValues)
-                        }
-                    }
+                    statValueDataMap[def]?.let { statValueData -> MetricDefStatValueTable(def, statValueData) }
+//                    statValueStateMap[def]?.let { allStatValue ->
+//                        dayPeriodStatValueStateMap[def]?.let { dayPeriodStatValues ->
+//                            MetricDefStatValueTable(def, allStatValue, dayPeriodStatValues)
+//                        }
+//                    }
                 }
                 if (category == MetricCategory.BLOOD_PRESSURE){
                     StatValueRow(stringResource(R.string.me_gap), meGapStatValue, { it.toAnnotatedString("%.0f")})
@@ -71,15 +80,41 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         }
     }
 }
+//@Composable
+//fun BloodPressureStatValueTable(){
+//    CustomDivider()
+//    StatValueHeadersRow(stringResource(R.string.blood_pressure))
+//    StatValueBpRow(stringResource(R.string.all), allStatValue, metricDef.format)
+////    dayPeriodStatValues.forEach { (period, statValue) ->
+////        StatValueRow(stringResource(period.resId), statValue, metricDef.format)
+////    }
+//}
+//@Composable
+//fun StatValueBpRow(label: String, statValueUpper: StatValue, statValueLower: StatValue, format: (Number?, Number?) -> AnnotatedString){
+//    Row {
+//        Text(label, Modifier.weight(1f))
+//        StatType.entries.forEach { statType ->
+//            //val mod = Modifier.weight(statType.weight)
+//            Text(format(statType.selector(statValueUpper), statType.selector(statValueLower)))
+//        }
+//    }
+//}
+//enum class StatTypeBp (val resId: Int, val selector: (StatValue) -> Number?){
+//    Average(R.string.average, { u, l -> u.avg?.let { upper -> l.avg?.let { lower -> BloodPressure(upper.toInt(), lower.toInt()) }}}),
+//    Max(R.string.max,  { u, l -> u.max?.let { upper -> l.max?.let { lower -> BloodPressure(upper.toInt(), lower.toInt()) }}}),
+//    Min(R.string.min,  { u, l -> u.min?.let { upper -> l.min?.let { lower -> BloodPressure(upper.toInt(), lower.toInt()) }}}),
+//    //Count(R.string.count, { u, l -> u.count }, 0.7f);
+//}
 @Composable
-fun MetricDefStatValueTable(metricDef: MetricDef, allStatValue: StatValue, dayPeriodStatValues: Map<DayPeriod, StatValue>){
+fun MetricDefStatValueTable(metricDef: MetricDef, statValueData: StatValueData){
     CustomDivider()
     StatValueHeadersRow(stringResource(metricDef.resId))
-    StatValueRow(stringResource(R.string.all), allStatValue, metricDef.format)
-    dayPeriodStatValues.forEach { (period, statValue) ->
+    StatValueRow(stringResource(R.string.all), statValueData.all, metricDef.format)
+    statValueData.byPeriod.forEach { (period, statValue) ->
         StatValueRow(stringResource(period.resId), statValue, metricDef.format)
     }
 }
+
 enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val weight: Float = 1f){
     Average(R.string.average, { it.avg }),
     Max(R.string.max, { it.max }),

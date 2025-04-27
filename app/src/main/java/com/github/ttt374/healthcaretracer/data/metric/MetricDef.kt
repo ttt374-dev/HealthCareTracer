@@ -1,8 +1,10 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
+import androidx.compose.ui.text.AnnotatedString
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import java.time.Instant
 
 data class MeasuredValue(
@@ -20,7 +22,8 @@ data class MetricDef(
     val resId: Int,
     val targetResId: Int?,
     val category: MetricCategory,
-    val selector: (Vitals) -> Double?
+    val selector: (Vitals) -> Double?,
+    val format: (Double?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}
 )
 enum class MetricCategory(val resId: Int) {
     BLOOD_PRESSURE(R.string.blood_pressure),
@@ -35,14 +38,16 @@ object MetricDefRegistry {
             resId = R.string.bpUpper,
             targetResId = R.string.targetBpUpper,
             category = MetricCategory.BLOOD_PRESSURE,
-            selector = { it.bp?.upper?.toDouble() }
+            selector = { it.bp?.upper?.toDouble() },
+            format = { it.toAnnotatedString("%0.f")}
         ),
         MetricDef(
             id = "bp_lower",
             resId = R.string.bpLower,
             targetResId = R.string.targetBpLower,
             category = MetricCategory.BLOOD_PRESSURE,
-            selector = { it.bp?.lower?.toDouble() }
+            selector = { it.bp?.lower?.toDouble() },
+            format = { it.toAnnotatedString("%.0f")}
         ),
         MetricDef(
             id = "pulse",

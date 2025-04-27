@@ -34,7 +34,7 @@ import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val timeRange by viewModel.timeRange.collectAsState()
-    val config by viewModel.config.collectAsState()
+//    val config by viewModel.config.collectAsState()
 //    val guideline = config.bloodPressureGuideline
 //    val statisticsData by viewModel.statisticsData.collectAsState()
 
@@ -67,14 +67,13 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                     CustomDivider()
                     StatValueHeadersRow(stringResource(def.resId))
                     statValueStateMap[def]?.value?.let { statValue ->
-                        StatValueRow(stringResource(R.string.all), statValue)
+                        StatValueRow(stringResource(R.string.all), statValue, def.format)
                     }
                     dayPeriodStatValueStateMap[def]?.value?.forEach { (period, statValue) ->
-                        StatValueRow(stringResource(period.resId), statValue)
+                        StatValueRow(stringResource(period.resId), statValue, def.format)
                     }
                 }
                 if (category == MetricCategory.BLOOD_PRESSURE){
-                    //val meGapStatValue = bpUpperMeasuredValues.toMeGapStatValue(config.timeOfDayConfig)
                     StatValueRow(stringResource(R.string.me_gap), meGapStatValue)
 
                 }
@@ -82,35 +81,36 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
         }
     }
 }
-enum class StatType (val resId: Int, val selector: (StatValue) -> Double?){
+enum class StatType (val resId: Int, val selector: (StatValue) -> Double?, val weight: Float = 1f){
     Average(R.string.average, { it.avg }),
     Max(R.string.max, { it.max }),
     Min(R.string.min, { it.min }),
-    Count(R.string.count, { it.count.toDouble() })
+    Count(R.string.count, { it.count.toDouble() }, 0.7f)
 
 }
 @Composable
 fun StatValueHeadersRow(label: String){
     Row {
         val mod = Modifier.weight(1f)
-        val modCount = Modifier.weight(0.7f)
+        //val modCount = Modifier.weight(0.7f)
         Text(label, mod, fontWeight = FontWeight.Bold)
         StatType.entries.forEach {
-            Text(stringResource(it.resId), mod)
+            Text(stringResource(it.resId), Modifier.weight(it.weight))
         }
-        Text(stringResource(StatType.Count.resId), modCount)
+        //Text(stringResource(StatType.Count.resId), modCount)
     }
 }
 @Composable
 fun StatValueRow(label: String, statValue: StatValue, format: (Double?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}){
     Row {
-        val mod = Modifier.weight(1f)
-        val modCount = Modifier.weight(0.7f)
-        Text(label, mod)
+        Text(label, Modifier.weight(1f))
         StatType.entries.forEach { statType ->
-            Text(format(statType.selector(statValue)), mod)
+            val mod = Modifier.weight(statType.weight)
+            when (statType){
+                StatType.Count -> Text(statValue.count.toDisplayString(), mod)
+                else -> Text(format(statType.selector(statValue)), mod)
+            }
         }
-        Text(statValue.count.toDisplayString(), modCount)
     }
 }
 @Composable

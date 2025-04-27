@@ -52,7 +52,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.MenuItem
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
-import com.github.ttt374.healthcaretracer.data.metric.TimeOfDayConfig
+import com.github.ttt374.healthcaretracer.data.metric.DayPeriodConfig
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.shared.toBodyTemperatureString
 import com.github.ttt374.healthcaretracer.shared.toBodyWeightString
@@ -126,7 +126,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn { // (reverseLayout = true) {
                 items(dailyItems.reversed()) { dailyItem ->
-                    DailyItemRow(dailyItem, guideline, config.timeOfDayConfig,
+                    DailyItemRow(dailyItem, guideline, config.dayPeriodCOnfig,
                         appNavigator::navigateToEdit,)
                 }
             }
@@ -135,7 +135,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-                 timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
+                 dayPeriodCOnfig: DayPeriodConfig = DayPeriodConfig(),
                  navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -145,12 +145,12 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         Text(dailyItem.vitals.pulse?.toInt().toPulseString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
-        ItemRow(item, guideline, timeOfDayConfig, navigateToEdit, )
+        ItemRow(item, guideline, dayPeriodCOnfig, navigateToEdit, )
     }
 }
 @Composable
 fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-            timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(),
+            dayPeriodCOnfig: DayPeriodConfig = DayPeriodConfig(),
             navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     val bp = item.vitals.bp
@@ -158,7 +158,7 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
-            when (item.measuredAt.toDayPeriod(config = timeOfDayConfig)){
+            when (item.measuredAt.toDayPeriod(config = dayPeriodCOnfig)){
                 DayPeriod.Morning -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
                 DayPeriod.Evening -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
                 else -> {}

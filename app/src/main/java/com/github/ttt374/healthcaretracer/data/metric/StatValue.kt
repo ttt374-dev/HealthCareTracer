@@ -16,14 +16,24 @@ fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNul
 fun List<Double>.averageOrNull(): Double? =
     this.takeIf { it.isNotEmpty() }?.average()
 
-fun List<MeasuredValue>.toMeGapStatValue(timeOfDayConfig: TimeOfDayConfig, zoneId: ZoneId = ZoneId.systemDefault()): StatValue {
+fun List<MeasuredValue>.toMeGapStatValue(dayPeriodCOnfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): StatValue {
     return groupBy { it.measuredAt.atZone(zoneId).toLocalDate() }
         .mapNotNull { (_, measuredValues) ->
-            measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning}.map { it.value }.averageOrNull()?.let { morningAvg ->
-                measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening}.map { it.value }.averageOrNull()?.let { eveningAvg ->
+            val periodMap = measuredValues.groupBy { it.measuredAt.toDayPeriod(dayPeriodCOnfig, zoneId) }
+            periodMap[DayPeriod.Morning]?.map { it.value }?.averageOrNull()?.let { morningAvg ->
+                periodMap[DayPeriod.Evening]?.map { it.value }?.averageOrNull()?.let { eveningAvg ->
                     morningAvg - eveningAvg
                 }
             }
+//            if (morningAvg != null && eveningAvg != null) morningAvg - eveningAvg else null
+//            val morningAvg = periodMap[DayPeriod.Morning]?.map { it.value }?.averageOrNull()
+//            val eveningAvg = periodMap[DayPeriod.Evening]?.map { it.value }?.averageOrNull()
+//            if (morningAvg != null && eveningAvg != null) morningAvg - eveningAvg else null
+//            measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Morning}.map { it.value }.averageOrNull()?.let { morningAvg ->
+//                measuredValues.filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == DayPeriod.Evening}.map { it.value }.averageOrNull()?.let { eveningAvg ->
+//                    morningAvg - eveningAvg
+//                }
+//            }
         }.toStatValue()
 }
 

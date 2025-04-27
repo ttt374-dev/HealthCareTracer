@@ -14,7 +14,7 @@ enum class DayPeriod(val resId: Int) {
 }
 
 @Serializable
-data class TimeOfDayConfig(
+data class DayPeriodConfig(
     val timeMap: Map<DayPeriod, @Serializable(with = LocalTimeSerializer::class) LocalTime> =
         //DayPeriod.entries.associateWith { LocalTime.of(9, 0) }
         mapOf(
@@ -32,20 +32,20 @@ data class TimeOfDayConfig(
     operator fun get(period: DayPeriod): LocalTime =
         timeMap[period] ?: error("Missing config for $period")
 
-    fun update(period: DayPeriod, newTime: LocalTime): TimeOfDayConfig =
+    fun update(period: DayPeriod, newTime: LocalTime): DayPeriodConfig =
         copy(timeMap = timeMap + (period to newTime))
 
     companion object {
-        fun from(map: Map<DayPeriod, LocalTime>): TimeOfDayConfig {
+        fun from(map: Map<DayPeriod, LocalTime>): DayPeriodConfig {
             require(map.size == DayPeriod.entries.size && DayPeriod.entries.all { it in map }) {
                 "TimeOfDayConfig must contain values for all DayPeriods."
             }
-            return TimeOfDayConfig(map)
+            return DayPeriodConfig(map)
         }
     }
 }
 
-fun Instant.toDayPeriod(config: TimeOfDayConfig, zoneId: ZoneId = ZoneId.systemDefault()): DayPeriod {
+fun Instant.toDayPeriod(config: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): DayPeriod {
     val time = this.atZone(zoneId).toLocalTime()
     return when {
         time >= config[DayPeriod.Morning] && time < config[DayPeriod.Afternoon] -> DayPeriod.Morning

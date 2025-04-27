@@ -59,7 +59,7 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
         configRepository.dataFlow.flatMapLatest { config ->
             val bpUpperDef = MetricDefRegistry.getById("bp_upper") ?: return@flatMapLatest flowOf(StatValue())
             getMeasuredValuesFlow(bpUpperDef).map { measuredValues ->
-                measuredValues.toMeGapStatValue(config.timeOfDayConfig)
+                measuredValues.toMeGapStatValue(config.dayPeriodCOnfig)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
 

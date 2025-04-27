@@ -39,7 +39,7 @@ object MetricDefRegistry {
             targetResId = R.string.targetBpUpper,
             category = MetricCategory.BLOOD_PRESSURE,
             selector = { it.bp?.upper?.toDouble() },
-            format = { it.toAnnotatedString("%0.f")}
+            format = { it.toAnnotatedString("%.0f")}
         ),
         MetricDef(
             id = "bp_lower",

@@ -130,8 +130,8 @@ fun MetricDefStatValueTable(metricDef: MetricDef, statValueData: StatValueData){
     }
 }
 
-enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val weight: Float = 1f){
-    Average(R.string.average, { it.avg }),
+enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val format: ((Number?) -> AnnotatedString)? = null){
+    Average(R.string.average, { it.avg }, { it.toAnnotatedString("%.1f")} ),
     Max(R.string.max, { it.max }),
     Min(R.string.min, { it.min }),
     //Count(R.string.count, { it.count }, 0.7f);
@@ -143,7 +143,7 @@ fun StatValueHeadersRow(label: String){
         //val modCount = Modifier.weight(0.7f)
         Text(label, mod, fontWeight = FontWeight.Bold)
         StatType.entries.forEach {
-            Text(stringResource(it.resId), Modifier.weight(it.weight))
+            Text(stringResource(it.resId), Modifier.weight(1f))
         }
         Text(stringResource(R.string.count), Modifier.weight(0.7f))
     }
@@ -153,8 +153,10 @@ fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> Annot
     Row {
         Text(label, Modifier.weight(1f))
         StatType.entries.forEach { statType ->
-            val mod = Modifier.weight(statType.weight)
-            Text(format(statType.selector(statValue)), mod)
+            val mod = Modifier.weight(1f)
+            statType.format?.let { statFormat ->
+                Text(statFormat(statType.selector(statValue)), mod)
+            } ?:  Text(format(statType.selector(statValue)), mod)
         }
         Text(statValue.count.toDisplayString(), Modifier.weight(0.7f))
     }

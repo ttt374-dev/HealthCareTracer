@@ -23,13 +23,7 @@ data class MetricDef(
     val targetResId: Int?,
     val category: MetricCategory,
     val selector: (Vitals) -> Double?,
-    val format: (Number?) -> AnnotatedString = { value ->
-        when (value){
-            is Int -> value.toAnnotatedString("%d")
-            is Double -> value.toAnnotatedString("%.1f")
-            else ->  value?.toString()?.toAnnotatedString() ?: "".toAnnotatedString()
-        }
-    }
+    val format: (Number?) -> AnnotatedString = { it.toAnnotatedString() }
 )
 enum class MetricCategory(val resId: Int) {
     BLOOD_PRESSURE(R.string.blood_pressure),
@@ -60,21 +54,24 @@ object MetricDefRegistry {
             resId = R.string.pulse,
             targetResId = null,
             category = MetricCategory.HEART,
-            selector = { it.pulse?.toDouble() }
+            selector = { it.pulse?.toDouble() },
+            format = { it.toAnnotatedString("%.0f")}
         ),
         MetricDef(
             id = "body_temp",
             resId = R.string.bodyTemperature,
             targetResId = null,
             category = MetricCategory.TEMPERATURE,
-            selector = { it.bodyTemperature }
+            selector = { it.bodyTemperature },
+            format = { it.toAnnotatedString("%.1f")}
         ),
         MetricDef(
             id = "body_weight",
             resId = R.string.bodyWeight,
             targetResId = R.string.targetBodyWeight,
             category = MetricCategory.WEIGHT,
-            selector = { it.bodyWeight }
+            selector = { it.bodyWeight },
+            format = { it.toAnnotatedString("%.1f")}
         )
     )
 

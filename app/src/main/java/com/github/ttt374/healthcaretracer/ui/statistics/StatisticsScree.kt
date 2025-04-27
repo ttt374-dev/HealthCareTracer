@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.ui.statics
+package com.github.ttt374.healthcaretracer.ui.statistics
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -25,7 +25,6 @@ import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
-import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.github.ttt374.healthcaretracer.shared.toDisplayString
@@ -66,8 +65,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                     }
                 }
                 if (category == MetricCategory.BLOOD_PRESSURE){
-                    StatValueRow(stringResource(R.string.me_gap), meGapStatValue)
-
+                    StatValueRow(stringResource(R.string.me_gap), meGapStatValue, { it.toAnnotatedString("%.0f")})
                 }
             }
         }
@@ -101,7 +99,7 @@ fun StatValueHeadersRow(label: String){
     }
 }
 @Composable
-fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> AnnotatedString = { it.toAnnotatedString("%.1f")}){
+fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> AnnotatedString){
     Row {
         Text(label, Modifier.weight(1f))
         StatType.entries.forEach { statType ->

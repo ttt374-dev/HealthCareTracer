@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.ui.statics
+package com.github.ttt374.healthcaretracer.ui.statistics
 
 
 import androidx.lifecycle.ViewModel

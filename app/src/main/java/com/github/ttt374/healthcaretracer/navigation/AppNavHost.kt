@@ -1,14 +1,12 @@
 package com.github.ttt374.healthcaretracer.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.ui.calendar.CalendarScreen
 import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
@@ -16,7 +14,7 @@ import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
 import com.github.ttt374.healthcaretracer.ui.metric.MetricScreen
 import com.github.ttt374.healthcaretracer.ui.settings.SettingsScreen
-import com.github.ttt374.healthcaretracer.ui.statics.StatisticsScreen
+import com.github.ttt374.healthcaretracer.ui.statistics.StatisticsScreen
 import java.time.LocalDate
 
 sealed class Screen(val route: String, val routeWithArgs: String = "") {

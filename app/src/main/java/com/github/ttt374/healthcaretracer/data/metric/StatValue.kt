@@ -15,7 +15,22 @@ fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNul
 
 fun List<Double>.averageOrNull(): Double? =
     this.takeIf { it.isNotEmpty() }?.average()
-
+//fun <T> List<T>.averageOrNull(): Double? {
+//    if (isEmpty()) return null
+//
+//    if (firstOrNull() !is Number) return null
+//
+//    var sum = 0.0
+//    var count = 0
+//
+//    for (element in this) {
+//        if (element is Number) {
+//            sum += element.toDouble()
+//            count++
+//        }
+//    }
+//    return if (count > 0) sum / count else null
+//}
 fun List<MeasuredValue>.toMeGapStatValue(dayPeriodCOnfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): StatValue {
     return groupBy { it.measuredAt.atZone(zoneId).toLocalDate() }
         .mapNotNull { (_, measuredValues) ->

@@ -64,8 +64,6 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                             MetricDefStatValueTable(def, allStatValue, dayPeriodStatValues)
                         }
                     }
-
-
                 }
                 if (category == MetricCategory.BLOOD_PRESSURE){
                     StatValueRow(stringResource(R.string.me_gap), meGapStatValue)

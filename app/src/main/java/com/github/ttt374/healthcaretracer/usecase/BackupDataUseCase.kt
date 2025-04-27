@@ -19,7 +19,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-
 class ExportDataUseCase( private val itemRepository: ItemRepository) {
     suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
         val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
@@ -103,14 +102,12 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
                         line = csvReader.readNext()
                         continue
                     }
-
-
                     val item = Item(
                         measuredAt = Instant.parse(line[headerIndexMap.getValue("measuredAt")]),
                         vitals = Vitals(
                             bp = (line[headerIndexMap.getValue("BP upper")].toIntOrNull() to line[headerIndexMap.getValue("BP lower")].toIntOrNull()).toBloodPressure(),
                             //bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
-                            pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toIntOrNull() },
+                            pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toDoubleOrNull()?.toInt() },
                             bodyWeight = headerIndexMap["body weight"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
                             bodyTemperature = headerIndexMap["body temperature"]?.let { line.getOrNull(it)?.toDoubleOrNull() }),
                         location = headerIndexMap["location"]?.let { line.getOrNull(it) } ?: "",
@@ -121,12 +118,10 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
                 } catch (e: Exception) {
                     Log.e("parse csv", "Row $index failed: ${e.message}")
                 }
-
                 index++
                 line = csvReader.readNext()
             }
         }
-
         return importedItems
     }
 

@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
@@ -34,10 +36,6 @@ import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val timeRange by viewModel.timeRange.collectAsState()
-//    val config by viewModel.config.collectAsState()
-//    val guideline = config.bloodPressureGuideline
-//    val statisticsData by viewModel.statisticsData.collectAsState()
-
     val statValueStateMap = viewModel.statValueMap.mapValues { (_, flow) ->
         flow.collectAsState()
     }
@@ -46,9 +44,6 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
 
     }
     val firstDate by viewModel.firstDate.collectAsState()
-
-//    val upperDef = MetricDefRegistry.getById("bp_upper") ?: throw  IllegalArgumentException("illegal Def id: 'bp_upper'")
-//    val bpUpperMeasuredValues by viewModel.getMeasuredValues(upperDef).collectAsState()
     val meGapStatValue by viewModel.meGapStatValue.collectAsState()
 
     Scaffold(
@@ -64,14 +59,13 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
             }
             items(MetricCategory.entries){ category ->
                 MetricDefRegistry.getByCategory(category).forEach { def ->
-                    CustomDivider()
-                    StatValueHeadersRow(stringResource(def.resId))
-                    statValueStateMap[def]?.value?.let { statValue ->
-                        StatValueRow(stringResource(R.string.all), statValue, def.format)
+                    statValueStateMap[def]?.value?.let { allStatValue ->
+                        dayPeriodStatValueStateMap[def]?.value?.let { dayPeriodStatValues ->
+                            MetricDefStatValueTable(def, allStatValue, dayPeriodStatValues)
+                        }
                     }
-                    dayPeriodStatValueStateMap[def]?.value?.forEach { (period, statValue) ->
-                        StatValueRow(stringResource(period.resId), statValue, def.format)
-                    }
+
+
                 }
                 if (category == MetricCategory.BLOOD_PRESSURE){
                     StatValueRow(stringResource(R.string.me_gap), meGapStatValue)
@@ -79,6 +73,15 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 }
             }
         }
+    }
+}
+@Composable
+fun MetricDefStatValueTable(metricDef: MetricDef, allStatValue: StatValue, dayPeriodStatValues: Map<DayPeriod, StatValue>){
+    CustomDivider()
+    StatValueHeadersRow(stringResource(metricDef.resId))
+    StatValueRow(stringResource(R.string.all), allStatValue, metricDef.format)
+    dayPeriodStatValues.forEach { (period, statValue) ->
+        StatValueRow(stringResource(period.resId), statValue, metricDef.format)
     }
 }
 enum class StatType (val resId: Int, val selector: (StatValue) -> Double?, val weight: Float = 1f){

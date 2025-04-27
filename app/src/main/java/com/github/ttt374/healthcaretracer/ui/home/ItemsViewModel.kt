@@ -38,7 +38,7 @@ fun List<Item>.toAveragedVitals(): Vitals {
     return Vitals(
         bp = (mapNotNull { it.vitals.bp?.upper?.toDouble() }.averageOrNull() to mapNotNull { it.vitals.bp?.lower?.toDouble() }.averageOrNull())
             .toBloodPressure(),
-        pulse = mapNotNull { it.vitals.pulse }.averageOrNull(),
+        pulse = mapNotNull { it.vitals.pulse?.toDouble() }.averageOrNull()?.toInt(),
         bodyWeight = mapNotNull { it.vitals.bodyWeight }.averageOrNull(),
         bodyTemperature = mapNotNull { it.vitals.bodyTemperature }.averageOrNull(),
     )

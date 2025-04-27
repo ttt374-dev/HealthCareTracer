@@ -23,7 +23,7 @@ data class ItemUiState (
             bp = bpUpper.toIntOrNull()?.let { upper -> bpLower.toIntOrNull()?.let { lower -> BloodPressure(upper, lower)}},
             //bpUpper = bpUpper.toIntOrNull(),
             //bpLower = bpLower.toIntOrNull(),
-            pulse = pulse.toDoubleOrNull(),
+            pulse = pulse.toIntOrNull(),
             bodyWeight = bodyWeight.toDoubleOrNull(),
             bodyTemperature = bodyTemperature.toDoubleOrNull()),
         memo = memo, location = location, measuredAt = measuredAt)

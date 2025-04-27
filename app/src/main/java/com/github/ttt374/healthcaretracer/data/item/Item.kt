@@ -17,7 +17,7 @@ const val MIN_BP = 50
 @Serializable
 data class Vitals(
     val bp: BloodPressure? = null,
-    val pulse: Double? = null,
+    val pulse: Int? = null,
     val bodyWeight: Double? = null,
     val bodyTemperature: Double? = null,
 )

@@ -45,7 +45,6 @@ object MetricDefRegistry {
             targetResId = R.string.targetBpUpper,
             category = MetricCategory.BLOOD_PRESSURE,
             selector = { it.bp?.upper?.toDouble() },
-            format = { it.toAnnotatedString("%.0f")}
         ),
         MetricDef(
             id = "bp_lower",
@@ -60,7 +59,7 @@ object MetricDefRegistry {
             resId = R.string.pulse,
             targetResId = null,
             category = MetricCategory.HEART,
-            selector = { it.pulse }
+            selector = { it.pulse?.toDouble() }
         ),
         MetricDef(
             id = "body_temp",

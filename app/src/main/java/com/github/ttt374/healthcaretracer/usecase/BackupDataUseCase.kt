@@ -110,7 +110,7 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
                         vitals = Vitals(
                             bp = (line[headerIndexMap.getValue("BP upper")].toIntOrNull() to line[headerIndexMap.getValue("BP lower")].toIntOrNull()).toBloodPressure(),
                             //bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
-                            pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
+                            pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toIntOrNull() },
                             bodyWeight = headerIndexMap["body weight"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
                             bodyTemperature = headerIndexMap["body temperature"]?.let { line.getOrNull(it)?.toDoubleOrNull() }),
                         location = headerIndexMap["location"]?.let { line.getOrNull(it) } ?: "",

@@ -13,6 +13,8 @@ import com.github.ttt374.healthcaretracer.data.repository.StatisticsRepository
 import com.github.ttt374.healthcaretracer.di.modules.StatisticsTimeRange
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
+import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
@@ -38,6 +40,10 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config()) // for config.guideline
     val timeRange = timeRangeRepository.timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
 
+    fun getStatDataListForMetricType(metricType: MetricType): StateFlow<List<StatData>>{
+        return statisticsRepository.getStatDataListForMetricType(metricType)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
     val statValueMap: Map<MetricDef, StateFlow<StatValue>> =
         MetricDefRegistry.allDefs.associateWith { def ->
             timeRangeRepository.timeRangeFlow.flatMapLatest { range ->

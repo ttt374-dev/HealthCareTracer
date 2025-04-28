@@ -10,6 +10,7 @@ data class StatValue(
     val min: Double? = null,
     val count: Int = 0,
 )
+data class StatData (val metricDef: MetricDef, val all: StatValue = StatValue(), val byPeriod: Map<DayPeriod, StatValue> = emptyMap())
 
 fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
 

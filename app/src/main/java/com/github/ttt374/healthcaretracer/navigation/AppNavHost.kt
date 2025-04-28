@@ -32,9 +32,9 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val appNavigator = AppNavigator(navController)
-
+    val startRoute = Screen.Statistics.route
     //NavHost(navController = navController, startDestination = Screen.Home.route) {
-    NavHost(navController = navController, startDestination = Screen.Analysis.route) {
+    NavHost(navController = navController, startDestination = startRoute) {
         composable(Screen.Home.route) { HomeScreen(appNavigator = appNavigator) }
         composable(Screen.Entry.route) { EntryScreen(appNavigator = appNavigator)}
         composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){

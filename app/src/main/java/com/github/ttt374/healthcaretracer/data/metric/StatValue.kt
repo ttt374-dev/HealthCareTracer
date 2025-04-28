@@ -31,10 +31,10 @@ fun List<Double>.averageOrNull(): Double? =
 //    }
 //    return if (count > 0) sum / count else null
 //}
-fun List<MeasuredValue>.toMeGapStatValue(dayPeriodCOnfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): StatValue {
+fun List<MeasuredValue>.toMeGapStatValue(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): StatValue {
     return groupBy { it.measuredAt.atZone(zoneId).toLocalDate() }
         .mapNotNull { (_, measuredValues) ->
-            val periodMap = measuredValues.groupBy { it.measuredAt.toDayPeriod(dayPeriodCOnfig, zoneId) }
+            val periodMap = measuredValues.groupBy { it.measuredAt.toDayPeriod(dayPeriodConfig, zoneId) }
             periodMap[DayPeriod.Morning]?.map { it.value }?.averageOrNull()?.let { morningAvg ->
                 periodMap[DayPeriod.Evening]?.map { it.value }?.averageOrNull()?.let { eveningAvg ->
                     morningAvg - eveningAvg

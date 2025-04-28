@@ -31,6 +31,7 @@ enum class MetricCategory(val resId: Int) {
     TEMPERATURE(R.string.bodyTemperature),
     WEIGHT(R.string.bodyWeight);
 }
+
 object MetricDefRegistry {
     val defs: List<MetricDef> = listOf(
         MetricDef(

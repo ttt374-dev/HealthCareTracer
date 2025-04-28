@@ -116,20 +116,20 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
     }
 }
 
-@Composable
-fun ToggleButton(displayMode: DisplayMode, onModeChange: (DisplayMode) -> Unit) {
-    Row {
-        listOf(DisplayMode.CHART, DisplayMode.STATISTICS).forEach { mode ->
-            Button(
-                onClick = { onModeChange(mode) },
-                colors = if (displayMode == mode) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-                modifier = Modifier.padding(horizontal = 4.dp)
-            ) {
-                Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
-            }
-        }
-    }
-}
+//@Composable
+//fun ToggleButton(displayMode: DisplayMode, onModeChange: (DisplayMode) -> Unit) {
+//    Row {
+//        listOf(DisplayMode.CHART, DisplayMode.STATISTICS).forEach { mode ->
+//            Button(
+//                onClick = { onModeChange(mode) },
+//                colors = if (displayMode == mode) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
+//                modifier = Modifier.padding(horizontal = 4.dp)
+//            ) {
+//                Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
+//            }
+//        }
+//    }
+//}
 @Composable
 fun ToggleDisplayMode(
     displayMode: DisplayMode,

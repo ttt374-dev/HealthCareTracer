@@ -49,6 +49,7 @@ object ApplicationModule {
 
     @Provides
     fun provideImportDataUseCase(itemRepository: ItemRepository) = ImportDataUseCase(itemRepository)
+
 }
 
 @Qualifier

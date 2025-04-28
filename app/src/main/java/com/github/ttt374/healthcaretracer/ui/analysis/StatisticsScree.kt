@@ -107,7 +107,7 @@ fun StatValueHeadersRow(label: String){
 @Composable
 fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> AnnotatedString){
     Row {
-        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+        Box(contentAlignment = Alignment.CenterStart, modifier=Modifier.weight(1f)){
             Text(label)
         }
         StatType.entries.forEach { statType ->

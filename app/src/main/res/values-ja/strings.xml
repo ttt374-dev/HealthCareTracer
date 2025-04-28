@@ -53,5 +53,6 @@
     <string name="entry">新規エントリー</string>
     <string name="edit">編集</string>
     <string name="count">件数</string>
+    <string name="analysis">分析</string>
 
 </resources>

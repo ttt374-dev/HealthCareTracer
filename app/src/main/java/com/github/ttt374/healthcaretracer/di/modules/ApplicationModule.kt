@@ -5,7 +5,7 @@ import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
-import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
@@ -61,8 +61,8 @@ object MetricCategoryModule {
 
     @Provides
     @DefaultMetricCategory
-    fun provideDefaultMetricCategory(): MetricCategory {
-        return MetricCategory.BLOOD_PRESSURE // ← ここを切り替えられる！
+    fun provideDefaultMetricCategory(): MetricType {
+        return MetricType.BLOOD_PRESSURE // ← ここを切り替えられる！
     }
 }
 

@@ -3,7 +3,7 @@ package com.github.ttt374.healthcaretracer.ui.chart
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
-import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
 import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.di.modules.DefaultMetricCategory
@@ -24,20 +24,20 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
                                          @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
-                                         @DefaultMetricCategory defaultMetricCategory: MetricCategory
+                                         @DefaultMetricCategory defaultMetricType: MetricType
 ) : ViewModel() {
     val timeRangeFlow = timeRangeRepository.timeRangeFlow
     val timeRange = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
-        private val _selectedChartType: MutableStateFlow<MetricCategory> = MutableStateFlow(defaultMetricCategory)
-    val selectedChartType: StateFlow<MetricCategory> = _selectedChartType.asStateFlow()
+        private val _selectedChartType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
+    val selectedChartType: StateFlow<MetricType> = _selectedChartType.asStateFlow()
 
     val chartData = timeRangeFlow.flatMapLatest { timeRange ->
         selectedChartType.flatMapLatest { type ->
             chartRepository.getChartDataFlow(type, timeRange)
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricCategory))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
 
-    fun setChartType(chartType: MetricCategory) {
+    fun setChartType(chartType: MetricType) {
         _selectedChartType.value = chartType
     }
     fun setSelectedRange(range: TimeRange) {

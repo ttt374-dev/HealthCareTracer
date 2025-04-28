@@ -24,7 +24,7 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
-import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
@@ -67,9 +67,9 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                     Text(timeRange.toDisplayString( firstDate))
                 }
             }
-            items(MetricCategory.entries){ category ->
+            items(MetricType.entries){ category ->
                 when (category){
-                    MetricCategory.BLOOD_PRESSURE -> {
+                    MetricType.BLOOD_PRESSURE -> {
                         val statUpper = statValueDataMap[MetricDefRegistry.getById("bp_upper")]
                         val statLower = statValueDataMap[MetricDefRegistry.getById("bp_lower")]
                         if (statUpper != null && statLower != null){

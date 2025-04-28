@@ -34,7 +34,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
-import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.firstDate
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
@@ -55,8 +55,8 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
     val timeRange by chartViewModel.timeRange.collectAsState()
 
     val pagerState = rememberPagerState(
-        initialPage = MetricCategory.entries.indexOf(selectedChartType),
-        pageCount = { MetricCategory.entries.size }
+        initialPage = MetricType.entries.indexOf(selectedChartType),
+        pageCount = { MetricType.entries.size }
     )
 
     val coroutineScope = rememberCoroutineScope()
@@ -78,7 +78,7 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
                 Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
             }
             TabRow(selectedTabIndex = pagerState.currentPage) {
-                MetricCategory.entries.forEachIndexed { index, type ->
+                MetricType.entries.forEachIndexed { index, type ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = {
@@ -99,8 +99,8 @@ fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: 
 }
 
 ////////////
-internal fun Int.toChartType(): MetricCategory? {
-    return MetricCategory.entries.getOrNull(this)
+internal fun Int.toChartType(): MetricType? {
+    return MetricType.entries.getOrNull(this)
 }
 
 private fun LineChart.setupValueFormatter(datePattern: String){
@@ -211,7 +211,7 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
 //                val colors = series.actualEntries.map { entry ->
 //                    val instant = Instant.ofEpochMilli(entry.x.toLong())
 //
-//                    val delta = when (instant.toDayPeriod()) {  // TODO: TimeOfDayConfig, zoneid
+//                    val delta = when (instant.toDayPeriod()) {
 //                        DayPeriod.Morning -> 0.2f
 //                        DayPeriod.Evening -> -0.2f
 //                        else -> 0.0f

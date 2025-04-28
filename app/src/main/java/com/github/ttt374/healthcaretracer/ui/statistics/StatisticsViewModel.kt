@@ -39,14 +39,14 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
     val timeRange = timeRangeRepository.timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
 
     val statValueMap: Map<MetricDef, StateFlow<StatValue>> =
-        MetricDefRegistry.defs.associateWith { def ->
+        MetricDefRegistry.allDefs.associateWith { def ->
             timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
                 statisticsRepository.getStatValueFlow(def, range.days)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
         }
 
     val dayPeriodStatMap: Map<MetricDef, StateFlow<Map<DayPeriod, StatValue>>> =
-        MetricDefRegistry.defs.associateWith { def ->
+        MetricDefRegistry.allDefs.associateWith { def ->
             timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
                 statisticsRepository.getDayPeriodStatValueFlow(def, range.days)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())

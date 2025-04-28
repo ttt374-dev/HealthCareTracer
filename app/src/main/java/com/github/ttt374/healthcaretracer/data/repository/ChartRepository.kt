@@ -1,9 +1,8 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
-import com.github.ttt374.healthcaretracer.data.metric.MetricCategory
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricDef
-import com.github.ttt374.healthcaretracer.data.metric.MetricDefRegistry
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.toEntry
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
@@ -25,12 +24,13 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
         }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getChartDataFlow(metricCategory: MetricCategory, timeRange: TimeRange): Flow<ChartData> {
+    fun getChartDataFlow(metricType: MetricType, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
-            MetricDefRegistry.getByCategory(metricCategory).map { def ->
+            metricType.defs.map { def ->
+            //MetricDefRegistry.getByCategory(metricCategory).map { def ->
                 getChartSeriesFlow(def, timeRange, targetValues)
             }.combineList().map {
-                ChartData(metricCategory, it)
+                ChartData(metricType, it)
             }
         }
     }

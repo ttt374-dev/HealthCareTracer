@@ -35,14 +35,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
-import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import kotlinx.coroutines.launch
 
-enum class DisplayMode { CHART, STATISTICS }
+enum class DisplayMode { CHART, STATISTICS ; companion object { val Default = CHART}}
 
 @Composable
 fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator: AppNavigator){

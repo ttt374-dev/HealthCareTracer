@@ -27,9 +27,8 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
     fun getChartDataFlow(metricType: MetricType, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
             metricType.defs.map { def ->
-            //MetricDefRegistry.getByCategory(metricCategory).map { def ->
                 getChartSeriesFlow(def, timeRange, targetValues)
-            }.combineList().map {
+            }.combineIntoList().map {
                 ChartData(metricType, it)
             }
         }
@@ -47,5 +46,5 @@ internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRan
     )
 }
 
-inline fun <reified T> List<Flow<T>>.combineList(): Flow<List<T>> =
+inline fun <reified T> List<Flow<T>>.combineIntoList(): Flow<List<T>> =
     combine(*toTypedArray()) { it.toList() }

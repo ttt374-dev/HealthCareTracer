@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,7 +40,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
                                             private val configRepository: ConfigRepository,
                                             @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
                                          @DefaultMetricCategory defaultMetricType: MetricType) : ViewModel() {
-    private val timeRangeFlow = timeRangeRepository.timeRangeFlow
+                                                 private val timeRangeFlow = timeRangeRepository.timeRangeFlow
     val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
     private val _selectedMetricType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
     val selectedMetricType: StateFlow<MetricType> = _selectedMetricType.asStateFlow()
@@ -47,30 +48,42 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     private val _displayMode: MutableStateFlow<DisplayMode> = MutableStateFlow(DisplayMode.CHART)
     val displayMode: StateFlow<DisplayMode> = _displayMode.asStateFlow()
     val config: StateFlow<Config> = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
+    // ローディング状態を追加
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val chartData = timeRangeFlow.flatMapLatest { timeRange ->
         selectedMetricType.flatMapLatest { type ->
-            chartRepository.getChartDataFlow(type, timeRange)
+            _isLoading.value = true
+            chartRepository.getChartDataFlow(type, timeRange).onEach {
+                _isLoading.value = false
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
 
     val statDataList: StateFlow<List<StatData>> = selectedMetricType.flatMapLatest{ metricType ->
         timeRangeFlow.flatMapLatest { range ->
-            statisticsRepository.getStatDataListForMetricType(metricType, range.days)
+            _isLoading.value = true
+            statisticsRepository.getStatDataListForMetricType(metricType, range.days).onEach {
+                _isLoading.value = false
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /// M-E gap
-    val meGapStatValue: StateFlow<StatValue> =
-        combine(configRepository.dataFlow, timeRangeFlow) { config, timeRange ->
-            config to timeRange
-        }.flatMapLatest { (config, timeRange) ->
-            MetricType.BLOOD_PRESSURE.defs.firstOrNull()?.let { def ->
-                statisticsRepository.getMeasuredValuesFlow(def, timeRange.days).map { measuredValues ->
-                    measuredValues.toMeGapStatValue(config.dayPeriodConfig)
-                }
-            } ?: flowOf(StatValue())
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
+    val meGapStatValue: StateFlow<StatValue> = configRepository.dataFlow.flatMapLatest { config ->
+      statisticsRepository.getMeGapStatValueFlow(dayPeriodConfig = config.dayPeriodConfig)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
+//    val meGapStatValue: StateFlow<StatValue> =
+//        combine(configRepository.dataFlow, timeRangeFlow) { config, timeRange ->
+//            config to timeRange
+//        }.flatMapLatest { (config, timeRange) ->
+//            MetricType.BLOOD_PRESSURE.defs.firstOrNull()?.let { def ->
+//                statisticsRepository.getMeasuredValuesFlow(def, timeRange.days).map { measuredValues ->
+//                    measuredValues.toMeGapStatValue(config.dayPeriodConfig)
+//                }
+//            } ?: flowOf(StatValue())
+//        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
 
     /////////////////////
     fun setMetricType(metricType: MetricType) {

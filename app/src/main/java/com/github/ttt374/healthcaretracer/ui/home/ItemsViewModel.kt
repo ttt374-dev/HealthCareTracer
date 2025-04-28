@@ -19,11 +19,11 @@ import javax.inject.Inject
 class ItemsViewModel @Inject constructor (itemRepository: ItemRepository) : ViewModel(){
     val items = itemRepository.getAllItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val dailyItems = itemRepository.getAllItemsFlow().map { items ->items.groupByDate() }
+    val dailyItems = itemRepository.getAllItemsFlow().map { items ->items.toDailyItemList() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }
 
-fun List<Item>.groupByDate(): List<DailyItem> {
+fun List<Item>.toDailyItemList(): List<DailyItem> {
     return groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
         .map { (date, dailyItems) ->
             DailyItem(

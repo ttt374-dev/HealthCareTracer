@@ -135,22 +135,22 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
 }
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-                 dayPeriodCOnfig: DayPeriodConfig = DayPeriodConfig(),
+                 dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
                  navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically){
         Text(DateTimeFormatter.ofPattern("yyyy-M-d (E) ").format(dailyItem.date), modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
         Text(dailyItem.vitals.bp.toAnnotatedString(guideline = guideline), fontWeight = FontWeight.Bold)
-        Text(dailyItem.vitals.pulse?.toInt().toPulseString(), textAlign = TextAlign.End)
+        Text(dailyItem.vitals.pulse.toPulseString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
-        ItemRow(item, guideline, dayPeriodCOnfig, navigateToEdit, )
+        ItemRow(item, guideline, dayPeriodConfig, navigateToEdit, )
     }
 }
 @Composable
 fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-            dayPeriodCOnfig: DayPeriodConfig = DayPeriodConfig(),
+            dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
             navigateToEdit: (Long) -> Unit = {}){
     val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
     val bp = item.vitals.bp
@@ -158,7 +158,7 @@ fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideli
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
-            when (item.measuredAt.toDayPeriod(config = dayPeriodCOnfig)){
+            when (item.measuredAt.toDayPeriod(config = dayPeriodConfig)){
                 DayPeriod.Morning -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
                 DayPeriod.Evening -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
                 else -> {}

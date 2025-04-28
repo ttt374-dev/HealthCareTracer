@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
-import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -32,13 +32,26 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 
+fun <T> List<T>.firstAndSecondOrNull(): Pair<T?, T?> {
+    return if (this.size > 1) {
+        this[0] to this[1]  // 1番目と2番目の要素をペアで返す
+    } else {
+        null to null  // 要素が2つ未満の場合はnullを返す
+    }
+}
 
+fun <A, B> Pair<A?, B?>.forEachNonNull(action: (A, B) -> Unit) {
+    val (first, second) = this
+    if (first != null && second != null) {
+        action(first, second)
+    }
+}
 
 @Composable
 fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val config by viewModel.config.collectAsState()
     val timeRange by viewModel.timeRange.collectAsState()
-    val metricType = MetricType.HEART
+    val metricType = MetricType.BLOOD_PRESSURE
 
     val statDataList by viewModel.getStatDataListForMetricType(metricType).collectAsState()
 
@@ -69,11 +82,19 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 }
             }
             item {
-                statDataList.forEach { statData ->
-                    MetricDefStatDataTable(statData)
-                }
-
+                BloodPressureStatValueTable(statDataList) { it.toAnnotatedString(showUnit = false) }
             }
+//            statDataList.firstAndSecondOrNull().forEachNonNull { upper, lower ->
+//                item {
+//                    BloodPressureStatValueTable(upper, lower) { it.toAnnotatedString(showUnit = false)}
+//                }
+//            }
+
+//                statDataList.forEach { statData ->
+//                    MetricDefStatDataTable(statData)
+//                }
+
+
             //items(MetricType.entries){ category ->
 //                when (metricType){
 //                    MetricType.BLOOD_PRESSURE -> {
@@ -96,15 +117,17 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     }
 }
 @Composable
-fun BloodPressureStatValueTable(statUpperData: StatData, statLowerData: StatData, format: (BloodPressure) -> AnnotatedString ){
+fun BloodPressureStatValueTable(statDataList: List<StatData>, format: (BloodPressure) -> AnnotatedString ){
+    val (statUpperData, statLowerData) = statDataList.firstAndSecondOrNull()
     CustomDivider()
-    StatValueHeadersRow(stringResource(R.string.blood_pressure))
-    StatValueBpRow(stringResource(R.string.all), statUpperData.all, statLowerData.all, format)
-    statUpperData.byPeriod.forEach { (period, statUpper) ->
-        statLowerData.byPeriod[period]?.let { statLower ->
-            StatValueBpRow(stringResource(period.resId), statUpper, statLower, format)
+    if (statUpperData != null && statLowerData != null){
+        StatValueHeadersRow(stringResource(R.string.blood_pressure))
+        StatValueBpRow(stringResource(R.string.all), statUpperData.all, statLowerData.all, format)
+        statUpperData.byPeriod.forEach { (period, statUpper) ->
+            statLowerData.byPeriod[period]?.let { statLower ->
+                StatValueBpRow(stringResource(period.resId), statUpper, statLower, format)
+            }
         }
-
     }
 
 }

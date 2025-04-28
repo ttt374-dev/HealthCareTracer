@@ -64,6 +64,11 @@ object MetricDefs {
 }
 /////////////
 // category
+
+internal fun <T> List<T>.secondOrNull(): T? {
+    return if (this.size > 1) this[1] else null
+}
+
 enum class MetricType(
     val resId: Int,
     val defs: List<MetricDef>

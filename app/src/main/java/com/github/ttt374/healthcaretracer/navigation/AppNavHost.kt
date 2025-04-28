@@ -30,7 +30,7 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val appNavigator = AppNavigator(navController)
-    val startRoute = Screen.Analysis.route
+    val startRoute = Screen.Home.route
     //NavHost(navController = navController, startDestination = Screen.Home.route) {
     NavHost(navController = navController, startDestination = startRoute) {
         composable(Screen.Home.route) { HomeScreen(appNavigator = appNavigator) }
@@ -50,7 +50,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 }
 class AppNavigator(private val navController: NavHostController){
     fun navigateBack() = navController.popBackStack()
-    fun navigateTo(route: String) = navController.navigate(route)
+    private fun navigateTo(route: String) = navController.navigate(route)
 
     fun navigateToHome() = navigateTo(Screen.Home.route)
     fun navigateToEntry(date: LocalDate? = null) =

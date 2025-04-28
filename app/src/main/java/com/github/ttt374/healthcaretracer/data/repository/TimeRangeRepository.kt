@@ -18,10 +18,11 @@ import java.time.temporal.ChronoUnit
 
 class TimeRangeRepository @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
-    val getter: (Preferences) -> TimeRange,
-    val updater: (Preferences, TimeRange) -> Preferences,
+    //val getter: (Preferences) -> TimeRange,
+    //val updater: (Preferences, TimeRange) -> Preferences,
 ) {
-    val timeRangeFlow: Flow<TimeRange> = preferencesRepository.dataFlow.map(getter)
+    val timeRangeFlow: Flow<TimeRange> = preferencesRepository.dataFlow.map { it.timeRange }
+    //val timeRangeFlow: Flow<TimeRange> = preferencesRepository.dataFlow.map(getter)
 //    val timeRange: StateFlow<TimeRange> = timeRangeFlow
 //        .stateIn(
 //            CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
@@ -31,8 +32,8 @@ class TimeRangeRepository @Inject constructor(
 
     suspend fun setSelectedRange(range: TimeRange) {
         preferencesRepository.updateData {
-            updater(it, range)
-            //it.copy(timeRangeStatistics = range)
+            //updater(it, range)
+            it.copy(timeRange = range)
         }
     }
 }
@@ -47,13 +48,12 @@ enum class TimeRange(val days: Long?,  @StringRes val labelRes: Int) {
     fun startDate(now: Instant = Instant.now()): Instant? {
         return days?.let { now.minus(it, ChronoUnit.DAYS) }
     }
-    fun toDisplayString(fullStartDate: Instant, zone: ZoneId = ZoneId.systemDefault()): String {
-        val startDate = this.startDate() ?: fullStartDate
-        val endDate = Instant.now()
-        val dateFormat = DateTimeFormatter.ofPattern("yyyy-M-d").withZone(zone)
-        return "${dateFormat.format(startDate)} - ${dateFormat.format(endDate)}"
-
-    }
+//    fun toDisplayString(fullStartDate: Instant, zone: ZoneId = ZoneId.systemDefault()): String {
+//        val startDate = this.startDate() ?: fullStartDate
+//        val endDate = Instant.now()
+//        val dateFormat = DateTimeFormatter.ofPattern("yyyy-M-d").withZone(zone)
+//        return "${dateFormat.format(startDate)} - ${dateFormat.format(endDate)}"
+//    }
     companion object {
         val Default = ONE_MONTH
     }

@@ -12,7 +12,6 @@ import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.StatisticsRepository
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
-import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.di.modules.DefaultMetricCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +30,7 @@ import javax.inject.Inject
 class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRepository,
                                             private val statisticsRepository: StatisticsRepository,
                                             private val configRepository: ConfigRepository,
-                                            @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
+                                            private val timeRangeRepository: TimeRangeRepository,
                                          @DefaultMetricCategory defaultMetricType: MetricType) : ViewModel() {
     private val timeRangeFlow = timeRangeRepository.timeRangeFlow
     val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
@@ -66,16 +65,6 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     /// M-E gap
     val meGapStatValue: StateFlow<StatValue> = statisticsRepository.getMeGapStatValueFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
-//    val meGapStatValue: StateFlow<StatValue> =
-//        combine(configRepository.dataFlow, timeRangeFlow) { config, timeRange ->
-//            config to timeRange
-//        }.flatMapLatest { (config, timeRange) ->
-//            MetricType.BLOOD_PRESSURE.defs.firstOrNull()?.let { def ->
-//                statisticsRepository.getMeasuredValuesFlow(def, timeRange.days).map { measuredValues ->
-//                    measuredValues.toMeGapStatValue(config.dayPeriodConfig)
-//                }
-//            } ?: flowOf(StatValue())
-//        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
 
     /////////////////////
     fun setMetricType(metricType: MetricType) {

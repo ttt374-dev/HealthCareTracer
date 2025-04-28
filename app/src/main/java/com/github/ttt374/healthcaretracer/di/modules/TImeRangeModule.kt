@@ -7,39 +7,38 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Qualifier
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class ChartTimeRange
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class StatisticsTimeRange
+//
+//@Qualifier
+//@Retention(AnnotationRetention.BINARY)
+//annotation class ChartTimeRange
+//
+//@Qualifier
+//@Retention(AnnotationRetention.BINARY)
+//annotation class StatisticsTimeRange
 
 @Module
 @InstallIn(SingletonComponent::class)
 object TimeRangeModule {
     @Provides
-    @StatisticsTimeRange
-    fun provideStatisticsTimeRangeManager(
+    fun provideTimeRangeRepository(
         preferencesRepository: PreferencesRepository
     ): TimeRangeRepository {
         return TimeRangeRepository(
             preferencesRepository,
-            getter = { it.timeRangeStatistics },
-            updater = { prefs, range -> prefs.copy(timeRangeStatistics = range) }
+            //getter = { it.timeRange },
+            //updater = { prefs, range -> prefs.copy(timeRange = range) }
         )
     }
 
-    @Provides
-    @ChartTimeRange
-    fun provideChartTimeRangeManager(
-        preferencesRepository: PreferencesRepository
-    ): TimeRangeRepository {
-        return TimeRangeRepository(
-            preferencesRepository,
-            getter = { it.timeRangeChart },
-            updater = { prefs, range -> prefs.copy(timeRangeChart = range) }
-        )
-    }
+//    @Provides
+//    @ChartTimeRange
+//    fun provideChartTimeRangeManager(
+//        preferencesRepository: PreferencesRepository
+//    ): TimeRangeRepository {
+//        return TimeRangeRepository(
+//            preferencesRepository,
+//            getter = { it.timeRangeChart },
+//            updater = { prefs, range -> prefs.copy(timeRangeChart = range) }
+//        )
+//    }
 }

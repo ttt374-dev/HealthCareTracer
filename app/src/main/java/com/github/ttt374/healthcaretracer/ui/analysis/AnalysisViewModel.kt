@@ -12,7 +12,6 @@ import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
 import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
 import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
-import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.StatisticsRepository
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.data.repository.TimeRangeRepository
@@ -25,7 +24,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
                                             @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
                                          @DefaultMetricCategory defaultMetricType: MetricType) : ViewModel() {
     private val timeRangeFlow = timeRangeRepository.timeRangeFlow
-    val timeRange = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
+    val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
     private val _selectedMetricType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
     val selectedMetricType: StateFlow<MetricType> = _selectedMetricType.asStateFlow()
 
@@ -53,21 +54,22 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
 
-    val getStatDataList: StateFlow<List<StatData>> = selectedMetricType.flatMapLatest{ metricType ->
+    val statDataList: StateFlow<List<StatData>> = selectedMetricType.flatMapLatest{ metricType ->
         timeRangeFlow.flatMapLatest { range ->
             statisticsRepository.getStatDataListForMetricType(metricType, range.days)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private fun getMeasuredValuesFlow(metricDef: MetricDef): Flow<List<MeasuredValue>> =
-        timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
-            statisticsRepository.getMeasuredValuesFlow(metricDef, range.days)
-        }
+    /// M-E gap
     val meGapStatValue: StateFlow<StatValue> =
-        configRepository.dataFlow.flatMapLatest { config ->
-            getMeasuredValuesFlow(MetricType.BLOOD_PRESSURE.defs.first()).map { measuredValues ->  // TODO: first() check
-                measuredValues.toMeGapStatValue(config.dayPeriodConfig)
-            }
+        combine(configRepository.dataFlow, timeRangeFlow) { config, timeRange ->
+            config to timeRange
+        }.flatMapLatest { (config, timeRange) ->
+            MetricType.BLOOD_PRESSURE.defs.firstOrNull()?.let { def ->
+                statisticsRepository.getMeasuredValuesFlow(def, timeRange.days).map { measuredValues ->
+                    measuredValues.toMeGapStatValue(config.dayPeriodConfig)
+                }
+            } ?: flowOf(StatValue())
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
 
     /////////////////////

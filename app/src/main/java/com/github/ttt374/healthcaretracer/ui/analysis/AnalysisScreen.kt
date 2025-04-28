@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -49,7 +48,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
     val chartData by viewModel.chartData.collectAsState()
     val config by viewModel.config.collectAsState()
     val selectedMetricType by viewModel.selectedMetricType.collectAsState()
-    val statDataList by viewModel.getStatDataList.collectAsState()
+    val statDataList by viewModel.statDataList.collectAsState()
     val meGapStatValue by viewModel.meGapStatValue.collectAsState()
 
     val timeRange by viewModel.timeRange.collectAsState()

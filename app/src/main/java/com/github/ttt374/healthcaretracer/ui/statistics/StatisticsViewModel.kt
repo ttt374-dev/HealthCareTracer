@@ -44,27 +44,27 @@ class StatisticsViewModel @Inject constructor (private val statisticsRepository:
         return statisticsRepository.getStatDataListForMetricType(metricType)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     }
-    val statValueMap: Map<MetricDef, StateFlow<StatValue>> =
-        MetricDefRegistry.allDefs.associateWith { def ->
-            timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
-                statisticsRepository.getStatValueFlow(def, range.days)
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
-        }
-
-    val dayPeriodStatMap: Map<MetricDef, StateFlow<Map<DayPeriod, StatValue>>> =
-        MetricDefRegistry.allDefs.associateWith { def ->
-            timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
-                statisticsRepository.getDayPeriodStatValueFlow(def, range.days)
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
-        }
+//    val statValueMap: Map<MetricDef, StateFlow<StatValue>> =
+//        MetricDefRegistry.allDefs.associateWith { def ->
+//            timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
+//                statisticsRepository.getStatValueFlow(def, range.days)
+//            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
+//        }
+//
+//    val dayPeriodStatMap: Map<MetricDef, StateFlow<Map<DayPeriod, StatValue>>> =
+//        MetricDefRegistry.allDefs.associateWith { def ->
+//            timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
+//                statisticsRepository.getDayPeriodStatValueFlow(def, range.days)
+//            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+//        }
 
     val firstDate: StateFlow<Instant> = itemRepository.getAllItemsFlow().map { it.firstOrNull()?.measuredAt ?: Instant.now() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Instant.now())
 
-    fun meGapStatValue(metricDef: MetricDef): StateFlow<StatValue> =
+    val meGapStatValue: StateFlow<StatValue> =
         configRepository.dataFlow.flatMapLatest { config ->
             //val bpUpperDef = MetricDefRegistry.getById("bp_upper") ?: return@flatMapLatest flowOf(StatValue())
-            getMeasuredValuesFlow(metricDef).map { measuredValues ->
+            getMeasuredValuesFlow(MetricType.BLOOD_PRESSURE.defs.first()).map { measuredValues ->  // TODO: first() check
                 measuredValues.toMeGapStatValue(config.dayPeriodConfig)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())

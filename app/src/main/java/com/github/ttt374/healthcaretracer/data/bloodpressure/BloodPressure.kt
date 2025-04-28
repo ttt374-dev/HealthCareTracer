@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BloodPressure(val upper: Int, val lower: Int)
 
-fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPressureGuideline.Default, showUnit: Boolean = true) : AnnotatedString {
+fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline? = null, showUnit: Boolean = true) : AnnotatedString {
     return this?.let {
         buildAnnotatedString {
             fun appendBp(value: Int?, color: Color) {
@@ -24,9 +24,9 @@ fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline = BloodPr
                     append("-")
                 }
             }
-            appendBp(upper, guideline.getCategoryUpper(upper).color)
+            appendBp(upper, guideline?.getCategoryUpper(upper)?.color ?: Color.Unspecified)
             append("/")
-            appendBp(lower, guideline.getCategoryLower(lower).color)
+            appendBp(lower, guideline?.getCategoryLower(lower)?.color ?: Color.Unspecified)
 
             if (showUnit){
                 pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))

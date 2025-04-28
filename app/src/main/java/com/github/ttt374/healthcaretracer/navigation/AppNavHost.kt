@@ -32,7 +32,7 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val appNavigator = AppNavigator(navController)
-    val startRoute = Screen.Statistics.route
+    val startRoute = Screen.Analysis.route
     //NavHost(navController = navController, startDestination = Screen.Home.route) {
     NavHost(navController = navController, startDestination = startRoute) {
         composable(Screen.Home.route) { HomeScreen(appNavigator = appNavigator) }

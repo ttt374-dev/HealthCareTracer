@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.analysis
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -35,6 +37,7 @@ import com.github.ttt374.healthcaretracer.ui.chart.toChartType
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
+import com.github.ttt374.healthcaretracer.ui.statistics.StatDataTable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -43,7 +46,9 @@ enum class DisplayMode { CHART, STATISTICS }
 @Composable
 fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator: AppNavigator){
     val chartData by viewModel.chartData.collectAsState()
+    val config by viewModel.config.collectAsState()
     val selectedMetricType by viewModel.selectedMetricType.collectAsState()
+    val statDataList by viewModel.getStatDataList.collectAsState()
     val timeRange by viewModel.timeRange.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val onRangeSelected = { range: TimeRange -> viewModel.setSelectedRange(range)}
@@ -85,9 +90,12 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
                 when (displayMode) {
                     DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
-                    DisplayMode.STATISTICS -> {}
+                    DisplayMode.STATISTICS -> {
+                        Column(Modifier.fillMaxSize()){
+                            StatDataTable(selectedMetricType, statDataList, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+                        }
+                    }
                 }
-
             }
         }
     }

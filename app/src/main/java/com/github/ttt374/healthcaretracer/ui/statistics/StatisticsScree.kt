@@ -63,7 +63,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     }
 
     val firstDate by viewModel.firstDate.collectAsState()
-    val meGapStatValue by viewModel.meGapStatValue.collectAsState()
+    val meGapStatValue by viewModel.meGapStatValue(MetricType.BLOOD_PRESSURE.defs.first()).collectAsState()  // TODO first check
 
 //    val statDataMap: Map<MetricDef, StatData> = statValueStateMap.mapValues { (key, all) ->
 //        val byPeriod = dayPeriodStatValueStateMap[key] ?: emptyMap()
@@ -82,7 +82,8 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
                 }
             }
             item {
-                BloodPressureStatValueTable(statDataList) { it.toAnnotatedString(showUnit = false) }
+                BloodPressureStatDataTable(statDataList, meGapStatValue) { it.toAnnotatedString(config.bloodPressureGuideline, false) }
+
             }
 //            statDataList.firstAndSecondOrNull().forEachNonNull { upper, lower ->
 //                item {
@@ -117,7 +118,7 @@ fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNaviga
     }
 }
 @Composable
-fun BloodPressureStatValueTable(statDataList: List<StatData>, format: (BloodPressure) -> AnnotatedString ){
+fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: StatValue, format: (BloodPressure) -> AnnotatedString ){
     val (statUpperData, statLowerData) = statDataList.firstAndSecondOrNull()
     CustomDivider()
     if (statUpperData != null && statLowerData != null){
@@ -128,6 +129,7 @@ fun BloodPressureStatValueTable(statDataList: List<StatData>, format: (BloodPres
                 StatValueBpRow(stringResource(period.resId), statUpper, statLower, format)
             }
         }
+        StatValueRow(stringResource(R.string.me_gap), meGapStatValue, { it.toAnnotatedString("%.0f")})
     }
 
 }

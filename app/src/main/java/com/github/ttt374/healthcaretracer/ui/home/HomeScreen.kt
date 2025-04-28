@@ -126,7 +126,7 @@ fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn { // (reverseLayout = true) {
                 items(dailyItems.reversed()) { dailyItem ->
-                    DailyItemRow(dailyItem, guideline, config.dayPeriodCOnfig,
+                    DailyItemRow(dailyItem, guideline, config.dayPeriodConfig,
                         appNavigator::navigateToEdit,)
                 }
             }

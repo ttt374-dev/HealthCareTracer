@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Serializable
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
-    val dayPeriodCOnfig: DayPeriodConfig = DayPeriodConfig(),
+    val dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
     val targetVitals: Vitals = Vitals(bp = BloodPressure(120, 80), bodyWeight = 60.0)
 
     //val localeTag: String = "en_US"

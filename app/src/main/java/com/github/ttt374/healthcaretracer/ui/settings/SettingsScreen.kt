@@ -107,11 +107,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     DayPeriod.entries.forEach { dayPeriod ->
         if (dayPeriodDialogState[dayPeriod]?.isOpen == true){
-            LocalTimeDialog(config.dayPeriodCOnfig[dayPeriod],
+            LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
                 onTimeSelected = {
                     //val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
-                    val timeOfDayConfig = config.dayPeriodCOnfig.update(dayPeriod, it)
-                    viewModel.saveConfig(config.copy(dayPeriodCOnfig = timeOfDayConfig))
+                    val timeOfDayConfig = config.dayPeriodConfig.update(dayPeriod, it)
+                    viewModel.saveConfig(config.copy(dayPeriodConfig = timeOfDayConfig))
                 },
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
@@ -149,7 +149,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             }
             DayPeriod.entries.forEach { dayPeriod ->
                 SettingsRow(stringResource(dayPeriod.resId)){
-                    Text(config.dayPeriodCOnfig[dayPeriod].format(localTimeFormat),
+                    Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),
                     //Text(dayPeriod.takeStartValue(config.timeOfDayConfig).format(localTimeFormat),
                         modifier = Modifier.clickable { dayPeriodDialogState[dayPeriod]?.open() })
                 }

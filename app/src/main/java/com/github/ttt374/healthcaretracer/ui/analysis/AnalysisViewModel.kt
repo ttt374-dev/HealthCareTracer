@@ -55,11 +55,9 @@ enum class TimeRange(val days: Long?,  @StringRes val labelRes: Int) {
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRepository,
                                             private val statisticsRepository: StatisticsRepository,
-                                            private val configRepository: ConfigRepository,
-                                            //private val timeRangeRepository: TimeRangeRepository,
+                                            configRepository: ConfigRepository,
                                             private val preferencesRepository: PreferencesRepository,
                                             @DefaultMetricCategory defaultMetricType: MetricType) : ViewModel() {
-    //private val timeRangeFlow = timeRangeRepository.timeRangeFlow
     private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRange }
     val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
     private val _selectedMetricType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)

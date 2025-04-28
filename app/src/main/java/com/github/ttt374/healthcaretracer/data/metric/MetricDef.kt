@@ -65,10 +65,6 @@ object MetricDefs {
 /////////////
 // category
 
-internal fun <T> List<T>.secondOrNull(): T? {
-    return if (this.size > 1) this[1] else null
-}
-
 enum class MetricType(
     val resId: Int,
     val defs: List<MetricDef>
@@ -99,15 +95,15 @@ enum class MetricType(
         )
     )
 }
-object MetricDefRegistry {
-    val allDefs: List<MetricDef> = MetricType.entries.flatMap { it.defs }
-
-    fun getByCategory(category: MetricType): List<MetricDef> =
-        category.defs
-
-    fun getById(id: String): MetricDef? =
-        allDefs.find { it.id == id }
-}
+//object MetricDefRegistry {
+//    val allDefs: List<MetricDef> = MetricType.entries.flatMap { it.defs }
+//
+//    fun getByCategory(category: MetricType): List<MetricDef> =
+//        category.defs
+//
+//    fun getById(id: String): MetricDef? =
+//        allDefs.find { it.id == id }
+//}
 
 
 //data class MetricDef(

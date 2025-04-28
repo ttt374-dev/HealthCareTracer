@@ -17,7 +17,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
-import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -129,72 +128,23 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     )
 
     return this.withIndex().flatMap { (index, series) ->
-        val label = series.metricDef.resId.let { stringResource(it) } ?: ""
+        val label = series.metricDef.resId.let { stringResource(it) }
         val targetLabel = series.metricDef.targetResId?.let { stringResource(it) } ?: ""
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(
-//            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()).apply {
-//                val colors = series.actualEntries.map { entry ->
-//                    val instant = Instant.ofEpochMilli(entry.x.toLong())
-//
-//                    val delta = when (instant.toDayPeriod()) {
-//                        DayPeriod.Morning -> 0.2f
-//                        DayPeriod.Evening -> -0.2f
-//                        else -> 0.0f
-//                    }
-//                    color.adjustLightness(delta).toArgb()
-//                }
-//                circleColors = colors
-//            },
             LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
             LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true
             )
         )
     }
 }
-//@Composable
-//fun adjustForDarkMode(color: Color): Color {
-//    return if (isSystemInDarkTheme()) color.toDarkMode() else color
-//}
-
-//fun Instant.isMorning(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(), zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-//    val range = LocalTimeRange(timeOfDayConfig.morning, timeOfDayConfig.afternoon)
-//    return range.contains(this.toLocalTime(zoneId))
-//}
-//fun Instant.isEvening(timeOfDayConfig: TimeOfDayConfig = TimeOfDayConfig(), zoneId: ZoneId = ZoneId.systemDefault()): Boolean {
-//    val range = LocalTimeRange(timeOfDayConfig.evening, timeOfDayConfig.morning)
-//    return range.contains(this.toLocalTime(zoneId))
-//}
-
 fun Color.adjustForMode(isDarkMode: Boolean = false): Color {
     return if (isDarkMode) this.toDarkMode() else this
 }
-
 fun Color.toDarkMode(): Color {
     val r = 1f - red
     val g = 1f - green
     val b = 1f - blue
     return Color(r, g, b, alpha * 0.5f)
 }
-
-//fun Color.adjustLightness(delta: Float): Color {
-//    val hsl = FloatArray(3)
-//    ColorUtils.colorToHSL(this.toArgb(), hsl)
-//    hsl[2] = (hsl[2] + delta).coerceIn(0f, 1f) // 明度を加減
-//    return Color(ColorUtils.HSLToColor(hsl))
-//}
-
-
-//fun Color.toDarkMode(): Color {
-//    val hsv = FloatArray(3)
-//    // Color を ARGB Int に変換し、HSV に変換
-//    android.graphics.Color.colorToHSV(this.toArgb(), hsv)
-//
-//    // 明度(V)だけを下げる（例: 70% → 40% に）
-//    hsv[2] = hsv[2].coerceIn(0.0f, 1.0f) // 安全に範囲制限
-//    hsv[2] = max(0f, hsv[2] - 0.3f) // 明度を少し下げる
-//
-//    val darkColorInt = android.graphics.Color.HSVToColor(hsv)
-//    return Color(darkColorInt)
-//}

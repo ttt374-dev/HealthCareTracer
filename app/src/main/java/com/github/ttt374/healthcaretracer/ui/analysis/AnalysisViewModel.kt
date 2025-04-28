@@ -3,8 +3,12 @@ package com.github.ttt374.healthcaretracer.ui.analysis
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
+import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.StatData
+import com.github.ttt374.healthcaretracer.data.metric.StatValue
+import com.github.ttt374.healthcaretracer.data.metric.toMeGapStatValue
 import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
 import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
@@ -16,6 +20,7 @@ import com.github.ttt374.healthcaretracer.di.modules.ChartTimeRange
 import com.github.ttt374.healthcaretracer.di.modules.DefaultMetricCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +32,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class AnalysisViewModel @Inject constructor(private val itemRepository: ItemRepository,
                                             private val chartRepository: ChartRepository,
                                             private val statisticsRepository: StatisticsRepository,
@@ -53,11 +59,23 @@ class AnalysisViewModel @Inject constructor(private val itemRepository: ItemRepo
 //        return statisticsRepository.getStatDataListForMetricType(metricType)
 //            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 //    }
-    @OptIn(ExperimentalCoroutinesApi::class)
     val getStatDataList: StateFlow<List<StatData>> = selectedMetricType.flatMapLatest{ metricType ->
-        statisticsRepository.getStatDataListForMetricType(metricType)
+        timeRangeFlow.flatMapLatest { range ->
+            statisticsRepository.getStatDataListForMetricType(metricType, range.days)
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private fun getMeasuredValuesFlow(metricDef: MetricDef): Flow<List<MeasuredValue>> =
+        timeRangeRepository.timeRangeFlow.flatMapLatest { range ->
+            statisticsRepository.getMeasuredValuesFlow(metricDef, range.days)
+        }
+    val meGapStatValue: StateFlow<StatValue> =
+        configRepository.dataFlow.flatMapLatest { config ->
+            //val bpUpperDef = MetricDefRegistry.getById("bp_upper") ?: return@flatMapLatest flowOf(StatValue())
+            getMeasuredValuesFlow(MetricType.BLOOD_PRESSURE.defs.first()).map { measuredValues ->  // TODO: first() check
+                measuredValues.toMeGapStatValue(config.dayPeriodConfig)
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
     /////////////////////
     fun setMetricType(metricType: MetricType) {
         _selectedMetricType.value = metricType

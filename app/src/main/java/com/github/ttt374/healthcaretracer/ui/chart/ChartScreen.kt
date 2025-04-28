@@ -47,56 +47,56 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
-
-@Composable
-fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
-    val chartData by chartViewModel.chartData.collectAsState()
-    val selectedChartType by chartViewModel.selectedChartType.collectAsState()
-    val timeRange by chartViewModel.timeRange.collectAsState()
-
-    val pagerState = rememberPagerState(
-        initialPage = MetricType.entries.indexOf(selectedChartType),
-        pageCount = { MetricType.entries.size }
-    )
-
-    val coroutineScope = rememberCoroutineScope()
-    val onRangeSelected = { range: TimeRange -> chartViewModel.setSelectedRange(range)}
-
-    LaunchedEffect(Unit) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            page.toChartType()?.let { chartViewModel.setChartType(it) }
-        }
-    }
-
-    //////////////////////////////
-    Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
-        bottomBar = { CustomBottomAppBar(appNavigator) })
-    { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
-                Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
-            }
-            TabRow(selectedTabIndex = pagerState.currentPage) {
-                MetricType.entries.forEachIndexed { index, type ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        },
-                        text = { Text(stringResource(type.resId)) }
-                    )
-                }
-            }
-            // 選択されたタブに応じて異なるグラフを表示
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
-                HealthChart(chartData.chartSeriesList, timeRange)
-            }
-        }
-    }
-}
+//
+//@Composable
+//fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
+//    val chartData by chartViewModel.chartData.collectAsState()
+//    val selectedChartType by chartViewModel.selectedChartType.collectAsState()
+//    val timeRange by chartViewModel.timeRange.collectAsState()
+//
+//    val pagerState = rememberPagerState(
+//        initialPage = MetricType.entries.indexOf(selectedChartType),
+//        pageCount = { MetricType.entries.size }
+//    )
+//
+//    val coroutineScope = rememberCoroutineScope()
+//    val onRangeSelected = { range: TimeRange -> chartViewModel.setSelectedRange(range)}
+//
+//    LaunchedEffect(Unit) {
+//        snapshotFlow { pagerState.currentPage }.collect { page ->
+//            page.toChartType()?.let { chartViewModel.setChartType(it) }
+//        }
+//    }
+//
+//    //////////////////////////////
+//    Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
+//        bottomBar = { CustomBottomAppBar(appNavigator) })
+//    { innerPadding ->
+//        Column(modifier = Modifier.padding(innerPadding)) {
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//                TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
+//                Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
+//            }
+//            TabRow(selectedTabIndex = pagerState.currentPage) {
+//                MetricType.entries.forEachIndexed { index, type ->
+//                    Tab(
+//                        selected = pagerState.currentPage == index,
+//                        onClick = {
+//                            coroutineScope.launch {
+//                                pagerState.animateScrollToPage(index)
+//                            }
+//                        },
+//                        text = { Text(stringResource(type.resId)) }
+//                    )
+//                }
+//            }
+//            // 選択されたタブに応じて異なるグラフを表示
+//            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
+//                HealthChart(chartData.chartSeriesList, timeRange)
+//            }
+//        }
+//    }
+//}
 
 ////////////
 internal fun Int.toChartType(): MetricType? {

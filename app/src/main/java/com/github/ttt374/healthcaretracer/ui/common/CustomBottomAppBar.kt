@@ -20,8 +20,9 @@ fun CustomBottomAppBar (appNavigator: AppNavigator, floatingActionButton: @Compo
     val actions = listOf(
         BottomAction(Icons.Filled.Home, "home", appNavigator::navigateToHome),
         BottomAction(Icons.Filled.CalendarMonth, "calendar", appNavigator::navigateToCalendar),
-        BottomAction(Icons.AutoMirrored.Filled.ShowChart, "chart", appNavigator::navigateToChart),
-        BottomAction(Icons.Filled.Analytics, "statistics", appNavigator::navigateToStatistics),
+        BottomAction(Icons.AutoMirrored.Filled.ShowChart, "chart", appNavigator::navigateToAnalysis),
+        //BottomAction(Icons.AutoMirrored.Filled.ShowChart, "chart", appNavigator::navigateToChart),
+        //BottomAction(Icons.Filled.Analytics, "statistics", appNavigator::navigateToStatistics),
         BottomAction(Icons.Filled.Settings, "settings", appNavigator::navigateToSettings)
     )
     BottomAppBar(actions = {

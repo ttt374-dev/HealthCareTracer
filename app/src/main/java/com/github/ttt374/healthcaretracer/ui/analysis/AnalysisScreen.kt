@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.ui.analysis
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -38,7 +36,6 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import com.github.ttt374.healthcaretracer.ui.statistics.StatDataTable
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 enum class DisplayMode { CHART, STATISTICS }
@@ -49,6 +46,8 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
     val config by viewModel.config.collectAsState()
     val selectedMetricType by viewModel.selectedMetricType.collectAsState()
     val statDataList by viewModel.getStatDataList.collectAsState()
+    val meGapStatValue by viewModel.meGapStatValue.collectAsState()
+
     val timeRange by viewModel.timeRange.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val onRangeSelected = { range: TimeRange -> viewModel.setSelectedRange(range)}
@@ -92,7 +91,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                     DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
                     DisplayMode.STATISTICS -> {
                         Column(Modifier.fillMaxSize()){
-                            StatDataTable(selectedMetricType, statDataList, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+                            StatDataTable(selectedMetricType, statDataList, meGapStatValue, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
                         }
                     }
                 }

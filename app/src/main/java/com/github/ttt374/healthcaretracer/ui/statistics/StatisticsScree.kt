@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.statistics
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,86 +47,86 @@ fun <A, B> Pair<A?, B?>.forEachNonNull(action: (A, B) -> Unit) {
         action(first, second)
     }
 }
-
-@Composable
-fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
-    val config by viewModel.config.collectAsState()
-    val timeRange by viewModel.timeRange.collectAsState()
-    val metricType = MetricType.BLOOD_PRESSURE
-
-    val statDataList by viewModel.getStatDataListForMetricType(metricType).collectAsState()
-    val meGapStatValue by viewModel.meGapStatValue.collectAsState()  // TODO first check
-
-//    val statValueStateMap = viewModel.statValueMap.mapValues { (_, flow) ->
-//        flow.collectAsState().value
-//    }
-//    val dayPeriodStatValueStateMap = viewModel.dayPeriodStatMap.mapValues { (_, flow) ->
-//        flow.collectAsState().value
-//    }
-
-    val firstDate by viewModel.firstDate.collectAsState()
-
-
-//    val statDataMap: Map<MetricDef, StatData> = statValueStateMap.mapValues { (key, all) ->
-//        val byPeriod = dayPeriodStatValueStateMap[key] ?: emptyMap()
-//        StatData(all = all, byPeriod = byPeriod)
-//    }
-
-    Scaffold(
-        topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
-        bottomBar = { CustomBottomAppBar(appNavigator) }
-    ) { innerPadding ->
-        LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
-            item {
-                Row(modifier = Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
-                    Text(timeRange.toDisplayString( firstDate))
-                }
-            }
-            item {
-                BloodPressureStatDataTable(statDataList, meGapStatValue) { it.toAnnotatedString(config.bloodPressureGuideline, false) }
-
-            }
-//            statDataList.firstAndSecondOrNull().forEachNonNull { upper, lower ->
-//                item {
-//                    BloodPressureStatValueTable(upper, lower) { it.toAnnotatedString(showUnit = false)}
+//
+//@Composable
+//fun StatisticsScreen(viewModel: StatisticsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
+//    val config by viewModel.config.collectAsState()
+//    val timeRange by viewModel.timeRange.collectAsState()
+//    val metricType = MetricType.BLOOD_PRESSURE
+//
+//    val statDataList by viewModel.getStatDataListForMetricType(metricType).collectAsState()
+//    val meGapStatValue by viewModel.meGapStatValue.collectAsState()  // TODO first check
+//
+////    val statValueStateMap = viewModel.statValueMap.mapValues { (_, flow) ->
+////        flow.collectAsState().value
+////    }
+////    val dayPeriodStatValueStateMap = viewModel.dayPeriodStatMap.mapValues { (_, flow) ->
+////        flow.collectAsState().value
+////    }
+//
+//    val firstDate by viewModel.firstDate.collectAsState()
+//
+//
+////    val statDataMap: Map<MetricDef, StatData> = statValueStateMap.mapValues { (key, all) ->
+////        val byPeriod = dayPeriodStatValueStateMap[key] ?: emptyMap()
+////        StatData(all = all, byPeriod = byPeriod)
+////    }
+//
+//    Scaffold(
+//        topBar = { CustomTopAppBar(stringResource(R.string.statistics)) },
+//        bottomBar = { CustomBottomAppBar(appNavigator) }
+//    ) { innerPadding ->
+//        LazyColumn(modifier = Modifier.padding(innerPadding).padding(horizontal = 8.dp)){
+//            item {
+//                Row(modifier = Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+//                    TimeRangeDropdown(timeRange, onRangeSelected = { viewModel.setSelectedRange(it) })
+//                    Text(timeRange.toDisplayString( firstDate))
 //                }
 //            }
-
-//                statDataList.forEach { statData ->
-//                    MetricDefStatDataTable(statData)
-//                }
-
-
-            //items(MetricType.entries){ category ->
-//                when (metricType){
-//                    MetricType.BLOOD_PRESSURE -> {
-//                        val statUpper = statValueDataMap[MetricDefRegistry.getById("bp_upper")]
-//                        val statLower = statValueDataMap[MetricDefRegistry.getById("bp_lower")]
-//                        if (statUpper != null && statLower != null){
-//                            BloodPressureStatValueTable(statUpper, statLower, format = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
-//                        }
-//                        StatValueRow(stringResource(R.string.me_gap), meGapStatValue, { it.toAnnotatedString("%.0f")})
-//                    }
-//                    else -> {
-//                        MetricDefRegistry.getByCategory(metricType).forEach { def ->
-//                            statValueDataMap[def]?.let { statValueData ->
-//                                MetricDefStatValueTable(def, statValueData) }
-//                        }
-//                    }
-//                }
-            //}
-        }
-    }
-}
+//            item {
+//                BloodPressureStatDataTable(statDataList, meGapStatValue) { it.toAnnotatedString(config.bloodPressureGuideline, false) }
+//
+//            }
+////            statDataList.firstAndSecondOrNull().forEachNonNull { upper, lower ->
+////                item {
+////                    BloodPressureStatValueTable(upper, lower) { it.toAnnotatedString(showUnit = false)}
+////                }
+////            }
+//
+////                statDataList.forEach { statData ->
+////                    MetricDefStatDataTable(statData)
+////                }
+//
+//
+//            //items(MetricType.entries){ category ->
+////                when (metricType){
+////                    MetricType.BLOOD_PRESSURE -> {
+////                        val statUpper = statValueDataMap[MetricDefRegistry.getById("bp_upper")]
+////                        val statLower = statValueDataMap[MetricDefRegistry.getById("bp_lower")]
+////                        if (statUpper != null && statLower != null){
+////                            BloodPressureStatValueTable(statUpper, statLower, format = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+////                        }
+////                        StatValueRow(stringResource(R.string.me_gap), meGapStatValue, { it.toAnnotatedString("%.0f")})
+////                    }
+////                    else -> {
+////                        MetricDefRegistry.getByCategory(metricType).forEach { def ->
+////                            statValueDataMap[def]?.let { statValueData ->
+////                                MetricDefStatValueTable(def, statValueData) }
+////                        }
+////                    }
+////                }
+//            //}
+//        }
+//    }
+//}
 @Composable
 fun StatDataTable(metricType: MetricType, statDataList: List<StatData>,
                   meGapStatValue: StatValue? = null,
-                  bpToAnnotatedString: (BloodPressure) -> AnnotatedString = { it.toAnnotatedString(showUnit = false) } ){
+                  bpToAnnotatedString: (BloodPressure?) -> AnnotatedString = { it.toAnnotatedString(showUnit = false) } ){
     when (metricType){
         MetricType.BLOOD_PRESSURE -> {
             BloodPressureStatDataTable(statDataList, null, bpToAnnotatedString)
-            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it, { it.toAnnotatedString("%.f")}) }
+            meGapStatValue?.let { statValue -> StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")}) }
         }
         else -> {
             statDataList.forEach { statData ->
@@ -136,7 +137,7 @@ fun StatDataTable(metricType: MetricType, statDataList: List<StatData>,
 }
 @Composable
 fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: StatValue? = null,
-                               format: (BloodPressure) -> AnnotatedString = { it.toAnnotatedString(showUnit = false)} ){
+                               format: (BloodPressure?) -> AnnotatedString = { it.toAnnotatedString(showUnit = false)} ){
     val (statUpperData, statLowerData) = statDataList.firstAndSecondOrNull()
     CustomDivider()
     if (statUpperData != null && statLowerData != null){
@@ -154,24 +155,18 @@ fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: Sta
 
 }
 @Composable
-fun StatValueBpRow(label: String, statUpper: StatValue, statLower: StatValue, format: (BloodPressure) -> AnnotatedString ){
+fun StatValueBpRow(label: String, statUpper: StatValue, statLower: StatValue, format: (BloodPressure?) -> AnnotatedString ){
     Row {
         Text(label, Modifier.weight(1f))
         StatType.entries.forEach { statType ->
-            //val mod = Modifier.weight(statType.weight)
             val bp = (statType.selector(statUpper)?.toInt() to statType.selector(statLower)?.toInt()).toBloodPressure()
-            //Text(format(bp!!)) // TODO
-            bp?.let { Text(format(it), Modifier.weight(1f))}
+            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+                Text(format(bp))
+            }
         }
         Text(statUpper.count.toString(), Modifier.weight(.7f))
     }
 }
-//enum class StatTypeBp (val resId: Int, val selector: (StatValue) -> Number?){
-//    Average(R.string.average, { u, l -> u.avg?.let { upper -> l.avg?.let { lower -> BloodPressure(upper.toInt(), lower.toInt()) }}}),
-//    Max(R.string.max,  { u, l -> u.max?.let { upper -> l.max?.let { lower -> BloodPressure(upper.toInt(), lower.toInt()) }}}),
-//    Min(R.string.min,  { u, l -> u.min?.let { upper -> l.min?.let { lower -> BloodPressure(upper.toInt(), lower.toInt()) }}}),
-//    //Count(R.string.count, { u, l -> u.count }, 0.7f);
-//}
 
 @Composable
 fun MetricDefStatDataTable(statData: StatData){
@@ -207,14 +202,19 @@ fun StatValueHeadersRow(label: String){
 @Composable
 fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> AnnotatedString){
     Row {
-        Text(label, Modifier.weight(1f))
-        StatType.entries.forEach { statType ->
-            val mod = Modifier.weight(1f)
-            statType.format?.let { statFormat ->
-                Text(statFormat(statType.selector(statValue)), mod)
-            } ?:  Text(format(statType.selector(statValue)), mod)
+        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+            Text(label)
         }
-        Text(statValue.count.toDisplayString(), Modifier.weight(0.7f))
+        StatType.entries.forEach { statType ->
+            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+                statType.format?.let { statFormat ->
+                    Text(statFormat(statType.selector(statValue)))
+                } ?:  Text(format(statType.selector(statValue)))
+            }
+        }
+        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+            Text(statValue.count.toDisplayString())
+        }
     }
 }
 @Composable

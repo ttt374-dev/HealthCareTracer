@@ -9,12 +9,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.github.ttt374.healthcaretracer.ui.analysis.AnalysisScreen
 import com.github.ttt374.healthcaretracer.ui.calendar.CalendarScreen
-import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
 import com.github.ttt374.healthcaretracer.ui.settings.SettingsScreen
-import com.github.ttt374.healthcaretracer.ui.statistics.StatisticsScreen
 import java.time.LocalDate
 
 sealed class Screen(val route: String, val routeWithArgs: String = "") {
@@ -23,9 +21,9 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object EntryWithDate : Screen("entry", "entry/{date}")  // date is optional
     data object Edit : Screen("edit", "edit/{itemId}")
     data object Analysis: Screen("analysis")
-    data object Chart: Screen("chart")
+    //data object Chart: Screen("chart")
     data object Calendar: Screen("calendar")
-    data object Statistics: Screen("statistics")
+    //data object Statistics: Screen("statistics")
     data object Settings: Screen("settings")
 }
 
@@ -44,9 +42,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             EditScreen(appNavigator=appNavigator)
         }
         composable(Screen.Analysis.route) { AnalysisScreen(appNavigator=appNavigator)}
-        composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
+        //composable(Screen.Chart.route) { ChartScreen(appNavigator=appNavigator)}
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
-        composable(Screen.Statistics.route) { StatisticsScreen(appNavigator=appNavigator)}
+        //composable(Screen.Statistics.route) { StatisticsScreen(appNavigator=appNavigator)}
         composable(Screen.Settings.route) { SettingsScreen(appNavigator=appNavigator)}
     }
 }
@@ -58,8 +56,9 @@ class AppNavigator(private val navController: NavHostController){
     fun navigateToEntry(date: LocalDate? = null) =
         navigateTo(date?.let { "${Screen.EntryWithDate.route}/$date" } ?: Screen.Entry.route)
     fun navigateToEdit(itemId: Long) = navigateTo("${Screen.Edit.route}/$itemId")
-    fun navigateToChart() = navigateTo(Screen.Chart.route)
+    //fun navigateToChart() = navigateTo(Screen.Chart.route)
     fun navigateToCalendar() = navigateTo(Screen.Calendar.route)
-    fun navigateToStatistics() = navigateTo(Screen.Statistics.route)
+    //fun navigateToStatistics() = navigateTo(Screen.Statistics.route)
     fun navigateToSettings() = navigateTo(Screen.Settings.route)
+    fun navigateToAnalysis() = navigateTo(Screen.Analysis.route)
 }

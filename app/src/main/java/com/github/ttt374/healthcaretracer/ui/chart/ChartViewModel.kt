@@ -20,29 +20,29 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class)
-class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
-                                         @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
-                                         @DefaultMetricCategory defaultMetricType: MetricType
-) : ViewModel() {
-    val timeRangeFlow = timeRangeRepository.timeRangeFlow
-    val timeRange = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
-        private val _selectedChartType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
-    val selectedChartType: StateFlow<MetricType> = _selectedChartType.asStateFlow()
-
-    val chartData = timeRangeFlow.flatMapLatest { timeRange ->
-        selectedChartType.flatMapLatest { type ->
-            chartRepository.getChartDataFlow(type, timeRange)
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
-
-    fun setChartType(chartType: MetricType) {
-        _selectedChartType.value = chartType
-    }
-    fun setSelectedRange(range: TimeRange) {
-        viewModelScope.launch {
-            timeRangeRepository.setSelectedRange(range)
-        }
-    }
-}
+//@HiltViewModel
+//@OptIn(ExperimentalCoroutinesApi::class)
+//class ChartViewModel @Inject constructor(private val chartRepository: ChartRepository,
+//                                         @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
+//                                         @DefaultMetricCategory defaultMetricType: MetricType
+//) : ViewModel() {
+//    val timeRangeFlow = timeRangeRepository.timeRangeFlow
+//    val timeRange = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
+//        private val _selectedChartType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
+//    val selectedChartType: StateFlow<MetricType> = _selectedChartType.asStateFlow()
+//
+//    val chartData = timeRangeFlow.flatMapLatest { timeRange ->
+//        selectedChartType.flatMapLatest { type ->
+//            chartRepository.getChartDataFlow(type, timeRange)
+//        }
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
+//
+//    fun setChartType(chartType: MetricType) {
+//        _selectedChartType.value = chartType
+//    }
+//    fun setSelectedRange(range: TimeRange) {
+//        viewModelScope.launch {
+//            timeRangeRepository.setSelectedRange(range)
+//        }
+//    }
+//}

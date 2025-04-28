@@ -1,8 +1,6 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
 
-import java.time.ZoneId
-
 //////////
 data class StatValue(
     val avg: Double? = null,

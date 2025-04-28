@@ -41,7 +41,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import kotlinx.coroutines.launch
 
-enum class DisplayMode { CHART, STATISTICS ; companion object { val Default = CHART}}
+enum class DisplayMode(val resId: Int) { CHART(R.string.chart), STATISTICS(R.string.statistics) ; companion object { val Default = CHART}}
 
 @Composable
 fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator: AppNavigator){
@@ -138,12 +138,7 @@ fun ToggleDisplayMode(
         options = DisplayMode.entries,
         selectedOption = displayMode,
         onOptionSelected = onDisplayModeChange,
-        optionText = { mode ->
-            when (mode) {
-                DisplayMode.CHART -> "Chart"
-                DisplayMode.STATISTICS -> "Statistics"
-            }
-        }
+        optionText = { mode -> stringResource(mode.resId) },
     )
 }
 
@@ -154,6 +149,7 @@ fun <T> SegmentedButtonGroup(
     onOptionSelected: (T) -> Unit,
     optionText: @Composable (T) -> String
 ) {
+    val paddingDp = 3.dp
     Row(
         modifier = Modifier
             .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
@@ -162,8 +158,8 @@ fun <T> SegmentedButtonGroup(
         options.forEachIndexed { index, option ->
             val isSelected = option == selectedOption
             val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
-                options.lastIndex -> RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                0 -> RoundedCornerShape(topStart = paddingDp, bottomStart = paddingDp)
+                options.lastIndex -> RoundedCornerShape(topEnd = paddingDp, bottomEnd = paddingDp)
                 else -> RoundedCornerShape(0.dp)
             }
             Button(
@@ -174,7 +170,7 @@ fun <T> SegmentedButtonGroup(
                 } else {
                     ButtonDefaults.outlinedButtonColors()
                 },
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(horizontal = paddingDp, vertical = paddingDp),
                 modifier = Modifier.weight(1f)
             ) {
                 Text(

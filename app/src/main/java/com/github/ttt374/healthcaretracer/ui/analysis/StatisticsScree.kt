@@ -24,11 +24,13 @@ import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.github.ttt374.healthcaretracer.shared.toDisplayString
 
+//fun Any?.toAnnotatedString(format: String) : AnnotatedString = AnnotatedString("--fallback--")
+
 enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val format: ((Number?) -> AnnotatedString)? = null){
     Average(R.string.average, { it.avg }, { it.toAnnotatedString("%.1f")} ),
     Max(R.string.max, { it.max }),
     Min(R.string.min, { it.min }),
-    //Count(R.string.count, { it.count }, 0.7f);
+    Count(R.string.count, { it.count }, { it.toAnnotatedString("%d")});
 }
 //////////////////////////
 @Composable
@@ -37,8 +39,8 @@ fun StatDataTable(metricType: MetricType, statDataList: List<StatData>,
                   bpToAnnotatedString: (BloodPressure?) -> AnnotatedString = { it.toAnnotatedString(showUnit = false) } ){
     when (metricType){
         MetricType.BLOOD_PRESSURE -> {
-            BloodPressureStatDataTable(statDataList, null, bpToAnnotatedString)
-            meGapStatValue?.let { statValue -> StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")}) }
+            BloodPressureStatDataTable(statDataList, meGapStatValue, bpToAnnotatedString)
+            //meGapStatValue?.let { statValue -> StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")}) }
         }
         else -> {
             statDataList.forEach { statData ->
@@ -54,15 +56,17 @@ fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: Sta
     CustomDivider()
     if (statUpperData != null && statLowerData != null){
         StatValueHeadersRow(stringResource(R.string.blood_pressure))
+        CustomDivider()
         StatValueBpRow(stringResource(R.string.all), statUpperData.all, statLowerData.all, format)
         statUpperData.byPeriod.forEach { (period, statUpper) ->
             statLowerData.byPeriod[period]?.let { statLower ->
                 StatValueBpRow(stringResource(period.resId), statUpper, statLower, format)
             }
         }
-        meGapStatValue?.let {
-            StatValueRow(stringResource(R.string.me_gap), it, { it.toAnnotatedString("%.0f")})
+        meGapStatValue?.let { statValue ->
+            StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")})
         }
+        CustomDivider()
     }
 
 }
@@ -73,10 +77,15 @@ fun StatValueBpRow(label: String, statUpper: StatValue, statLower: StatValue, fo
         StatType.entries.forEach { statType ->
             val bp = (statType.selector(statUpper)?.toInt() to statType.selector(statLower)?.toInt()).toBloodPressure()
             Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
-                Text(format(bp))
+                statType.format?.let { statFormat ->
+                    Text(statFormat(statType.selector(statUpper)))
+                } ?:  Text(format(bp))
+                    //Text(format(bp))
             }
         }
-        Text(statUpper.count.toString(), Modifier.weight(.7f))
+//        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+//            Text(statUpper.count.toString())
+//        }
     }
 }
 
@@ -85,10 +94,12 @@ fun MetricDefStatDataTable(statData: StatData){
     CustomDivider()
     with(statData){
         StatValueHeadersRow(stringResource(metricDef.resId))
+        CustomDivider()
         StatValueRow(stringResource(R.string.all), all, metricDef.format)
         byPeriod.forEach { (period, statValue) ->
             StatValueRow(stringResource(period.resId), statValue, metricDef.format)
         }
+        CustomDivider()
     }
 }
 
@@ -99,9 +110,11 @@ fun StatValueHeadersRow(label: String){
         //val modCount = Modifier.weight(0.7f)
         Text(label, mod, fontWeight = FontWeight.Bold)
         StatType.entries.forEach {
-            Text(stringResource(it.resId), Modifier.weight(1f))
+            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+                Text(stringResource(it.resId))
+            }
         }
-        Text(stringResource(R.string.count), Modifier.weight(0.7f))
+        //Text(stringResource(R.string.count), Modifier.weight(0.7f))
     }
 }
 @Composable
@@ -117,14 +130,14 @@ fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> Annot
                 } ?:  Text(format(statType.selector(statValue)))
             }
         }
-        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
-            Text(statValue.count.toDisplayString())
-        }
+//        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+//            Text(statValue.count.toDisplayString())
+//        }
     }
 }
 @Composable
-internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingTop: Dp = 8.dp){
-    HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(top = paddingTop))
+internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingVertical: Dp = 4.dp){
+    HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(vertical = paddingVertical))
 }
 fun <T> List<T>.firstAndSecondOrNull(): Pair<T?, T?> {
     return if (this.size > 1) {

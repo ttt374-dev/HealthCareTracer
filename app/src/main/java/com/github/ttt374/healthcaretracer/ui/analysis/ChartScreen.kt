@@ -42,7 +42,8 @@ fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yy
     description.isEnabled = false
 
     val dataStart = data?.xMin?.toLong() ?: return
-    val end = data?.xMax?.toLong() ?: return
+    //val dataEnd = data?.xMax?.toLong() ?: return
+    val end = Instant.now().toEpochMilli()
 
     val start = timeRange.startDate()?.toEpochMilli() ?: dataStart
     val totalDays = ((end - start) / 86400000L).coerceAtLeast(1)
@@ -58,6 +59,7 @@ fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yy
         this.labelRotationAngle = labelRotationAngle
         setAvoidFirstLastClipping(true)
         axisMinimum = start.toFloat()
+        axisMaximum = Instant.now().toEpochMilli().toFloat()
         // X軸のラベル間隔を調整
         setLabelCount(5, true) // ラベル数を減らしてみる
     }

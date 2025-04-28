@@ -3,7 +3,11 @@ package com.github.ttt374.healthcaretracer.data.repository
 import androidx.room.Transaction
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
+import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
@@ -43,4 +47,17 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
         }
     }
     //suspend fun getFirstDate(): Instant? = itemDao.getFirstDate()
+    // measured value
+    fun getMeasuredValuesFlow(metric: MetricDef, days: Long? = null): Flow<List<MeasuredValue>> {
+        return getRecentItemsFlow(days)
+            .map { items ->
+                items.toMeasuredValue(metric.selector)
+//                items.mapNotNull { item ->
+//                    metric.selector(item.vitals)?.let { value -> MeasuredValue(item.measuredAt, value) }
+//                }
+            }
+    }
+}
+fun List<Item>.toMeasuredValue(selector: (Vitals) -> Double?) = this.mapNotNull { item ->
+    selector(item.vitals)?.let { MeasuredValue(item.measuredAt, it) }
 }

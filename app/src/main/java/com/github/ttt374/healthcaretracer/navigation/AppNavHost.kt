@@ -12,7 +12,6 @@ import com.github.ttt374.healthcaretracer.ui.chart.ChartScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
 import com.github.ttt374.healthcaretracer.ui.home.HomeScreen
-import com.github.ttt374.healthcaretracer.ui.metric.MetricScreen
 import com.github.ttt374.healthcaretracer.ui.settings.SettingsScreen
 import com.github.ttt374.healthcaretracer.ui.statistics.StatisticsScreen
 import java.time.LocalDate
@@ -46,7 +45,6 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(Screen.Calendar.route) { CalendarScreen(appNavigator=appNavigator)}
         composable(Screen.Statistics.route) { StatisticsScreen(appNavigator=appNavigator)}
         composable(Screen.Settings.route) { SettingsScreen(appNavigator=appNavigator)}
-        composable("metric"){ MetricScreen()}
     }
 }
 class AppNavigator(private val navController: NavHostController){

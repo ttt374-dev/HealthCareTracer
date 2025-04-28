@@ -1,6 +1,8 @@
 package com.github.ttt374.healthcaretracer.ui.analysis
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,8 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -22,6 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,12 +37,9 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.ui.chart.HealthChart
-import com.github.ttt374.healthcaretracer.ui.chart.toChartType
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
-import com.github.ttt374.healthcaretracer.ui.statistics.StatDataTable
 import kotlinx.coroutines.launch
 
 enum class DisplayMode { CHART, STATISTICS }
@@ -56,11 +60,14 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
         pageCount = { MetricType.entries.size }
     )
     val displayMode by viewModel.displayMode.collectAsState()
-    LaunchedEffect(Unit) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+        .collect { page ->
             page.toChartType()?.let { viewModel.setMetricType(it) }
         }
     }
+
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.analysis)) },
         bottomBar = { CustomBottomAppBar(appNavigator) })
     { innerPadding ->
@@ -69,7 +76,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                 TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
                 Spacer(modifier = Modifier.weight(1f))
                 // Chart / Statistics 切り替えボタン
-                ToggleButton(displayMode = displayMode, onModeChange = { viewModel.setDisplayMode(it) })
+                ToggleDisplayMode(displayMode = displayMode, { viewModel.setDisplayMode(it) })
                 //Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
             }
             TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -90,7 +97,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                 when (displayMode) {
                     DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
                     DisplayMode.STATISTICS -> {
-                        Column(Modifier.fillMaxSize()){
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
                             StatDataTable(selectedMetricType, statDataList, meGapStatValue, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
                         }
                     }
@@ -103,18 +110,70 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
 @Composable
 fun ToggleButton(displayMode: DisplayMode, onModeChange: (DisplayMode) -> Unit) {
     Row {
-        Button(
-            onClick = { onModeChange(DisplayMode.CHART) },
-            colors = if (displayMode == DisplayMode.CHART) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors()
-        ) {
-            Text("Chart")
+        listOf(DisplayMode.CHART, DisplayMode.STATISTICS).forEach { mode ->
+            Button(
+                onClick = { onModeChange(mode) },
+                colors = if (displayMode == mode) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) {
+                Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
+            }
         }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(
-            onClick = { onModeChange(DisplayMode.STATISTICS) },
-            colors = if (displayMode == DisplayMode.STATISTICS) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors()
-        ) {
-            Text("Statistics")
+    }
+}
+@Composable
+fun ToggleDisplayMode(
+    displayMode: DisplayMode,
+    onDisplayModeChange: (DisplayMode) -> Unit
+) {
+    SegmentedButtonGroup(
+        options = DisplayMode.entries,
+        selectedOption = displayMode,
+        onOptionSelected = onDisplayModeChange,
+        optionText = { mode ->
+            when (mode) {
+                DisplayMode.CHART -> "Chart"
+                DisplayMode.STATISTICS -> "Statistics"
+            }
+        }
+    )
+}
+
+@Composable
+fun <T> SegmentedButtonGroup(
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    optionText: @Composable (T) -> String
+) {
+    Row(
+        modifier = Modifier
+            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+    ) {
+        options.forEachIndexed { index, option ->
+            val isSelected = option == selectedOption
+            val shape = when (index) {
+                0 -> RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                options.lastIndex -> RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                else -> RoundedCornerShape(0.dp)
+            }
+            Button(
+                onClick = { onOptionSelected(option) },
+                shape = shape,
+                colors = if (isSelected) {
+                    ButtonDefaults.buttonColors()
+                } else {
+                    ButtonDefaults.outlinedButtonColors()
+                },
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = optionText(option),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }

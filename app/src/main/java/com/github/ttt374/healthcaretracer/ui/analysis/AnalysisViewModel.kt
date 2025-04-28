@@ -33,8 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
-class AnalysisViewModel @Inject constructor(private val itemRepository: ItemRepository,
-                                            private val chartRepository: ChartRepository,
+class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRepository,
                                             private val statisticsRepository: StatisticsRepository,
                                             private val configRepository: ConfigRepository,
                                             @ChartTimeRange private val timeRangeRepository: TimeRangeRepository,
@@ -48,17 +47,12 @@ class AnalysisViewModel @Inject constructor(private val itemRepository: ItemRepo
     val displayMode: StateFlow<DisplayMode> = _displayMode.asStateFlow()
     val config: StateFlow<Config> = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val chartData = timeRangeFlow.flatMapLatest { timeRange ->
         selectedMetricType.flatMapLatest { type ->
             chartRepository.getChartDataFlow(type, timeRange)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
 
-//    fun getStatDataListForMetricType(metricType: MetricType): StateFlow<List<StatData>>{
-//        return statisticsRepository.getStatDataListForMetricType(metricType)
-//            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-//    }
     val getStatDataList: StateFlow<List<StatData>> = selectedMetricType.flatMapLatest{ metricType ->
         timeRangeFlow.flatMapLatest { range ->
             statisticsRepository.getStatDataListForMetricType(metricType, range.days)
@@ -71,11 +65,11 @@ class AnalysisViewModel @Inject constructor(private val itemRepository: ItemRepo
         }
     val meGapStatValue: StateFlow<StatValue> =
         configRepository.dataFlow.flatMapLatest { config ->
-            //val bpUpperDef = MetricDefRegistry.getById("bp_upper") ?: return@flatMapLatest flowOf(StatValue())
             getMeasuredValuesFlow(MetricType.BLOOD_PRESSURE.defs.first()).map { measuredValues ->  // TODO: first() check
                 measuredValues.toMeGapStatValue(config.dayPeriodConfig)
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
+
     /////////////////////
     fun setMetricType(metricType: MetricType) {
         _selectedMetricType.value = metricType
@@ -88,7 +82,4 @@ class AnalysisViewModel @Inject constructor(private val itemRepository: ItemRepo
             timeRangeRepository.setSelectedRange(range)
         }
     }
-
-
-
 }

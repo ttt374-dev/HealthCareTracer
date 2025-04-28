@@ -1,102 +1,29 @@
-package com.github.ttt374.healthcaretracer.ui.chart
+package com.github.ttt374.healthcaretracer.ui.analysis
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
-import com.github.ttt374.healthcaretracer.data.metric.firstDate
-import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.data.repository.TimeRange
-import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
-import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
-import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
-import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
-//
-//@Composable
-//fun ChartScreen(chartViewModel: ChartViewModel = hiltViewModel(), appNavigator: AppNavigator){
-//    val chartData by chartViewModel.chartData.collectAsState()
-//    val selectedChartType by chartViewModel.selectedChartType.collectAsState()
-//    val timeRange by chartViewModel.timeRange.collectAsState()
-//
-//    val pagerState = rememberPagerState(
-//        initialPage = MetricType.entries.indexOf(selectedChartType),
-//        pageCount = { MetricType.entries.size }
-//    )
-//
-//    val coroutineScope = rememberCoroutineScope()
-//    val onRangeSelected = { range: TimeRange -> chartViewModel.setSelectedRange(range)}
-//
-//    LaunchedEffect(Unit) {
-//        snapshotFlow { pagerState.currentPage }.collect { page ->
-//            page.toChartType()?.let { chartViewModel.setChartType(it) }
-//        }
-//    }
-//
-//    //////////////////////////////
-//    Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.chart)) },
-//        bottomBar = { CustomBottomAppBar(appNavigator) })
-//    { innerPadding ->
-//        Column(modifier = Modifier.padding(innerPadding)) {
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//                TimeRangeDropdown(timeRange, onRangeSelected, modifier = Modifier.padding(4.dp))
-//                Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
-//            }
-//            TabRow(selectedTabIndex = pagerState.currentPage) {
-//                MetricType.entries.forEachIndexed { index, type ->
-//                    Tab(
-//                        selected = pagerState.currentPage == index,
-//                        onClick = {
-//                            coroutineScope.launch {
-//                                pagerState.animateScrollToPage(index)
-//                            }
-//                        },
-//                        text = { Text(stringResource(type.resId)) }
-//                    )
-//                }
-//            }
-//            // 選択されたタブに応じて異なるグラフを表示
-//            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
-//                HealthChart(chartData.chartSeriesList, timeRange)
-//            }
-//        }
-//    }
-//}
+
 
 ////////////
 internal fun Int.toChartType(): MetricType? {

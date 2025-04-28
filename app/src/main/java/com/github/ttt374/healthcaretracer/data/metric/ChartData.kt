@@ -1,7 +1,7 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
 import com.github.mikephil.charting.data.Entry
-import com.github.ttt374.healthcaretracer.ui.chart.toInstant
+import com.github.ttt374.healthcaretracer.ui.analysis.toInstant
 import java.time.Instant
 
 data class ChartData(val metricType: MetricType, val chartSeriesList: List<ChartSeries> = emptyList())

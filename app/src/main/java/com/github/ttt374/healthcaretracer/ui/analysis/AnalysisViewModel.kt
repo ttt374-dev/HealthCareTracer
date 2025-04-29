@@ -66,9 +66,6 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     val selectedMetricType: StateFlow<MetricType> = _selectedMetricType.asStateFlow()
 
     val displayMode: StateFlow<DisplayMode> = preferencesRepository.dataFlow.map { it.displayMode }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DisplayMode.Default)
-    //val displayMode: StateFlow<DisplayMode> = _displayMode.asStateFlow()
-//    private val _displayMode: MutableStateFlow<DisplayMode> = MutableStateFlow(DisplayMode.CHART)
-//    val displayMode: StateFlow<DisplayMode> = _displayMode.asStateFlow()
 
     val config: StateFlow<Config> = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
     // ローディング状態を追加
@@ -79,7 +76,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     private val statCache = mutableStateMapOf<Pair<MetricType, TimeRange>, StatData<MetricValue>>()
 
     private val _chartData = MutableStateFlow(ChartData(defaultMetricType))
-    val chartData: StateFlow<ChartData> = _chartData
+    val chartData: StateFlow<ChartData> = _chartData.asStateFlow()
 
     private val _statData = MutableStateFlow(StatData<MetricValue>(metricType = defaultMetricType))
     val statData: StateFlow<StatData<MetricValue>> = _statData.asStateFlow()
@@ -173,7 +170,6 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
         _selectedMetricType.value = metricType
     }
     fun setDisplayMode(displayMode: DisplayMode) {
-        //_displayMode.value = displayMode
         viewModelScope.launch {
             preferencesRepository.updateData { it.copy(displayMode = displayMode) }
         }
@@ -181,7 +177,6 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     fun setSelectedRange(range: TimeRange) {
         viewModelScope.launch {
             preferencesRepository.updateData { it.copy(timeRange = range)}
-            //timeRangeRepository.setSelectedRange(range)
         }
     }
 }

@@ -27,7 +27,7 @@ import com.github.ttt374.healthcaretracer.data.metric.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 
-enum class StatType (val resId: Int, val selector: (StatValue) -> MetricValue?, val format: ((MetricValue?) -> AnnotatedString)? = null){
+enum class StatType (val resId: Int, val selector: (StatValue<MetricValue>) -> MetricValue?, val format: ((MetricValue?) -> AnnotatedString)? = null){
     Average(R.string.average, { it.avg } ),
     Max(R.string.max, { it.max  }),
     Min(R.string.min, { it.min  }),
@@ -40,8 +40,8 @@ enum class StatType (val resId: Int, val selector: (StatValue) -> MetricValue?, 
 }
 //////////////////////////
 @Composable
-fun StatDataTable(metricType: MetricType, statData: StatData,
-                  meGapStatValue: StatValue? = null,
+fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
+                  meGapStatValue: StatValue<MetricValue>? = null,
                   bpToAnnotatedString: (BloodPressure?) -> AnnotatedString = { it.toAnnotatedString(showUnit = false) } ){
     CustomDivider()
     with(statData){
@@ -84,7 +84,7 @@ fun StatValueHeadersRow(label: String){
     }
 }
 @Composable
-fun StatValueRow(label: String, statValue: StatValue, format: (MetricValue?) -> AnnotatedString = { it.toAnnotatedString()}){
+fun StatValueRow(label: String, statValue: StatValue<MetricValue>, format: (MetricValue?) -> AnnotatedString = { it.toAnnotatedString()}){
     Row {
         Box(contentAlignment = Alignment.CenterStart, modifier=Modifier.weight(1f)){
             Text(label)

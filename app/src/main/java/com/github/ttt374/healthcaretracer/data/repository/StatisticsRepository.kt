@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.data.repository
 import com.github.ttt374.healthcaretracer.data.item.meGap
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
+import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.data.metric.toDayPeriod
@@ -23,19 +24,19 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
 //        return getStatData(type, days)
 //        //return combine( type.defs.map { getStatData(it, days)}){ it.toList()}
 //    }
-    fun getStatData(type: MetricType, days: Long? = null): Flow<StatData> {
+    fun getStatData(type: MetricType, days: Long? = null): Flow<StatData<MetricValue>> {
         return getStatValueFlow(type, days).flatMapLatest { allStat ->
             getDayPeriodStatValueFlow(type, days).map { byPeriodStat ->
                 StatData(metricType = type, all = allStat, byPeriod = byPeriodStat)
             }
         }
     }
-    private fun getStatValueFlow(metricType: MetricType, days: Long?): Flow<StatValue> {
+    private fun getStatValueFlow(metricType: MetricType, days: Long?): Flow<StatValue<MetricValue>> {
         return itemRepository.getMeasuredValuesFlow(metricType, days).map { items ->
             items.map { it.value }.toStatValue()
         }
     }
-    private fun getDayPeriodStatValueFlow(metricType: MetricType, days: Long?): Flow<Map<DayPeriod, StatValue>> {
+    private fun getDayPeriodStatValueFlow(metricType: MetricType, days: Long?): Flow<Map<DayPeriod, StatValue<MetricValue>>> {
         return dayPeriodConfigFlow.flatMapLatest { dayPeriodConfig ->
             itemRepository.getMeasuredValuesFlow(metricType, days).map { list ->
                 val grouped = list.groupBy { (measuredAt, _) ->
@@ -47,7 +48,7 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
             }
         }
     }
-    fun getMeGapStatValueFlow(days: Long? = null): Flow<StatValue>  {
+    fun getMeGapStatValueFlow(days: Long? = null): Flow<StatValue<MetricValue>>  {
         return  dayPeriodConfigFlow.flatMapLatest { dayPeriodConfig ->
             itemRepository.getRecentItemsFlow(days).map { list ->
                 list.toDailyItemList().mapNotNull { it.meGap(dayPeriodConfig)?.toMetricNumber()}.toStatValue()

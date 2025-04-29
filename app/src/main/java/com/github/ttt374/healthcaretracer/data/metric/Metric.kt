@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
+import android.util.Log
 import androidx.compose.ui.text.AnnotatedString
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
@@ -16,7 +17,8 @@ data class MeasuredValue(
 fun MeasuredValue.toEntries(): Entry {
     return when (value){
         is MetricDouble -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
-        is MetricBloodPressure -> Entry() // TODO: measuredAt.toEpochMilli().toFloat(), value.toFloat())
+        else -> { Log.d("toEntry", "only works for MetricDouble"); Entry() }
+        //is MetricBloodPressure -> Entry() // TODO: measuredAt.toEpochMilli().toFloat(), value.toFloat())
         //is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
         //else -> Entry() // TODOx
     }

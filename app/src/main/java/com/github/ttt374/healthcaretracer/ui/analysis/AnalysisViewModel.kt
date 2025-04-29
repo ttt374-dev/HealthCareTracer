@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
+import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.data.repository.ChartRepository
@@ -83,7 +84,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
 
-    val statData: StateFlow<StatData> = selectedMetricType.flatMapLatest{ metricType ->
+    val statData: StateFlow<StatData<MetricValue>> = selectedMetricType.flatMapLatest{ metricType ->
         timeRangeFlow.flatMapLatest { range ->
             _isLoading.value = true
             statisticsRepository.getStatData(metricType, range.days).onEach {
@@ -93,7 +94,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = MetricType.HEART))  // TODO Default
 
     /// M-E gap
-    val meGapStatValue: StateFlow<StatValue> = statisticsRepository.getMeGapStatValueFlow()
+    val meGapStatValue: StateFlow<StatValue<MetricValue>> = statisticsRepository.getMeGapStatValueFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
 
     /////////////////////

@@ -16,13 +16,13 @@ data class StatData<T> (val metricType: MetricType = MetricType.BLOOD_PRESSURE, 
 fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
 fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
     return when (this.firstOrNull()){
-        is MetricDouble -> {
-            val list = this.map { (it as MetricDouble).value }
+        is MetricValue.Double -> {
+            val list = this.map { (it as MetricValue.Double).value }
             StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
-        is MetricBloodPressure -> {
-            val upperStatValue = this.map { (it as MetricBloodPressure).value.upper.toDouble() }.toStatValue()
-            val lowerStatValue = this.map { (it as MetricBloodPressure).value.lower.toDouble() }.toStatValue()
+        is MetricValue.BloodPressure -> {
+            val upperStatValue = this.map { (it as MetricValue.BloodPressure).value.upper.toDouble() }.toStatValue()
+            val lowerStatValue = this.map { (it as MetricValue.BloodPressure).value.lower.toDouble() }.toStatValue()
 
             StatValue(
                 avg = (upperStatValue.avg to lowerStatValue.avg).toBloodPressure()?.toMetricValue(),

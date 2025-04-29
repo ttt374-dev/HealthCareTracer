@@ -17,8 +17,6 @@ import androidx.compose.ui.unit.dp
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.metric.MetricBloodPressure
-import com.github.ttt374.healthcaretracer.data.metric.MetricDouble
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
@@ -33,7 +31,7 @@ enum class StatType (val resId: Int, val selector: (StatValue<MetricValue>) -> M
     Min(R.string.min, { it.min  }),
     Count(R.string.count, { it.count.toMetricValue() }, {
         when (it){
-            is MetricDouble ->  it.value.toInt().toAnnotatedString("%d")
+            is MetricValue.Double ->  it.value.toInt().toAnnotatedString("%d")
             else -> AnnotatedString("-")
         }
     });
@@ -50,8 +48,8 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
         val format = when (metricType){
             MetricType.BLOOD_PRESSURE -> { mv: MetricValue? ->
                 when (mv){
-                    is MetricDouble -> { mv.value.toAnnotatedString()}
-                    is MetricBloodPressure -> { bpToAnnotatedString(mv.value) }
+                    is MetricValue.Double -> { mv.value.toAnnotatedString()}
+                    is MetricValue.BloodPressure -> { bpToAnnotatedString(mv.value) }
                     //is MetricBloodPressure -> { mv.value.toAnnotatedString(showUnit = false)}
                     null -> { AnnotatedString("-")}
                 }

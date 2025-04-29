@@ -7,8 +7,7 @@ import com.github.ttt374.healthcaretracer.data.metric.toEntries
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
-import com.github.ttt374.healthcaretracer.data.metric.MetricBloodPressure
-import com.github.ttt374.healthcaretracer.data.metric.MetricDouble
+import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
 import com.github.ttt374.healthcaretracer.ui.analysis.TimeRange
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,11 +36,11 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
                 MetricType.BLOOD_PRESSURE -> {
                     itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
                         val upperEntries = list.map { mv ->
-                            MeasuredValue(mv.measuredAt, (mv.value as MetricBloodPressure).value.upper.toMetricValue())  // TODO cast check
+                            MeasuredValue(mv.measuredAt, (mv.value as MetricValue.BloodPressure).value.upper.toMetricValue())  // TODO cast check
                         }.toEntries()
                         val upperTargetEntries = targetValues.bp?.upper?.let { tv -> upperEntries.toTargetEntries(tv, timeRange) }
                         val lowerEntries = list.map { mv ->
-                            MeasuredValue(mv.measuredAt, (mv.value as MetricBloodPressure).value.lower.toMetricValue())
+                            MeasuredValue(mv.measuredAt, (mv.value as MetricValue.BloodPressure).value.lower.toMetricValue())
                         }.toEntries()
                         val lowerTargetEntries = targetValues.bp?.lower?.let { tv -> lowerEntries.toTargetEntries(tv, timeRange) }
                         ChartData(metricType, listOf(
@@ -54,7 +53,7 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
                     itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
                     //getChartSeriesFlow(metricType, timeRange, targetValues).map {
                         val actualEntries = list.toEntries()
-                        val targetEntries = metricType.selector(targetValues)?.let { mv -> actualEntries.toTargetEntries((mv as MetricDouble).value, timeRange )}
+                        val targetEntries = metricType.selector(targetValues)?.let { mv -> actualEntries.toTargetEntries((mv as MetricValue.Double).value, timeRange )}
                         ChartData(metricType, listOf(ChartSeries(metricType.resId, actualEntries, targetEntries)))
                     }
                 }

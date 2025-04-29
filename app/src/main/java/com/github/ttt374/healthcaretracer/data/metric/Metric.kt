@@ -16,14 +16,14 @@ data class MeasuredValue(
 )
 fun MeasuredValue.toEntries(): Entry {
     return when (value){
-        is MetricDouble -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
+        is MetricValue.Double -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
         else -> { Log.d("toEntry", "only works for MetricDouble"); Entry() }
         //is MetricBloodPressure -> Entry() // TODO: measuredAt.toEpochMilli().toFloat(), value.toFloat())
         //is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
         //else -> Entry() // TODOx
     }
 }
-fun Double.toMetricNumber() = MetricDouble(value = this)
+fun Double.toMetricNumber() = MetricValue.Double(value = this)
 
 fun List<MeasuredValue>.toEntries(): List<Entry> {
     return map { it.toEntries() }
@@ -35,18 +35,20 @@ fun List<MeasuredValue>.toEntries(): List<Entry> {
 
 sealed class MetricValue {
     abstract fun format(): AnnotatedString
-}
-data class MetricDouble(val value: Double) : MetricValue(){
-    override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
-}
-data class MetricBloodPressure(val value: BloodPressure) : MetricValue(){
-    override fun format() = value.toAnnotatedString()
+
+    data class Double(val value: kotlin.Double) : MetricValue(){
+        override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
+    }
+    data class BloodPressure(val value: com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure) : MetricValue(){
+        override fun format() = value.toAnnotatedString()
+    }
+
 }
 
 //internal fun Int.toMetricValue() = MetricDouble(this.toDouble())
 //internal fun Double.toMetricValue() = MetricDouble(this)
-fun Number.toMetricValue() = MetricDouble(this.toDouble())
-fun BloodPressure.toMetricValue() = MetricBloodPressure(this)
+fun Number.toMetricValue() = MetricValue.Double(this.toDouble())
+fun BloodPressure.toMetricValue() = MetricValue.BloodPressure(this)
 fun MetricValue?.toAnnotatedString(): AnnotatedString {
     return when (this){
         null -> { AnnotatedString("-")}

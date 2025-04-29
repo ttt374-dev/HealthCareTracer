@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.ui.analysis
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -12,25 +13,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
+import com.github.ttt374.healthcaretracer.data.metric.StatType
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
-import com.github.ttt374.healthcaretracer.data.metric.toAnnotatedString
-import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
+import com.github.ttt374.healthcaretracer.data.metric.get
 
-enum class StatType (val resId: Int, val selector: (StatValue<MetricValue>) -> MetricValue?, val format: ((MetricValue?) -> AnnotatedString)? = null){
-    Average(R.string.average, { it.avg } ),
-    Max(R.string.max, { it.max }),
-    Min(R.string.min, { it.min }),
-    Count(R.string.count, { it.count.toMetricValue() });
-}
+
 //////////////////////////
 @Composable
 fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
@@ -41,19 +37,9 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
         StatValueHeadersRow(stringResource(metricType.resId))
         CustomDivider()
 
-//        val format = when (metricType){
-//            MetricType.BLOOD_PRESSURE -> { mv: MetricValue? ->
-//                when (mv){
-//                    is MetricValue.BloodPressure -> { formatBloodPressure(mv.value) }
-//                    else -> { AnnotatedString("-- SOMETHING WRONG --")}
-//                }
-//            }
-//            else -> metricType.format
-//        }
-        val format = { mv: MetricValue? ->
+        val format = { mv: MetricValue ->
             when(mv){
                 is MetricValue.BloodPressure -> { formatBloodPressure(mv.value)}
-                null -> { AnnotatedString("-") }
                 else -> { mv.format() }
             }
         }
@@ -62,7 +48,7 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
             StatValueRow(stringResource(period.resId), statValue, format)
         }
         if (metricType == MetricType.BLOOD_PRESSURE){
-            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it)} // , { (it as MetricDouble).value.toAnnotatedString("%.1f")} ) } // TODO cast check
+            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it, format)}
         }
         CustomDivider()
     }
@@ -70,7 +56,7 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
 
 @Composable
 fun StatValueHeadersRow(label: String){
-    Row {
+    Row(Modifier.fillMaxWidth()) {
         val mod = Modifier.weight(1f)
         //val modCount = Modifier.weight(0.7f)
         Text(label, mod, fontWeight = FontWeight.Bold)
@@ -79,43 +65,32 @@ fun StatValueHeadersRow(label: String){
                 Text(stringResource(it.resId))
             }
         }
-        //Text(stringResource(R.string.count), Modifier.weight(0.7f))
     }
 }
 @Composable
 fun StatValueRow(label: String, statValue: StatValue<MetricValue>, format: ((MetricValue) -> AnnotatedString)? = null){
-    Row {
-        Box(contentAlignment = Alignment.CenterStart, modifier=Modifier.weight(1f)){
-            Text(label)
-        }
-        StatType.entries.forEach { statType ->
-            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
-                statType.selector(statValue)?.let { mv ->
-                    format?.let { Text(it(mv))} ?: Text(mv.format())
-                } ?: Text("-")
+    Row(Modifier.fillMaxWidth()) {
+        Text(label, textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
 
-                //statType.selector(statValue)?.format?.let { it() }?.let { Text(it) } ?: Text("-")
-//                statType.format?.let { statFormat ->
-//                    Text(statFormat(statType.selector(statValue)))
-//                } ?:  Text(format(statType.selector(statValue))) // TODO
-            }
+        StatType.entries.forEach { statType ->
+            Text(statValue.formatMetricValue(statType, format), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
         }
-//        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
-//            Text(statValue.count.toDisplayString())
-//        }
     }
 }
+fun StatValue<MetricValue>.formatMetricValue(statType: StatType, format: ((MetricValue) -> AnnotatedString)? = null): AnnotatedString {
+    val metricValue = get(statType)
+    return if (metricValue != null) {
+        format?.invoke(metricValue) ?: metricValue.format()
+    } else {
+        AnnotatedString("-")
+    }
+}
+
+
 @Composable
 internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingVertical: Dp = 4.dp){
     HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(vertical = paddingVertical))
 }
-//fun <T> List<T>.firstAndSecondOrNull(): Pair<T?, T?> {
-//    return if (this.size > 1) {
-//        this[0] to this[1]  // 1番目と2番目の要素をペアで返す
-//    } else {
-//        null to null  // 要素が2つ未満の場合はnullを返す
-//    }
-//}
 
 //@Composable
 //fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: StatValue? = null,

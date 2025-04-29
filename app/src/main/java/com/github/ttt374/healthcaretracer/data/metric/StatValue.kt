@@ -1,11 +1,6 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
-import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.text.AnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
-import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 
 
 //////////
@@ -20,8 +15,8 @@ data class StatData (val metricType: MetricType, val all: StatValue = StatValue(
 //fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
 fun List<MetricValue>.toStatValue(): StatValue {
     return when (this.firstOrNull()){
-        is MetricNumber -> {
-            val list = this.map { (it as MetricNumber).value }
+        is MetricDouble -> {
+            val list = this.map { (it as MetricDouble).value }
             return StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
         is MetricBloodPressure -> {
@@ -29,9 +24,9 @@ fun List<MetricValue>.toStatValue(): StatValue {
             val lowerStatValue = this.map { (it as MetricBloodPressure).value.lower.toMetricValue() }.toStatValue()
 
             StatValue(
-                avg = BloodPressure((upperStatValue.avg as MetricNumber).value.toInt(), (lowerStatValue.avg as MetricNumber).value.toInt()).toMetricValue(),
-                max = BloodPressure((upperStatValue.max as MetricNumber).value.toInt(), (lowerStatValue.max as MetricNumber).value.toInt()).toMetricValue(),
-                min = BloodPressure((upperStatValue.min as MetricNumber).value.toInt(), (lowerStatValue.min as MetricNumber).value.toInt()).toMetricValue(),
+                avg = BloodPressure((upperStatValue.avg as MetricDouble).value.toInt(), (lowerStatValue.avg as MetricDouble).value.toInt()).toMetricValue(),
+                max = BloodPressure((upperStatValue.max as MetricDouble).value.toInt(), (lowerStatValue.max as MetricDouble).value.toInt()).toMetricValue(),
+                min = BloodPressure((upperStatValue.min as MetricDouble).value.toInt(), (lowerStatValue.min as MetricDouble).value.toInt()).toMetricValue(),
                 count = upperStatValue.count
             )
         } // TODO

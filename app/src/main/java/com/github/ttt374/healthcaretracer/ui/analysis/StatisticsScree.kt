@@ -18,7 +18,7 @@ import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.metric.MetricBloodPressure
-import com.github.ttt374.healthcaretracer.data.metric.MetricNumber
+import com.github.ttt374.healthcaretracer.data.metric.MetricDouble
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
@@ -33,7 +33,7 @@ enum class StatType (val resId: Int, val selector: (StatValue) -> MetricValue?, 
     Min(R.string.min, { it.min  }),
     Count(R.string.count, { it.count.toMetricValue() }, {
         when (it){
-            is MetricNumber ->  it.value.toInt().toAnnotatedString("%d")
+            is MetricDouble ->  it.value.toInt().toAnnotatedString("%d")
             else -> AnnotatedString("-")
         }
     });
@@ -50,7 +50,7 @@ fun StatDataTable(metricType: MetricType, statData: StatData,
         val format = when (metricType){
             MetricType.BLOOD_PRESSURE -> { mv: MetricValue? ->
                 when (mv){
-                    is MetricNumber -> { mv.value.toAnnotatedString()}
+                    is MetricDouble -> { mv.value.toAnnotatedString()}
                     is MetricBloodPressure -> { bpToAnnotatedString(mv.value) }
                     //is MetricBloodPressure -> { mv.value.toAnnotatedString(showUnit = false)}
                     null -> { AnnotatedString("-")}
@@ -63,7 +63,7 @@ fun StatDataTable(metricType: MetricType, statData: StatData,
             StatValueRow(stringResource(period.resId), statValue, format)
         }
         if (metricType == MetricType.BLOOD_PRESSURE){
-            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it, { (it as MetricNumber).value.toAnnotatedString("%.1f")} ) } // TODO cast check
+            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it, { (it as MetricDouble).value.toAnnotatedString("%.1f")} ) } // TODO cast check
         }
         CustomDivider()
     }

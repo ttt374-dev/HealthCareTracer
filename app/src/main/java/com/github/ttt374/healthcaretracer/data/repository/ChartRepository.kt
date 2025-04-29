@@ -8,7 +8,7 @@ import com.github.ttt374.healthcaretracer.data.metric.ChartData
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
 import com.github.ttt374.healthcaretracer.data.metric.MetricBloodPressure
-import com.github.ttt374.healthcaretracer.data.metric.MetricNumber
+import com.github.ttt374.healthcaretracer.data.metric.MetricDouble
 import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
 import com.github.ttt374.healthcaretracer.ui.analysis.TimeRange
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,7 +54,7 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
                     itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
                     //getChartSeriesFlow(metricType, timeRange, targetValues).map {
                         val actualEntries = list.toEntries()
-                        val targetEntries = metricType.selector(targetValues)?.let { mv -> actualEntries.toTargetEntries((mv as MetricNumber).value, timeRange )}
+                        val targetEntries = metricType.selector(targetValues)?.let { mv -> actualEntries.toTargetEntries((mv as MetricDouble).value, timeRange )}
                         ChartData(metricType, listOf(ChartSeries(metricType.resId, actualEntries, targetEntries)))
                     }
                 }

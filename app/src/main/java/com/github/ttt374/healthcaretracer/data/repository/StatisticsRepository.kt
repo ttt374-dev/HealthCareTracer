@@ -2,14 +2,12 @@ package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.ttt374.healthcaretracer.data.item.meGap
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
-import com.github.ttt374.healthcaretracer.data.metric.MetricNumber
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.data.metric.toDayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.toMetricNumber
 import com.github.ttt374.healthcaretracer.data.metric.toStatValue
-import com.github.ttt374.healthcaretracer.data.metric.toStateValue
 import com.github.ttt374.healthcaretracer.ui.home.toDailyItemList
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi

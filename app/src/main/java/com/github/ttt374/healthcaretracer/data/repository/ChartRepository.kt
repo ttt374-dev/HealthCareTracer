@@ -34,34 +34,32 @@ class ChartRepository @Inject constructor(
             }
         }
     }
-    private fun createBpEntries(measuredValues: List<MeasuredValue>, selector: (BloodPressure) -> Int): List<Entry> {
-        return measuredValues.mapNotNull {
-            val bp = it.value as? MetricValue.BloodPressure ?: return@mapNotNull null
-            MeasuredValue(it.measuredAt, selector(bp.value).toMetricValue()).toEntries()
+    private fun createBpEntries(measuredValues: List<MeasuredValue<BloodPressure>>, selector: (BloodPressure) -> Int): List<Entry> {
+        return measuredValues.map {
+            MeasuredValue(it.measuredAt, selector(it.value)).toEntries()
         }
     }
-    data class BpEntries (val upper: List<Entry>?, val lower: List<Entry>?)
+    data class BpEntries (val upper: List<Entry>, val lower: List<Entry>)
 
     private fun getBloodPressureChartDataFlow(timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
         val metricType = MetricType.BLOOD_PRESSURE
         return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val bpList = list.mapNotNull {
-                (it.value as? MetricValue.BloodPressure)?.let { bp -> MeasuredValue(it.measuredAt, bp) }
+                (it.value as? MetricValue.BloodPressure)?.let { bp -> MeasuredValue(it.measuredAt, bp.value) }
             }
-
             val actualEntries = BpEntries(
-                createBpEntries(bpList, { it.upper }),
-                createBpEntries(bpList, { it.lower })
+                createBpEntries(bpList) { it.upper },
+                createBpEntries(bpList) { it.lower }
             )
             val targetEntries = BpEntries(
-                targetValues.bp?.upper?.let { actualEntries.upper?.toTargetEntries(it, timeRange)},
-                targetValues.bp?.lower?.let { actualEntries.lower?.toTargetEntries(it, timeRange)},
+                targetValues.bp?.upper?.let { actualEntries.upper.toTargetEntries(it, timeRange) }.orEmpty(),
+                targetValues.bp?.lower?.let { actualEntries.lower.toTargetEntries(it, timeRange) }.orEmpty()
             )
 
             ChartData(metricType,
                 listOf(
-                    ChartSeries(R.string.bpUpper, actualEntries.upper ?: emptyList(), targetEntries.upper),
-                    ChartSeries(R.string.bpLower, actualEntries.lower ?: emptyList(), targetEntries.lower),
+                    ChartSeries(R.string.bpUpper, actualEntries.upper, targetEntries.upper),
+                    ChartSeries(R.string.bpLower, actualEntries.lower, targetEntries.lower),
                 )
             )
         }

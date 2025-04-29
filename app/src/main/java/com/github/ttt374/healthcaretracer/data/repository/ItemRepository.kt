@@ -49,7 +49,7 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
     }
     //suspend fun getFirstDate(): Instant? = itemDao.getFirstDate()
     // measured value
-    fun getMeasuredValuesFlow(metric: MetricType, days: Long? = null): Flow<List<MeasuredValue>> {
+    fun getMeasuredValuesFlow(metric: MetricType, days: Long? = null): Flow<List<MeasuredValue<MetricValue>>> {
         return getRecentItemsFlow(days)
             .map { items ->
                 items.toMeasuredValue(metric.selector)

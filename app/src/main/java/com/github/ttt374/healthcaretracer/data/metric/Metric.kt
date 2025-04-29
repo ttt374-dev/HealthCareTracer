@@ -10,19 +10,22 @@ import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import java.time.Instant
 
-data class MeasuredValue(
+data class MeasuredValue<T>(
     val measuredAt: Instant,
-    val value: MetricValue,
+    val value: T,
 )
-fun MeasuredValue.toEntries(): Entry {
+fun <T>MeasuredValue<T>.toEntries(): Entry {
+    val xValue = measuredAt.toEpochMilli().toFloat()
     return when (value){
-        is MetricValue.Double -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
-        else -> { Log.d("toEntry", "only works for MetricDouble"); Entry() }
+        is MetricValue.Double -> Entry(xValue, value.value.toFloat())
+        is MetricValue.Int -> Entry(xValue, value.value.toFloat())
+        is Number -> Entry(xValue, value.toFloat())
+        else -> { Log.d("toEntry", "only works for MetricDouble: ${this::class.java}"); Entry() }
     }
 }
 fun Double.toMetricNumber() = MetricValue.Double(value = this)
 
-fun List<MeasuredValue>.toEntries(): List<Entry> {
+fun <T>List<MeasuredValue<T>>.toEntries(): List<Entry> {
     return map { it.toEntries() }
 }
 //////////////////////////////

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import javax.inject.Inject
 
 class ChartRepository @Inject constructor(
@@ -39,7 +40,7 @@ class ChartRepository @Inject constructor(
             MeasuredValue(it.measuredAt, selector(it.value)).toEntries()
         }
     }
-    data class BpEntries (val upper: List<Entry>, val lower: List<Entry>)
+    private data class BpEntries (val upper: List<Entry>, val lower: List<Entry>)
 
     private fun getBloodPressureChartDataFlow(timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
         val metricType = MetricType.BLOOD_PRESSURE
@@ -51,9 +52,10 @@ class ChartRepository @Inject constructor(
                 createBpEntries(bpList) { it.upper },
                 createBpEntries(bpList) { it.lower }
             )
+            val startDate = timeRange.startDate()
             val targetEntries = BpEntries(
-                targetValues.bp?.upper?.let { actualEntries.upper.toTargetEntries(it, timeRange) }.orEmpty(),
-                targetValues.bp?.lower?.let { actualEntries.lower.toTargetEntries(it, timeRange) }.orEmpty()
+                actualEntries.upper.toTargetEntriesOrEmpty(targetValues.bp?.upper, startDate),
+                actualEntries.lower.toTargetEntriesOrEmpty(targetValues.bp?.lower, startDate),
             )
 
             ChartData(metricType,
@@ -69,7 +71,7 @@ class ChartRepository @Inject constructor(
         return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val actualEntries = list.toEntries()
             val targetValue = metricType.selector(targetValues) as? MetricValue.Double
-            val targetEntries = targetValue?.let { actualEntries.toTargetEntries(it.value, timeRange) }
+            val targetEntries = targetValue?.let { actualEntries.toTargetEntries(it.value, timeRange.startDate()) }
 
             ChartData(
                 metricType,
@@ -78,9 +80,12 @@ class ChartRepository @Inject constructor(
         }
     }
 }
-internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
+internal fun List<Entry>.toTargetEntriesOrEmpty(targetValue: Number?, startDate: Instant? = null): List<Entry>{
+    return targetValue?.let { toTargetEntries(it, startDate)}.orEmpty()
+}
+internal fun List<Entry>.toTargetEntries(targetValue: Number, startDate: Instant? = null): List<Entry> {
     if (isEmpty()) return emptyList()
-    val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x
+    val startX = startDate?.toEpochMilli()?.toFloat() ?: first().x
     val endX = last().x
 
     return listOf(

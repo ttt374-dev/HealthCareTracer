@@ -18,6 +18,7 @@ import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
+import com.github.ttt374.healthcaretracer.data.metric.MetricBloodPressure
 import com.github.ttt374.healthcaretracer.data.metric.MetricNumber
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
@@ -32,9 +33,9 @@ import com.github.ttt374.healthcaretracer.shared.toDisplayString
 //fun Any?.toAnnotatedString(format: String) : AnnotatedString = AnnotatedString("--fallback--")
 
 enum class StatType (val resId: Int, val selector: (StatValue) -> MetricValue?, val format: ((MetricValue?) -> AnnotatedString)? = null){
-    Average(R.string.average, { it.avg?.toMetricValue() } ),
-    Max(R.string.max, { it.max?.toMetricValue()  }),
-    Min(R.string.min, { it.min?.toMetricValue()  }),
+    Average(R.string.average, { it.avg } ),
+    Max(R.string.max, { it.max  }),
+    Min(R.string.min, { it.min  }),
     Count(R.string.count, { it.count.toMetricValue()  });
 }
 //////////////////////////
@@ -42,17 +43,36 @@ enum class StatType (val resId: Int, val selector: (StatValue) -> MetricValue?, 
 fun StatDataTable(metricType: MetricType, statData: StatData,
                   meGapStatValue: StatValue? = null,
                   bpToAnnotatedString: (BloodPressure?) -> AnnotatedString = { it.toAnnotatedString(showUnit = false) } ){
-    when (metricType){
-        MetricType.BLOOD_PRESSURE -> {
-            //BloodPressureStatDataTable(statDataList, meGapStatValue, bpToAnnotatedString)
-            //meGapStatValue?.let { statValue -> StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")}) }
+    CustomDivider()
+    with(statData){
+        StatValueHeadersRow(stringResource(metricType.resId))
+        CustomDivider()
+        val format = when (metricType){
+            MetricType.BLOOD_PRESSURE -> { mv: MetricValue? ->
+                when (mv){
+                    is MetricNumber -> { mv.value.toAnnotatedString()}
+                    is MetricBloodPressure -> { mv.value.toAnnotatedString(showUnit = false)}
+                    null -> { AnnotatedString("-")}
+                }
+            }
+            else -> metricType.format
         }
-        else -> {
-            //statDataList.forEach { statData ->
-                MetricDefStatDataTable(statData)
-            //}
+        StatValueRow(stringResource(R.string.all), all, format)
+        byPeriod.forEach { (period, statValue) ->
+            StatValueRow(stringResource(period.resId), statValue, format)
         }
+        CustomDivider()
     }
+//    when (metricType){
+//        MetricType.BLOOD_PRESSURE -> {
+//            MetricDefStatDataTable(statData)
+//            //BloodPressureStatDataTable(statData, meGapStatValue, bpToAnnotatedString)
+//            //meGapStatValue?.let { statValue -> StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")}) }
+//        }
+//        else -> {
+//            MetricDefStatDataTable(statData)
+//        }
+//    }
 }
 @Composable
 fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: StatValue? = null,

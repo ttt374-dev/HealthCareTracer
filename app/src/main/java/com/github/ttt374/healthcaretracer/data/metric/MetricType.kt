@@ -51,6 +51,7 @@ enum class MetricType(
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,
         selector = { it.bp?.toMetricValue() },
+        //format = { (it as MetricBloodPressure).value.toAnnotatedString(showUnit = false)}
     ),
     HEART(
         resId = R.string.pulse,

@@ -98,13 +98,14 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                 // ローディングインディケーターを表示
                 if (isLoading) {
                     //CircularProgressIndicator()
-                    Text("loading....")
+                    //Text("loading....")
                 } else {
                     when (displayMode) {
                         DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
                         DisplayMode.STATISTICS -> {
                             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-                                StatDataTable(selectedMetricType, statData, meGapStatValue, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+                                StatDataTable(selectedMetricType, statData, meGapStatValue,
+                                    bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
                             }
                         }
                     }

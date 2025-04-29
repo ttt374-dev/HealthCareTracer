@@ -27,26 +27,47 @@ fun List<MeasuredValue>.toEntries(): List<Entry> {
     return map { it.toEntries() }
 }
 //////////////////////////////
-sealed interface MetricValue
+//sealed interface MetricValue
+//data class MetricNumber(val value: Double) : MetricValue
+//data class MetricBloodPressure(val value: BloodPressure) : MetricValue
 
-data class MetricNumber(val value: Double) : MetricValue
-data class MetricBloodPressure(val value: BloodPressure) : MetricValue
+sealed class MetricValue {
+    abstract fun format(): AnnotatedString
+}
+
+data class MetricNumber(val value: Double) : MetricValue(){
+    override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
+}
+data class MetricBloodPressure(val value: BloodPressure) : MetricValue(){
+    override fun format() = value.toAnnotatedString()
+}
 
 internal fun Int.toMetricValue() = MetricNumber(this.toDouble())
 internal fun Double.toMetricValue() = MetricNumber(this)
 internal fun BloodPressure.toMetricValue() = MetricBloodPressure(this)
+fun MetricValue?.toAnnotatedString(): AnnotatedString {
+    return when (this){
+        is MetricNumber -> { this.value.toAnnotatedString()}
+        is MetricBloodPressure -> { this.value.toAnnotatedString()}
+        null -> { AnnotatedString("-")}
+    }
+}
+
 
 ///////////////////////////////////////////
 enum class MetricType(
     val resId: Int,
     val selector: (Vitals) -> MetricValue?,
     val format: (MetricValue?) -> AnnotatedString = {
-        when (it){
-            is MetricNumber -> it.value.toAnnotatedString("%.1f")
-            is MetricBloodPressure -> it.value.toAnnotatedString()
-            null -> AnnotatedString("-")
-        }
+        it?.toAnnotatedString() ?: AnnotatedString("-")
     },
+//    val format: (MetricValue?) -> AnnotatedString = {
+//        when (it){
+//            is MetricNumber -> it.value.toAnnotatedString("%.1f")
+//            is MetricBloodPressure -> it.value.toAnnotatedString()
+//            null -> AnnotatedString("-")
+//        }
+//    },
 ) {
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,

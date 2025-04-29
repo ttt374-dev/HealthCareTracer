@@ -22,7 +22,7 @@ fun List<MetricValue>.toStatValue(): StatValue {
     return when (this.firstOrNull()){
         is MetricNumber -> {
             val list = this.map { (it as MetricNumber).value }
-            return StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue())
+            return StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
         is MetricBloodPressure -> {
             val upperStatValue = this.map { (it as MetricBloodPressure).value.upper.toMetricValue() }.toStatValue()
@@ -32,18 +32,19 @@ fun List<MetricValue>.toStatValue(): StatValue {
                 avg = BloodPressure((upperStatValue.avg as MetricNumber).value.toInt(), (lowerStatValue.avg as MetricNumber).value.toInt()).toMetricValue(),
                 max = BloodPressure((upperStatValue.max as MetricNumber).value.toInt(), (lowerStatValue.max as MetricNumber).value.toInt()).toMetricValue(),
                 min = BloodPressure((upperStatValue.min as MetricNumber).value.toInt(), (lowerStatValue.min as MetricNumber).value.toInt()).toMetricValue(),
+                count = upperStatValue.count
             )
         } // TODO
         else -> StatValue()
     }
 }
-fun MetricValue?.toAnnotatedString(format: String? = null, guideline: BloodPressureGuideline? = null, showUnit: Boolean = true): AnnotatedString {
-    return when (this){
-        is MetricNumber -> this.value.toAnnotatedString(format)
-        is MetricBloodPressure -> this.value.toAnnotatedString(guideline, showUnit)
-        else -> AnnotatedString("-")
-    }
-}
+//fun MetricValue?.toAnnotatedString(format: String? = null, guideline: BloodPressureGuideline? = null, showUnit: Boolean = true): AnnotatedString {
+//    return when (this){
+//        is MetricNumber -> this.value.toAnnotatedString(format)
+//        is MetricBloodPressure -> this.value.toAnnotatedString(guideline, showUnit)
+//        else -> AnnotatedString("-")
+//    }
+//}
 //fun List<MetricNumber>.toStateValue() = map { it.value }.toStatValue()
 fun List<MetricBloodPressure>.toStateValue() = StatValue() // TODO
 

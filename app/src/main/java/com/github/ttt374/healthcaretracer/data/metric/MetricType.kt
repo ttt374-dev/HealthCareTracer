@@ -15,8 +15,10 @@ data class MeasuredValue(
 )
 fun MeasuredValue.toEntry(): Entry {
     return when (value){
-        is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
-        else -> Entry() // TODO: for Bloodpressure
+        is MetricNumber -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
+        is MetricBloodPressure -> Entry() // TODOmeasuredAt.toEpochMilli().toFloat(), value.toFloat())
+        //is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
+        //else -> Entry() // TODOx
     }
 }
 fun Double.toMetricNumber() = MetricNumber(value = this)

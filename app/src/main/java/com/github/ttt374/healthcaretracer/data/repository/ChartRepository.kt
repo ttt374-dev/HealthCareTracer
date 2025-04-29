@@ -19,8 +19,11 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
     private fun getChartSeriesFlow(metricType: MetricType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
         return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val entries = list.toEntry()
-            val targetEntries = metricType.selector(targetValues)?.let { entries.toTargetEntries(it, timeRange)}
-            ChartSeries(metricType, entries, targetEntries)
+            //val mv  = metricType.selector(targetValues)
+
+            //val targetEntries = metricType.selector(targetValues)?.let { mv -> entries.toTargetEntries(, timeRange)}
+            ChartSeries(metricType, entries, null)
+            //ChartSeries(metricType, entries, targetEntries)  // TODO: target entries
         }
     }
     @OptIn(ExperimentalCoroutinesApi::class)

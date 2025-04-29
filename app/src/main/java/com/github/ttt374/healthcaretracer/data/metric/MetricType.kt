@@ -3,43 +3,64 @@ package com.github.ttt374.healthcaretracer.data.metric
 import androidx.compose.ui.text.AnnotatedString
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import java.time.Instant
 
 data class MeasuredValue(
     val measuredAt: Instant,
-    val value: Double,
+    val value: MetricValue,
 )
-fun MeasuredValue.toEntry() = Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
+fun MeasuredValue.toEntry(): Entry {
+    return when (value){
+        is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
+        else -> Entry() // TODO: for Bloodpressure
+    }
+}
+fun Double.toMetricNumber() = MetricNumber(value = this)
 
 fun List<MeasuredValue>.toEntry(): List<Entry> {
     return map { it.toEntry() }
 }
+//////////////////////////////
+sealed interface MetricValue
 
+data class MetricNumber(val value: Double) : MetricValue
+data class MetricBloodPressure(val value: BloodPressure) : MetricValue
+
+internal fun Int.toMetricValue() = MetricNumber(this.toDouble())
+internal fun Double.toMetricValue() = MetricNumber(this)
+internal fun BloodPressure.toMetricValue() = MetricBloodPressure(this)
 
 ///////////////////////////////////////////
 enum class MetricType(
     val resId: Int,
-    val selector: (Vitals) -> Double?,
-    val format: (Number?) -> AnnotatedString = { it.toAnnotatedString() },
-    //val defs: List<MetricDef>
+    val selector: (Vitals) -> MetricValue?,
+    val format: (MetricValue?) -> AnnotatedString = {
+        when (it){
+            is MetricNumber -> it.value.toAnnotatedString("%.1f")
+            is MetricBloodPressure -> it.value.toAnnotatedString()
+            null -> AnnotatedString("-")
+        }
+    },
 ) {
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,
-        selector = { it.bp?.upper?.toDouble() },
+        selector = { it.bp?.toMetricValue() },
     ),
     HEART(
         resId = R.string.pulse,
-        selector = { it.pulse?.toDouble()},
+        selector = { it.pulse?.toMetricValue()},
     ),
     TEMPERATURE(
         resId = R.string.bodyTemperature,
-        selector = { it.bodyTemperature },
+        selector = { it.bodyTemperature?.toMetricValue() },
     ),
     WEIGHT(
         resId = R.string.bodyWeight,
-        selector = { it.bodyWeight },
+        selector = { it.bodyWeight?.toMetricValue() },
     )
 }
 //// def

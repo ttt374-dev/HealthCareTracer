@@ -6,6 +6,7 @@ import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
+import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
@@ -58,6 +59,6 @@ class ItemRepository @Inject constructor(private val itemDao: ItemDao) {
             }
     }
 }
-fun List<Item>.toMeasuredValue(selector: (Vitals) -> Double?) = this.mapNotNull { item ->
+fun List<Item>.toMeasuredValue(selector: (Vitals) -> MetricValue?) = this.mapNotNull { item ->
     selector(item.vitals)?.let { MeasuredValue(item.measuredAt, it) }
 }

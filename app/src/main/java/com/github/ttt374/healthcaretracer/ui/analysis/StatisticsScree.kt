@@ -18,19 +18,24 @@ import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
+import com.github.ttt374.healthcaretracer.data.metric.MetricNumber
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
+import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatValue
+import com.github.ttt374.healthcaretracer.data.metric.toAnnotatedString
+import com.github.ttt374.healthcaretracer.data.metric.toMetricNumber
+import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.github.ttt374.healthcaretracer.shared.toDisplayString
 
 //fun Any?.toAnnotatedString(format: String) : AnnotatedString = AnnotatedString("--fallback--")
 
-enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val format: ((Number?) -> AnnotatedString)? = null){
-    Average(R.string.average, { it.avg }, { it.toAnnotatedString("%.1f")} ),
-    Max(R.string.max, { it.max }),
-    Min(R.string.min, { it.min }),
-    Count(R.string.count, { it.count }, { it.toAnnotatedString("%d")});
+enum class StatType (val resId: Int, val selector: (StatValue) -> MetricValue?, val format: ((MetricValue?) -> AnnotatedString)? = null){
+    Average(R.string.average, { it.avg?.toMetricValue() } ),
+    Max(R.string.max, { it.max?.toMetricValue()  }),
+    Min(R.string.min, { it.min?.toMetricValue()  }),
+    Count(R.string.count, { it.count.toMetricValue()  });
 }
 //////////////////////////
 @Composable
@@ -64,7 +69,7 @@ fun BloodPressureStatDataTable(statDataList: List<StatData>, meGapStatValue: Sta
             }
         }
         meGapStatValue?.let { statValue ->
-            StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")})
+            StatValueRow(stringResource(R.string.me_gap), statValue, { (it as MetricNumber).value.toAnnotatedString("%.0f")})  // TODO: cast check
         }
         CustomDivider()
     }
@@ -75,7 +80,8 @@ fun StatValueBpRow(label: String, statUpper: StatValue, statLower: StatValue, fo
     Row {
         Text(label, Modifier.weight(1f))
         StatType.entries.forEach { statType ->
-            val bp = (statType.selector(statUpper)?.toInt() to statType.selector(statLower)?.toInt()).toBloodPressure()
+            //val bp = (statType.selector(statUpper)?.toInt() to statType.selector(statLower)?.toInt()).toBloodPressure()
+            val bp = BloodPressure(0, 0) // TODO
             Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
                 statType.format?.let { statFormat ->
                     Text(statFormat(statType.selector(statUpper)))
@@ -118,7 +124,7 @@ fun StatValueHeadersRow(label: String){
     }
 }
 @Composable
-fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> AnnotatedString){
+fun StatValueRow(label: String, statValue: StatValue, format: (MetricValue?) -> AnnotatedString){
     Row {
         Box(contentAlignment = Alignment.CenterStart, modifier=Modifier.weight(1f)){
             Text(label)
@@ -127,7 +133,7 @@ fun StatValueRow(label: String, statValue: StatValue, format: (Number?) -> Annot
             Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
                 statType.format?.let { statFormat ->
                     Text(statFormat(statType.selector(statValue)))
-                } ?:  Text(format(statType.selector(statValue)))
+                } ?:  Text(format(statType.selector(statValue))) // TODO
             }
         }
 //        Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){

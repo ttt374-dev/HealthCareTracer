@@ -1,5 +1,8 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.text.AnnotatedString
+
 
 //////////
 data class StatValue(
@@ -10,7 +13,26 @@ data class StatValue(
 )
 data class StatData (val metricType: MetricType, val all: StatValue = StatValue(), val byPeriod: Map<DayPeriod, StatValue> = emptyMap())
 
-fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+//fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+fun List<MetricValue>.toStatValue(): StatValue {
+    return when (this.firstOrNull()){
+        is MetricNumber -> {
+            val list = this.map { (it as MetricNumber).value }
+            return StatValue(list.averageOrNull(), list.maxOrNull(), list.minOrNull())
+        }
+        is MetricBloodPressure -> StatValue() // TODO
+        else -> StatValue()
+    }
+}
+fun MetricValue?.toAnnotatedString(format: String): AnnotatedString {
+    return when (this){
+        is MetricNumber -> this.toAnnotatedString(format)
+        is MetricBloodPressure -> this.toAnnotatedString(format)
+        else -> AnnotatedString("-")
+    }
+}
+//fun List<MetricNumber>.toStateValue() = map { it.value }.toStatValue()
+fun List<MetricBloodPressure>.toStateValue() = StatValue() // TODO
 
 fun List<Double>.averageOrNull(): Double? =
     this.takeIf { it.isNotEmpty() }?.average()

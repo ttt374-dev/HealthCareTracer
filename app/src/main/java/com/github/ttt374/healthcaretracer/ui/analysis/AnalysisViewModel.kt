@@ -91,7 +91,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
                 _isLoading.value = false
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = MetricType.HEART))  // TODO Default
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = MetricType.HEART))
 
     /// M-E gap
     val meGapStatValue: StateFlow<StatValue<MetricValue>> = statisticsRepository.getMeGapStatValueFlow()

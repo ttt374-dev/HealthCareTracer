@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 
 
@@ -12,27 +11,25 @@ data class StatValue<T>(
     val min: T? = null,
     val count: Int = 0,
 )
-data class StatData<T> (val metricType: MetricType, val all: StatValue<T> = StatValue<T>(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
+data class StatData<T> (val metricType: MetricType, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 
-//fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
-fun List<MetricValue>.toStatValue(): StatValue<MetricValue> {
+fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
     return when (this.firstOrNull()){
         is MetricDouble -> {
             val list = this.map { (it as MetricDouble).value }
-            return StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
+            StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
         is MetricBloodPressure -> {
-            val upperStatValue = this.map { (it as MetricBloodPressure).value.upper.toDouble().toMetricValue() }.toStatValue()
-            val lowerStatValue = this.map { (it as MetricBloodPressure).value.lower.toDouble().toMetricValue() }.toStatValue()
+            val upperStatValue = this.map { (it as MetricBloodPressure).value.upper.toDouble() }.toStatValue()
+            val lowerStatValue = this.map { (it as MetricBloodPressure).value.lower.toDouble() }.toStatValue()
 
             StatValue(
-                avg = BloodPressure((upperStatValue.avg as MetricDouble).value.toInt(), (lowerStatValue.avg as MetricDouble).value.toInt()).toMetricValue(),
-                max = BloodPressure((upperStatValue.max as MetricDouble).value.toInt(), (lowerStatValue.max as MetricDouble).value.toInt()).toMetricValue(),
-                min = BloodPressure((upperStatValue.min as MetricDouble).value.toInt(), (lowerStatValue.min as MetricDouble).value.toInt()).toMetricValue(),
-                count = upperStatValue.count
+                avg = (upperStatValue.avg to lowerStatValue.avg).toBloodPressure()?.toMetricValue(),
+                max = (upperStatValue.max to lowerStatValue.max).toBloodPressure()?.toMetricValue(),
+                min = (upperStatValue.max to lowerStatValue.min).toBloodPressure()?.toMetricValue()
             )
-        } // TODO
-
+        }
         else -> StatValue()
     }
 }
@@ -48,6 +45,7 @@ fun List<MetricValue>.toStatValue(): StatValue<MetricValue> {
 
 fun List<Double>.averageOrNull(): Double? =
     this.takeIf { it.isNotEmpty() }?.average()
+
 //fun <T> List<T>.averageOrNull(): Double? {
 //    if (isEmpty()) return null
 //

@@ -13,7 +13,6 @@ data class StatValue<T>(
 )
 data class StatData<T> (val metricType: MetricType = MetricType.BLOOD_PRESSURE, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 
-fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
 fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
     return when (this.firstOrNull()){
         is MetricValue.Double -> {
@@ -32,13 +31,20 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
             StatValue(
                 avg = (upperStatValue.avg to lowerStatValue.avg).toBloodPressure()?.toMetricValue(),
                 max = (upperStatValue.max to lowerStatValue.max).toBloodPressure()?.toMetricValue(),
-                min = (upperStatValue.max to lowerStatValue.min).toBloodPressure()?.toMetricValue()
+                min = (upperStatValue.max to lowerStatValue.min).toBloodPressure()?.toMetricValue(),
+                count = upperStatValue.count
             )
         }
         null -> StatValue()
         //else -> StatValue()
     }
 }
+
+fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+fun List<Double>.averageOrNull(): Double? =
+    this.takeIf { it.isNotEmpty() }?.average()
+
+
 //fun MetricValue?.toAnnotatedString(format: String? = null, guideline: BloodPressureGuideline? = null, showUnit: Boolean = true): AnnotatedString {
 //    return when (this){
 //        is MetricNumber -> this.value.toAnnotatedString(format)
@@ -49,8 +55,6 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
 //fun List<MetricNumber>.toStateValue() = map { it.value }.toStatValue()
 //fun List<MetricBloodPressure>.toStateValue() = StatValue() // TODO
 
-fun List<Double>.averageOrNull(): Double? =
-    this.takeIf { it.isNotEmpty() }?.average()
 
 //fun <T> List<T>.averageOrNull(): Double? {
 //    if (isEmpty()) return null

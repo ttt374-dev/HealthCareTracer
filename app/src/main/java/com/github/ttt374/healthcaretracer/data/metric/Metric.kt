@@ -30,19 +30,30 @@ fun List<MeasuredValue>.toEntries(): List<Entry> {
 //data class MetricNumber(val value: Double) : MetricValue
 //data class MetricBloodPressure(val value: BloodPressure) : MetricValue
 
-sealed class MetricValue {
-    abstract fun format(): AnnotatedString
-
-    data class Double(val value: kotlin.Double) : MetricValue(){
-        override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
-    }
-    data class Int(val value: kotlin.Int) : MetricValue(){
-        override fun format(): AnnotatedString = value.toAnnotatedString("%d")
-    }
-    data class BloodPressure(val value: com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure) : MetricValue(){
-        override fun format() = value.toAnnotatedString()
-    }
-
+//sealed class MetricValue {
+//    abstract fun format(): AnnotatedString
+//
+//    data class Double(val value: kotlin.Double) : MetricValue(){
+//        override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
+//    }
+//    data class Int(val value: kotlin.Int) : MetricValue(){
+//        override fun format(): AnnotatedString = value.toAnnotatedString("%d")
+//    }
+//    data class BloodPressure(val value: com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure) : MetricValue(){
+//        override fun format() = value.toAnnotatedString()
+//    }
+//}
+sealed class MetricValue(val format: () -> AnnotatedString) {
+    data class Double(val value: kotlin.Double) : MetricValue({
+        value.toAnnotatedString("%.1f")
+    })
+    data class Int(val value: kotlin.Int) : MetricValue({
+        value.toAnnotatedString("%d")
+    })
+    data class BloodPressure(
+        val value: com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure) : MetricValue({
+        value.toAnnotatedString()
+    })
 }
 
 internal fun Int.toMetricValue() = MetricValue.Int(this)
@@ -51,7 +62,7 @@ fun BloodPressure.toMetricValue() = MetricValue.BloodPressure(this)
 fun MetricValue?.toAnnotatedString(): AnnotatedString {
     return when (this){
         null -> { AnnotatedString("-")}
-        else -> { format()}
+        else -> { format() }
     }
 }
 
@@ -60,9 +71,9 @@ fun MetricValue?.toAnnotatedString(): AnnotatedString {
 enum class MetricType(
     val resId: Int,
     val selector: (Vitals) -> MetricValue?,
-    val format: (MetricValue?) -> AnnotatedString = {
-        it.toAnnotatedString()
-    },
+//    val format: (MetricValue?) -> AnnotatedString = {
+//        it.toAnnotatedString()
+//    },
 ) {
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,

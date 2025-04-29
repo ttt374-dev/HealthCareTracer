@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -100,7 +99,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                     DisplayMode.STATISTICS -> {
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
                             StatDataTable(selectedMetricType, statData, meGapStatValue,
-                                bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+                                formatBloodPressure = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
                         }
                     }
                 }

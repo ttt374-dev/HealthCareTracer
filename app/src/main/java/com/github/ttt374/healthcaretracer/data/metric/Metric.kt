@@ -28,24 +28,7 @@ fun Double.toMetricNumber() = MetricValue.Double(value = this)
 fun <T>List<MeasuredValue<T>>.toEntries(): List<Entry> {
     return map { it.toEntries() }
 }
-//////////////////////////////
-//sealed interface MetricValue
-//data class MetricNumber(val value: Double) : MetricValue
-//data class MetricBloodPressure(val value: BloodPressure) : MetricValue
 
-//sealed class MetricValue {
-//    abstract fun format(): AnnotatedString
-//
-//    data class Double(val value: kotlin.Double) : MetricValue(){
-//        override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
-//    }
-//    data class Int(val value: kotlin.Int) : MetricValue(){
-//        override fun format(): AnnotatedString = value.toAnnotatedString("%d")
-//    }
-//    data class BloodPressure(val value: com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure) : MetricValue(){
-//        override fun format() = value.toAnnotatedString()
-//    }
-//}
 sealed class MetricValue(val format: () -> AnnotatedString) {
     data class Double(val value: kotlin.Double) : MetricValue({
         value.toAnnotatedString("%.1f")

@@ -6,7 +6,6 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
-
 fun String.withSubscript(subscript: String, textFontSize: TextUnit = 16.sp, subscriptFontSize: TextUnit = 8.sp): AnnotatedString {
     return AnnotatedString.Builder().apply {
         pushStyle(SpanStyle(fontSize = textFontSize)) // 大きめのフォントサイズ

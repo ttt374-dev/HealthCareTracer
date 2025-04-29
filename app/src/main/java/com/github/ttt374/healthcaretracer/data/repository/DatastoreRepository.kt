@@ -43,12 +43,10 @@ class GenericSerializer<T : Any>(
         }
     }
 }
-
 //////////////////////////////////
 interface DataStoreRepository<T> {
     val dataFlow: Flow<T>
     suspend fun updateData(transform: suspend (t: T) -> T): T
-    //suspend fun updateData(newData: T): Result<Unit>
 }
 class DataStoreRepositoryImpl<T>(context: Context, fileName: String, private val serializer: Serializer<T>):
     DataStoreRepository<T> {
@@ -59,7 +57,6 @@ class DataStoreRepositoryImpl<T>(context: Context, fileName: String, private val
         produceFile = { context.dataStoreFile(fileName) },
         scope = scope
     )
-
     override val dataFlow: Flow<T> = dataStore.data
     override suspend fun updateData(transform: suspend (t: T) -> T): T = dataStore.updateData(transform)
     //override suspend fun clearData() = updateData(serializer.defaultValue)

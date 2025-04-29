@@ -4,13 +4,12 @@ import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Vitals
-import com.github.ttt374.healthcaretracer.data.metric.MetricType
-import com.github.ttt374.healthcaretracer.data.metric.toEntries
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
+import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
-import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
+import com.github.ttt374.healthcaretracer.data.metric.toEntries
 import com.github.ttt374.healthcaretracer.ui.analysis.TimeRange
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -20,10 +19,7 @@ import kotlinx.coroutines.flow.map
 import java.time.Instant
 import javax.inject.Inject
 
-class ChartRepository @Inject constructor(
-    private val itemRepository: ItemRepository,
-    configRepository: ConfigRepository
-) {
+class ChartRepository @Inject constructor(private val itemRepository: ItemRepository, configRepository: ConfigRepository ){
     private val targetValuesFlow = configRepository.dataFlow.map { it.targetVitals }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -66,7 +62,6 @@ class ChartRepository @Inject constructor(
             )
         }
     }
-
     private fun getDefaultChartDataFlow(metricType: MetricType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
         return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val actualEntries = list.toEntries()
@@ -94,5 +89,5 @@ internal fun List<Entry>.toTargetEntries(targetValue: Number, startDate: Instant
     )
 }
 
-inline fun <reified T> List<Flow<T>>.combineIntoList(): Flow<List<T>> =
-    combine(*toTypedArray()) { it.toList() }
+//inline fun <reified T> List<Flow<T>>.combineIntoList(): Flow<List<T>> =
+//    combine(*toTypedArray()) { it.toList() }

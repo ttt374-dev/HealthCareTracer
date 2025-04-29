@@ -9,12 +9,9 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 sealed class BloodPressureCategory(val name: String, val nameLabel: Int,
-    val upperRange: IntRange, val lowerRange: IntRange, val color: Color
-){
-
+    val upperRange: IntRange, val lowerRange: IntRange, val color: Color){
     data class Normal(val bpUpperRange: IntRange, val bpLowerRange: IntRange) :
             BloodPressureCategory("Normal", R.string.bpcategory__normal, bpUpperRange, bpLowerRange, Color.Unspecified)
-    
     data class Elevated(val bpUpperRange: IntRange, val bpLowerRange: IntRange) :
             BloodPressureCategory("Elevated", R.string.bpcategory__elevated, bpUpperRange, bpLowerRange, Color.Unspecified)
     data class Htn1(val bpUpperRange: IntRange, val bpLowerRange: IntRange) :

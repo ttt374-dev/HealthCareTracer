@@ -20,10 +20,6 @@ import kotlinx.coroutines.flow.map
 class StatisticsRepository @Inject constructor(private val itemRepository: ItemRepository, configRepository: ConfigRepository) {
     private val dayPeriodConfigFlow = configRepository.dataFlow.map { it.dayPeriodConfig }
 
-//    fun getStatDataList(type: MetricType, days: Long? = null): Flow<List<StatData>>{
-//        return getStatData(type, days)
-//        //return combine( type.defs.map { getStatData(it, days)}){ it.toList()}
-//    }
     fun getStatDataFlow(type: MetricType, days: Long? = null): Flow<StatData<MetricValue>> {
         return getStatValueFlow(type, days).flatMapLatest { allStat ->
             getDayPeriodStatValueFlow(type, days).map { byPeriodStat ->

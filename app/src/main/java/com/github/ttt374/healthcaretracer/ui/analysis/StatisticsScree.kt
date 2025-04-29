@@ -1,18 +1,15 @@
 package com.github.ttt374.healthcaretracer.ui.analysis
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -59,28 +56,12 @@ fun StatValueBaseRow(label: String, values: List<AnnotatedString>){
 @Composable
 fun StatValueHeadersRow(label: String){
     StatValueBaseRow(label, StatType.entries.map { stringResource(it.resId).toAnnotatedString() } )
-//    Row(Modifier.fillMaxWidth()) {
-//        val mod = Modifier.weight(1f)
-//        Text(label, mod, fontWeight = FontWeight.Bold)
-//        StatType.entries.forEach {
-//            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
-//                Text(stringResource(it.resId))
-//            }
-//        }
-//    }
 }
 @Composable
 fun StatValueRow(label: String, statValue: StatValue<MetricValue>, format: MetricValueFormatter? = null){
     StatValueBaseRow(label, StatType.entries.map { statType ->
         statValue.formatMetricValue(statType, format)
     })
-//    Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-//        Text(label, modifier=Modifier.weight(1f))
-//
-//        StatType.entries.forEach { statType ->
-//            Text(statValue.formatMetricValue(statType, format), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
-//        }
-//    }
 }
 data class StatValue<T>(
     val avg: T? = null,

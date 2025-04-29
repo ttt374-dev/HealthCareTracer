@@ -45,7 +45,6 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
 }
 @Composable
 fun StatValueBaseRow(label: String, values: List<AnnotatedString>){
-
     Row (modifier=Modifier.fillMaxWidth().padding(horizontal = 4.dp)){
         Text(label, modifier=Modifier.weight(1f))
         values.forEach { value ->

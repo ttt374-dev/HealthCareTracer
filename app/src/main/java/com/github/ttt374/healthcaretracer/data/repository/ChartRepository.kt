@@ -13,7 +13,6 @@ import com.github.ttt374.healthcaretracer.data.metric.toEntries
 import com.github.ttt374.healthcaretracer.ui.analysis.TimeRange
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import java.time.Instant

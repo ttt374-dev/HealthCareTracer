@@ -16,12 +16,11 @@ enum class DayPeriod(val resId: Int) {
 @Serializable
 data class DayPeriodConfig(
     val timeMap: Map<DayPeriod, @Serializable(with = LocalTimeSerializer::class) LocalTime> =
-        //DayPeriod.entries.associateWith { LocalTime.of(9, 0) }
         mapOf(
             DayPeriod.Morning to LocalTime.of(5, 0),
             DayPeriod.Afternoon to LocalTime.of(12, 0),
             DayPeriod.Evening to LocalTime.of(18, 0),
-        )  // TODO: default
+        )
 ) {
     init {  // TODO: initial check
         val missing = DayPeriod.entries - timeMap.keys
@@ -35,21 +34,21 @@ data class DayPeriodConfig(
     fun update(period: DayPeriod, newTime: LocalTime): DayPeriodConfig =
         copy(timeMap = timeMap + (period to newTime))
 
-    companion object {
-        fun from(map: Map<DayPeriod, LocalTime>): DayPeriodConfig {
-            require(map.size == DayPeriod.entries.size && DayPeriod.entries.all { it in map }) {
-                "TimeOfDayConfig must contain values for all DayPeriods."
-            }
-            return DayPeriodConfig(map)
-        }
-    }
+//    companion object {
+//        fun from(map: Map<DayPeriod, LocalTime>): DayPeriodConfig {
+//            require(map.size == DayPeriod.entries.size && DayPeriod.entries.all { it in map }) {
+//                "TimeOfDayConfig must contain values for all DayPeriods."
+//            }
+//            return DayPeriodConfig(map)
+//        }
+//    }
 }
 
-fun Instant.toDayPeriod(config: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): DayPeriod {
+fun Instant.toDayPeriod(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): DayPeriod {
     val time = this.atZone(zoneId).toLocalTime()
     return when {
-        time >= config[DayPeriod.Morning] && time < config[DayPeriod.Afternoon] -> DayPeriod.Morning
-        time >= config[DayPeriod.Afternoon] && time < config[DayPeriod.Evening] -> DayPeriod.Afternoon
+        time >= dayPeriodConfig[DayPeriod.Morning] && time < dayPeriodConfig[DayPeriod.Afternoon] -> DayPeriod.Morning
+        time >= dayPeriodConfig[DayPeriod.Afternoon] && time < dayPeriodConfig[DayPeriod.Evening] -> DayPeriod.Afternoon
         else -> DayPeriod.Evening
     }
 }

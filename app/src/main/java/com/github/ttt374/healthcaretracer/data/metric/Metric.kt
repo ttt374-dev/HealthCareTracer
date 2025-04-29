@@ -45,12 +45,6 @@ sealed class MetricValue(val format: () -> AnnotatedString) {
 internal fun Int.toMetricValue() = MetricValue.Int(this)
 internal fun Double.toMetricValue() = MetricValue.Double(this)
 fun BloodPressure.toMetricValue() = MetricValue.BloodPressure(this)
-//fun MetricValue?.toAnnotatedString(): AnnotatedString {
-//    return when (this){
-//        null -> { AnnotatedString("-")}
-//        else -> { format() }
-//    }
-//}
 
 ///////////////////////////////////////////
 enum class MetricType(
@@ -72,5 +66,9 @@ enum class MetricType(
     WEIGHT(
         resId = R.string.bodyWeight,
         selector = { it.bodyWeight?.toMetricValue() },
-    )
+    );
+
+    companion object {
+        val Default = BLOOD_PRESSURE
+    }
 }

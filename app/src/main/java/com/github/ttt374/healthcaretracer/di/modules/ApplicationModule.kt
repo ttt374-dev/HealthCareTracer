@@ -20,12 +20,33 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ApplicationModule {
-    @Singleton
+object BackupModule {
+    @Provides
+    fun provideExportDataUseCase(itemRepository: ItemRepository) = ExportDataUseCase(itemRepository)
+
+    @Provides
+    fun provideImportDataUseCase(itemRepository: ItemRepository) = ImportDataUseCase(itemRepository)
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ItemModule {
     @Provides
     fun provideItemRepository(itemDao: ItemDao) =
         ItemRepository(itemDao)
 
+    @Provides
+    fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()
+
+    @Singleton
+    @Provides
+    fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase = ItemDatabase.getDatabase(context)
+
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object SettingsModule {
     @Singleton
     @Provides
     fun provideConfigRepository(@ApplicationContext context: Context) = ConfigRepository(context)
@@ -33,22 +54,6 @@ object ApplicationModule {
     @Singleton
     @Provides
     fun providePreferencesRepository(@ApplicationContext context: Context) = PreferencesRepository(context)
-
-//    @Provides
-//    fun provideChartRepository(itemRepository: ItemRepository, configRepository: ConfigRepository) =
-//        ChartRepository(itemRepository, configRepository)
-
-    @Provides
-    fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()
-
-    @Provides
-    fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase = ItemDatabase.getDatabase(context)
-
-    @Provides
-    fun provideExportDataUseCase(itemRepository: ItemRepository) = ExportDataUseCase(itemRepository)
-
-    @Provides
-    fun provideImportDataUseCase(itemRepository: ItemRepository) = ImportDataUseCase(itemRepository)
 
 }
 
@@ -59,7 +64,6 @@ annotation class DefaultMetricCategory
 @Module
 @InstallIn(SingletonComponent::class)
 object MetricCategoryModule {
-
     @Provides
     @DefaultMetricCategory
     fun provideDefaultMetricCategory(): MetricType {

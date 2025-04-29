@@ -22,13 +22,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
+//fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
 
 
 ////////////
-internal fun Int.toChartType(): MetricType? {
-    return MetricType.entries.getOrNull(this)
-}
 
 private fun LineChart.setupValueFormatter(datePattern: String){
     val formatter = DateTimeFormatter.ofPattern(datePattern)
@@ -132,13 +129,19 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
 
     return this.withIndex().flatMap { (index, series) ->
         val label = stringResource(series.resId)
-        val targetLabel = (stringResource(R.string.target) + ":" + stringResource(series.resId))
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
-        listOfNotNull(
-            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
-            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
-        )
+//        listOfNotNull(
+//            LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
+//            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
+//        )
+        buildList {
+            add(LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()))
+            if (!series.targetEntries.isNullOrEmpty()) {
+                val targetLabel = listOf(stringResource(R.string.target), ":", stringResource(series.resId)).joinToString()
+                add(LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true))
+            }
+        }
     }
 }
 fun Color.adjustForMode(isDarkMode: Boolean = false): Color {

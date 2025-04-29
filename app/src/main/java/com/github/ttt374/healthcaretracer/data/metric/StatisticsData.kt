@@ -6,7 +6,7 @@ import com.github.ttt374.healthcaretracer.ui.analysis.StatValue
 
 enum class StatType (val resId: Int){ Average(R.string.average ), Max(R.string.max), Min(R.string.min),
     Count(R.string.count);}
-data class StatData<T> (val metricType: MetricType = MetricType.BLOOD_PRESSURE, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
+data class StatData<T> (val metricType: MetricType = MetricType.Default, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 
 fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
     return when (this.firstOrNull()){

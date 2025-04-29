@@ -7,10 +7,8 @@ import com.github.ttt374.healthcaretracer.ui.analysis.StatValue
 
 //////////
 
-enum class StatType (val resId: Int){ Average(R.string.average ), Max(R.string.max), Min(R.string.min), Count(
-    R.string.count);}
-
-
+enum class StatType (val resId: Int){ Average(R.string.average ), Max(R.string.max), Min(R.string.min),
+    Count(R.string.count);}
 data class StatData<T> (val metricType: MetricType = MetricType.BLOOD_PRESSURE, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 
 fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
@@ -41,8 +39,7 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
 }
 
 fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
-fun List<Double>.averageOrNull(): Double? =
-    this.takeIf { it.isNotEmpty() }?.average()
+fun List<Double>.averageOrNull(): Double? = this.takeIf { it.isNotEmpty() }?.average()
 
 
 //fun MetricValue?.toAnnotatedString(format: String? = null, guideline: BloodPressureGuideline? = null, showUnit: Boolean = true): AnnotatedString {

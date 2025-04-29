@@ -22,6 +22,7 @@ import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatType
 import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
+import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 
 typealias MetricValueFormatter = (MetricValue) -> AnnotatedString
 
@@ -45,28 +46,41 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
         CustomDivider()
     }
 }
-
 @Composable
-fun StatValueHeadersRow(label: String){
-    Row(Modifier.fillMaxWidth()) {
-        val mod = Modifier.weight(1f)
-        Text(label, mod, fontWeight = FontWeight.Bold)
-        StatType.entries.forEach {
-            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
-                Text(stringResource(it.resId))
-            }
+fun StatValueBaseRow(label: String, values: List<AnnotatedString>){
+
+    Row (modifier=Modifier.fillMaxWidth().padding(horizontal = 4.dp)){
+        Text(label, modifier=Modifier.weight(1f))
+        values.forEach { value ->
+            Text(value, textAlign = TextAlign.Center, modifier=Modifier.weight(1f) )
         }
     }
 }
 @Composable
+fun StatValueHeadersRow(label: String){
+    StatValueBaseRow(label, StatType.entries.map { stringResource(it.resId).toAnnotatedString() } )
+//    Row(Modifier.fillMaxWidth()) {
+//        val mod = Modifier.weight(1f)
+//        Text(label, mod, fontWeight = FontWeight.Bold)
+//        StatType.entries.forEach {
+//            Box(contentAlignment = Alignment.Center, modifier=Modifier.weight(1f)){
+//                Text(stringResource(it.resId))
+//            }
+//        }
+//    }
+}
+@Composable
 fun StatValueRow(label: String, statValue: StatValue<MetricValue>, format: MetricValueFormatter? = null){
-    Row(Modifier.fillMaxWidth()) {
-        Text(label, textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
-
-        StatType.entries.forEach { statType ->
-            Text(statValue.formatMetricValue(statType, format), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
-        }
-    }
+    StatValueBaseRow(label, StatType.entries.map { statType ->
+        statValue.formatMetricValue(statType, format)
+    })
+//    Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+//        Text(label, modifier=Modifier.weight(1f))
+//
+//        StatType.entries.forEach { statType ->
+//            Text(statValue.formatMetricValue(statType, format), textAlign = TextAlign.Center, modifier=Modifier.weight(1f))
+//        }
+//    }
 }
 data class StatValue<T>(
     val avg: T? = null,

@@ -57,9 +57,11 @@ import java.util.Locale
 
 @Composable
 fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
+                   calendarViewModel: CalendarViewModel = hiltViewModel(),
                    appNavigator: AppNavigator){
     val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
+    val config by calendarViewModel.config.collectAsState()
 
     Scaffold(topBar = { CustomTopAppBar(stringResource(R.string.calendar)) },
         bottomBar = {
@@ -92,7 +94,9 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
                             val dailyItem = dailyItems.find { item -> item.date == cday.date }
                             Day(cday, dailyItem,
                                 isSelected = selectedDate == cday.date,
-                                onClick = { selectedDate = it.date; })
+                                onClick = { selectedDate = it.date; },
+                                formatBloodPressure = { it.toAnnotatedString(config.bloodPressureGuideline, false)}
+                                )
                         },
                          monthHeader = { month ->
                              val daysOfWeek = month.weekDays.first().map { it.date.dayOfWeek }
@@ -114,7 +118,8 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
 }
 
 @Composable
-fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = false, onClick: (CalendarDay) -> Unit = {}) {
+fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = false, onClick: (CalendarDay) -> Unit = {},
+        formatBloodPressure: (bp: BloodPressure) -> AnnotatedString) {
     val highlightColor = MaterialTheme.colorScheme.primaryContainer
     Box(modifier = Modifier
             .aspectRatio(.8f) // This is important for square sizing!
@@ -128,7 +133,8 @@ fun Day(day: CalendarDay, dailyItem: DailyItem? = null, isSelected: Boolean = fa
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = day.date.dayOfMonth.toString())
             dailyItem?.vitals?.bp?.let { bp ->
-                Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
+                Text(formatBloodPressure(bp), fontSize = 10.sp)
+                //Text(bp.toAnnotatedString(showUnit = false), fontSize = 10.sp)
             }
         }
     }

@@ -20,6 +20,11 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
             val list = this.map { (it as MetricValue.Double).value }
             StatValue(list.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
+        is MetricValue.Int -> {
+            val list = this.map  { (it as MetricValue.Int).value }
+            val listDouble = this.map { (it as MetricValue.Int).value.toDouble() }
+            StatValue(listDouble.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
+        }
         is MetricValue.BloodPressure -> {
             val upperStatValue = this.map { (it as MetricValue.BloodPressure).value.upper.toDouble() }.toStatValue()
             val lowerStatValue = this.map { (it as MetricValue.BloodPressure).value.lower.toDouble() }.toStatValue()
@@ -30,7 +35,8 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
                 min = (upperStatValue.max to lowerStatValue.min).toBloodPressure()?.toMetricValue()
             )
         }
-        else -> StatValue()
+        null -> StatValue()
+        //else -> StatValue()
     }
 }
 //fun MetricValue?.toAnnotatedString(format: String? = null, guideline: BloodPressureGuideline? = null, showUnit: Boolean = true): AnnotatedString {

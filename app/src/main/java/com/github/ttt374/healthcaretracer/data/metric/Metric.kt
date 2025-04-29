@@ -18,9 +18,6 @@ fun MeasuredValue.toEntries(): Entry {
     return when (value){
         is MetricValue.Double -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
         else -> { Log.d("toEntry", "only works for MetricDouble"); Entry() }
-        //is MetricBloodPressure -> Entry() // TODO: measuredAt.toEpochMilli().toFloat(), value.toFloat())
-        //is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
-        //else -> Entry() // TODOx
     }
 }
 fun Double.toMetricNumber() = MetricValue.Double(value = this)
@@ -39,15 +36,17 @@ sealed class MetricValue {
     data class Double(val value: kotlin.Double) : MetricValue(){
         override fun format(): AnnotatedString = value.toAnnotatedString("%.1f")
     }
+    data class Int(val value: kotlin.Int) : MetricValue(){
+        override fun format(): AnnotatedString = value.toAnnotatedString("%d")
+    }
     data class BloodPressure(val value: com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure) : MetricValue(){
         override fun format() = value.toAnnotatedString()
     }
 
 }
 
-//internal fun Int.toMetricValue() = MetricDouble(this.toDouble())
-//internal fun Double.toMetricValue() = MetricDouble(this)
-fun Number.toMetricValue() = MetricValue.Double(this.toDouble())
+internal fun Int.toMetricValue() = MetricValue.Int(this)
+internal fun Double.toMetricValue() = MetricValue.Double(this)
 fun BloodPressure.toMetricValue() = MetricValue.BloodPressure(this)
 fun MetricValue?.toAnnotatedString(): AnnotatedString {
     return when (this){
@@ -70,11 +69,11 @@ enum class MetricType(
         selector = { it.bp?.toMetricValue() },
         //format = { (it as MetricBloodPressure).value.toAnnotatedString(showUnit = false)}
     ),
-    HEART(
+    PULSE(
         resId = R.string.pulse,
         selector = { it.pulse?.toMetricValue()},
     ),
-    TEMPERATURE(
+    BODY_TEMPERATURE(
         resId = R.string.bodyTemperature,
         selector = { it.bodyTemperature?.toMetricValue() },
     ),

@@ -27,8 +27,8 @@ import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 
 enum class StatType (val resId: Int, val selector: (StatValue<MetricValue>) -> MetricValue?, val format: ((MetricValue?) -> AnnotatedString)? = null){
     Average(R.string.average, { it.avg } ),
-    Max(R.string.max, { it.max  }),
-    Min(R.string.min, { it.min  }),
+    Max(R.string.max, { it.max }),
+    Min(R.string.min, { it.min }),
     Count(R.string.count, { it.count.toMetricValue() }, {
         when (it){
             is MetricValue.Double ->  it.value.toInt().toAnnotatedString("%d")
@@ -48,10 +48,8 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
         val format = when (metricType){
             MetricType.BLOOD_PRESSURE -> { mv: MetricValue? ->
                 when (mv){
-                    is MetricValue.Double -> { mv.value.toAnnotatedString()}
                     is MetricValue.BloodPressure -> { bpToAnnotatedString(mv.value) }
-                    //is MetricBloodPressure -> { mv.value.toAnnotatedString(showUnit = false)}
-                    null -> { AnnotatedString("-")}
+                    else -> { mv.toAnnotatedString() }
                 }
             }
             else -> metricType.format

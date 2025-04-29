@@ -6,22 +6,9 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 
 //////////
 
-data class StatValue<T>(
-    val avg: T? = null,
-    val max: T? = null,
-    val min: T? = null,
-    val count: Int = 0,
-)
 enum class StatType (val resId: Int){ Average(R.string.average ), Max(R.string.max), Min(R.string.min), Count(
     R.string.count);}
-fun StatValue<MetricValue>.get(type: StatType): MetricValue? {
-    return when (type) {
-        StatType.Average -> avg
-        StatType.Max -> max
-        StatType.Min -> min
-        StatType.Count -> count.toMetricValue()
-    }
-}
+
 
 data class StatData<T> (val metricType: MetricType = MetricType.BLOOD_PRESSURE, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 

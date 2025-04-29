@@ -34,6 +34,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
+import com.github.ttt374.healthcaretracer.data.metric.MetricValue
+import com.github.ttt374.healthcaretracer.data.metric.toAnnotatedString
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -98,12 +100,16 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                     DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
                     DisplayMode.STATISTICS -> {
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-                            StatDataTable(selectedMetricType, statData, meGapStatValue,
-                                formatBloodPressure = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+                            val format = { mv: MetricValue ->
+                                when(mv){
+                                    is MetricValue.BloodPressure -> { mv.value.toAnnotatedString(config.bloodPressureGuideline, false) }
+                                    else -> { mv.format() }
+                                }
+                            }
+                            StatDataTable(selectedMetricType, statData, meGapStatValue, format)
                         }
                     }
                 }
-
             }
         }
     }

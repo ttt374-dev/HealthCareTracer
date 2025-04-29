@@ -63,7 +63,7 @@ fun StatDataTable(metricType: MetricType, statData: StatData<MetricValue>,
             StatValueRow(stringResource(period.resId), statValue, format)
         }
         if (metricType == MetricType.BLOOD_PRESSURE){
-            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it, { (it as MetricDouble).value.toAnnotatedString("%.1f")} ) } // TODO cast check
+            meGapStatValue?.let { StatValueRow(stringResource(R.string.me_gap), it)} // , { (it as MetricDouble).value.toAnnotatedString("%.1f")} ) } // TODO cast check
         }
         CustomDivider()
     }

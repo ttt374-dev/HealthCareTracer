@@ -11,7 +11,7 @@ data class StatValue<T>(
     val min: T? = null,
     val count: Int = 0,
 )
-data class StatData<T> (val metricType: MetricType, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
+data class StatData<T> (val metricType: MetricType = MetricType.BLOOD_PRESSURE, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 
 fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
 fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {

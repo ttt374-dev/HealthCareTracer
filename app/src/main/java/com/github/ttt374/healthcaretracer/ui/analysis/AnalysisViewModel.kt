@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.ui.analysis
 
 import androidx.annotation.StringRes
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.R
@@ -21,9 +22,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -64,7 +65,6 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     private val _selectedMetricType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
     val selectedMetricType: StateFlow<MetricType> = _selectedMetricType.asStateFlow()
 
-
     val displayMode: StateFlow<DisplayMode> = preferencesRepository.dataFlow.map { it.displayMode }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DisplayMode.Default)
     //val displayMode: StateFlow<DisplayMode> = _displayMode.asStateFlow()
 //    private val _displayMode: MutableStateFlow<DisplayMode> = MutableStateFlow(DisplayMode.CHART)
@@ -75,23 +75,94 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    val chartData = timeRangeFlow.flatMapLatest { timeRange ->
-        selectedMetricType.flatMapLatest { type ->
-            _isLoading.value = true
-            chartRepository.getChartDataFlow(type, timeRange).onEach {
-                _isLoading.value = false
-            }
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
+    private val chartCache = mutableStateMapOf<Pair<MetricType, TimeRange>, ChartData>()
+    private val statCache = mutableStateMapOf<Pair<MetricType, TimeRange>, StatData<MetricValue>>()
 
-    val statData: StateFlow<StatData<MetricValue>> = selectedMetricType.flatMapLatest{ metricType ->
-        timeRangeFlow.flatMapLatest { range ->
+    private val _chartData = MutableStateFlow(ChartData(defaultMetricType))
+    val chartData: StateFlow<ChartData> = _chartData
+
+    private val _statData = MutableStateFlow(StatData<MetricValue>(metricType = defaultMetricType))
+    val statData: StateFlow<StatData<MetricValue>> = _statData.asStateFlow()
+
+    private suspend fun loadChartData(type: MetricType, range: TimeRange) {
+        val key = type to range
+        if (key !in chartCache) {
             _isLoading.value = true
-            statisticsRepository.getStatData(metricType, range.days).onEach {
-                _isLoading.value = false
+            val data = chartRepository.getChartDataFlow(type, range).first()
+            chartCache[key] = data
+            _isLoading.value = false
+        }
+        _chartData.value = chartCache[key]!!
+    }
+
+    private suspend fun loadStatData(type: MetricType, range: TimeRange) {
+        val key = type to range
+        if (key !in statCache) {
+            _isLoading.value = true
+            val data = statisticsRepository.getStatDataFlow(type, range.days).first()
+            statCache[key] = data
+            _isLoading.value = false
+        }
+        _statData.value = statCache[key]!!
+    }
+    init {
+        viewModelScope.launch {
+            combine(_selectedMetricType, timeRange) { type, range ->
+                type to range
+            }.collect { (type, range) ->
+                loadChartData(type, range)
+                loadStatData(type, range)
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = MetricType.HEART))
+    }
+
+
+//
+//    private val _chartDataMap = mutableStateMapOf<Pair<MetricType, TimeRange>, ChartData>()
+//    val chartData = combine(_selectedMetricType, timeRange) { type, range ->
+//        _chartDataMap[type to range] ?: ChartData(type)
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
+//
+//    private val _statDataMap = mutableStateMapOf<Pair<MetricType, TimeRange>, StatData<MetricValue>>()
+//    val statData = combine(_selectedMetricType, timeRange) { type, range ->
+//        _statDataMap[type to range] ?: StatData(metricType = type)
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = defaultMetricType))
+//
+//
+//    init {
+//        viewModelScope.launch {
+//            MetricType.entries.forEach { metricType ->
+//                TimeRange.entries.forEach { range ->
+//                    launch {
+//                        _isLoading.value = true
+//                        val chart = chartRepository.getChartDataFlow(metricType, range).first()
+//                        val stat = statisticsRepository.getStatData(metricType, range.days).first()
+//                        _chartDataMap[metricType to range] = chart
+//                        _statDataMap[metricType to range] = stat
+//                        _isLoading.value = false
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+//    val chartData = timeRangeFlow.flatMapLatest { timeRange ->
+//        selectedMetricType.flatMapLatest { type ->
+//            _isLoading.value = true
+//            chartRepository.getChartDataFlow(type, timeRange).onEach {
+//                _isLoading.value = false
+//            }
+//        }
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
+//
+//    val statData: StateFlow<StatData<MetricValue>> = selectedMetricType.flatMapLatest{ metricType ->
+//        timeRangeFlow.flatMapLatest { range ->
+//            _isLoading.value = true
+//            statisticsRepository.getStatData(metricType, range.days).onEach {
+//                _isLoading.value = false
+//            }
+//        }
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = MetricType.HEART))
 
     /// M-E gap
     val meGapStatValue: StateFlow<StatValue<MetricValue>> = statisticsRepository.getMeGapStatValueFlow()

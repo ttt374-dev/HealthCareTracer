@@ -24,7 +24,7 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
 //        return getStatData(type, days)
 //        //return combine( type.defs.map { getStatData(it, days)}){ it.toList()}
 //    }
-    fun getStatData(type: MetricType, days: Long? = null): Flow<StatData<MetricValue>> {
+    fun getStatDataFlow(type: MetricType, days: Long? = null): Flow<StatData<MetricValue>> {
         return getStatValueFlow(type, days).flatMapLatest { allStat ->
             getDayPeriodStatValueFlow(type, days).map { byPeriodStat ->
                 StatData(metricType = type, all = allStat, byPeriod = byPeriodStat)

@@ -95,18 +95,12 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
             }
             // 選択されたタブに応じて異なるグラフを表示
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
-                // ローディングインディケーターを表示
-                if (isLoading) {
-                    //CircularProgressIndicator()
-                    //Text("loading....")
-                } else {
-                    when (displayMode) {
-                        DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
-                        DisplayMode.STATISTICS -> {
-                            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-                                StatDataTable(selectedMetricType, statData, meGapStatValue,
-                                    bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
-                            }
+                when (displayMode) {
+                    DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
+                    DisplayMode.STATISTICS -> {
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
+                            StatDataTable(selectedMetricType, statData, meGapStatValue,
+                                bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
                         }
                     }
                 }

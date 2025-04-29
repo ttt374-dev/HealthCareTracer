@@ -83,14 +83,14 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChartData(defaultMetricType))
 
-    val statDataList: StateFlow<List<StatData>> = selectedMetricType.flatMapLatest{ metricType ->
+    val statData: StateFlow<StatData> = selectedMetricType.flatMapLatest{ metricType ->
         timeRangeFlow.flatMapLatest { range ->
             _isLoading.value = true
-            statisticsRepository.getStatDataList(metricType, range.days).onEach {
+            statisticsRepository.getStatData(metricType, range.days).onEach {
                 _isLoading.value = false
             }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatData(metricType = MetricType.HEART))  // TODO Default
 
     /// M-E gap
     val meGapStatValue: StateFlow<StatValue> = statisticsRepository.getMeGapStatValueFlow()

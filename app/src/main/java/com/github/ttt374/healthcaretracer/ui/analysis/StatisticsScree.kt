@@ -34,18 +34,18 @@ enum class StatType (val resId: Int, val selector: (StatValue) -> Number?, val f
 }
 //////////////////////////
 @Composable
-fun StatDataTable(metricType: MetricType, statDataList: List<StatData>,
+fun StatDataTable(metricType: MetricType, statData: StatData,
                   meGapStatValue: StatValue? = null,
                   bpToAnnotatedString: (BloodPressure?) -> AnnotatedString = { it.toAnnotatedString(showUnit = false) } ){
     when (metricType){
         MetricType.BLOOD_PRESSURE -> {
-            BloodPressureStatDataTable(statDataList, meGapStatValue, bpToAnnotatedString)
+            //BloodPressureStatDataTable(statDataList, meGapStatValue, bpToAnnotatedString)
             //meGapStatValue?.let { statValue -> StatValueRow(stringResource(R.string.me_gap), statValue, { it.toAnnotatedString("%.0f")}) }
         }
         else -> {
-            statDataList.forEach { statData ->
+            //statDataList.forEach { statData ->
                 MetricDefStatDataTable(statData)
-            }
+            //}
         }
     }
 }
@@ -93,11 +93,11 @@ fun StatValueBpRow(label: String, statUpper: StatValue, statLower: StatValue, fo
 fun MetricDefStatDataTable(statData: StatData){
     CustomDivider()
     with(statData){
-        StatValueHeadersRow(stringResource(metricDef.resId))
+        StatValueHeadersRow(stringResource(metricType.resId))
         CustomDivider()
-        StatValueRow(stringResource(R.string.all), all, metricDef.format)
+        StatValueRow(stringResource(R.string.all), all, metricType.format)
         byPeriod.forEach { (period, statValue) ->
-            StatValueRow(stringResource(period.resId), statValue, metricDef.format)
+            StatValueRow(stringResource(period.resId), statValue, metricType.format)
         }
         CustomDivider()
     }

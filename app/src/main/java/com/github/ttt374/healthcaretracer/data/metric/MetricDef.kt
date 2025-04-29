@@ -67,10 +67,13 @@ object MetricDefs {
 
 enum class MetricType(
     val resId: Int,
+    val selector: (Vitals) -> Double?,
+    val format: (Number?) -> AnnotatedString = { it.toAnnotatedString() },
     val defs: List<MetricDef>
 ) {
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,
+        selector = { it.bp?.upper?.toDouble() },
         defs = listOf(
             MetricDefs.BP_UPPER,
             MetricDefs.BP_LOWER
@@ -78,18 +81,21 @@ enum class MetricType(
     ),
     HEART(
         resId = R.string.pulse,
+        selector = { it.pulse?.toDouble()},
         defs = listOf(
             MetricDefs.PULSE
         )
     ),
     TEMPERATURE(
         resId = R.string.bodyTemperature,
+        selector = { it.bodyTemperature },
         defs = listOf(
             MetricDefs.BODY_TEMP
         )
     ),
     WEIGHT(
         resId = R.string.bodyWeight,
+        selector = { it.bodyWeight },
         defs = listOf(
             MetricDefs.BODY_WEIGHT
         )

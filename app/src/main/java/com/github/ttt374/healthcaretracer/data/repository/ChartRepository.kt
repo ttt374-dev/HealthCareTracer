@@ -17,21 +17,25 @@ import javax.inject.Inject
 
 class ChartRepository @Inject constructor(private val itemRepository: ItemRepository, configRepository: ConfigRepository){
     private val targetValuesFlow = configRepository.dataFlow.map { it.targetVitals }
-    private fun getChartSeriesFlow(metricDef: MetricDef, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-        return itemRepository.getMeasuredValuesFlow(metricDef, timeRange.days).map { list ->
+    private fun getChartSeriesFlow(metricType: MetricType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
+        return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val entries = list.toEntry()
-            val targetEntries = metricDef.selector(targetValues)?.let { entries.toTargetEntries(it, timeRange)}
-            ChartSeries(metricDef, entries, targetEntries)
+            val targetEntries = metricType.selector(targetValues)?.let { entries.toTargetEntries(it, timeRange)}
+            ChartSeries(metricType, entries, targetEntries)
         }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getChartDataFlow(metricType: MetricType, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
-            metricType.defs.map { def ->
-                getChartSeriesFlow(def, timeRange, targetValues)
-            }.combineIntoList().map {
-                ChartData(metricType, it)
+            getChartSeriesFlow(metricType, timeRange, targetValues).map {
+                ChartData(metricType, listOf(it))
             }
+
+//            metricType.defs.map { def ->
+//                getChartSeriesFlow(def, timeRange, targetValues)
+//            }.combineIntoList().map {
+//                ChartData(metricType, it)
+//            }
         }
     }
 }

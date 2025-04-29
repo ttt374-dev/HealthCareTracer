@@ -48,7 +48,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
     val chartData by viewModel.chartData.collectAsState()
     val config by viewModel.config.collectAsState()
     val selectedMetricType by viewModel.selectedMetricType.collectAsState()
-    val statDataList by viewModel.statDataList.collectAsState()
+    val statData by viewModel.statData.collectAsState()
     val meGapStatValue by viewModel.meGapStatValue.collectAsState()
 
     val timeRange by viewModel.timeRange.collectAsState()
@@ -104,7 +104,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                         DisplayMode.CHART -> HealthChart(chartData.chartSeriesList, timeRange)
                         DisplayMode.STATISTICS -> {
                             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){
-                                StatDataTable(selectedMetricType, statDataList, meGapStatValue, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
+                                StatDataTable(selectedMetricType, statData, meGapStatValue, bpToAnnotatedString = { it.toAnnotatedString(config.bloodPressureGuideline, false)})
                             }
                         }
                     }

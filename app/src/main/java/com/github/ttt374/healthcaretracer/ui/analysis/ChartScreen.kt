@@ -130,14 +130,13 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     )
 
     return this.withIndex().flatMap { (index, series) ->
-        val label = series.metricDef.resId.let { stringResource(it) }
-        val targetLabel = series.metricDef.targetResId?.let { stringResource(it) } ?: ""
+        val label = series.metricType.resId.let { stringResource(it) }
+        val targetLabel = series.metricType.resId.let { stringResource(it) } ?: ""   // TODO
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(
             LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
-            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true
-            )
+            //LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)   // TODO
         )
     }
 }

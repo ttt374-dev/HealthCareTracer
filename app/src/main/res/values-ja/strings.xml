@@ -54,5 +54,6 @@
     <string name="edit">編集</string>
     <string name="count">件数</string>
     <string name="analysis">分析</string>
+    <string name="target">目標</string>
 
 </resources>

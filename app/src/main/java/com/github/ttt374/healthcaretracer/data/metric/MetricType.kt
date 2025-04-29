@@ -13,18 +13,18 @@ data class MeasuredValue(
     val measuredAt: Instant,
     val value: MetricValue,
 )
-fun MeasuredValue.toEntry(): Entry {
+fun MeasuredValue.toEntries(): Entry {
     return when (value){
         is MetricNumber -> Entry(measuredAt.toEpochMilli().toFloat(), value.value.toFloat())
-        is MetricBloodPressure -> Entry() // TODOmeasuredAt.toEpochMilli().toFloat(), value.toFloat())
+        is MetricBloodPressure -> Entry() // TODO: measuredAt.toEpochMilli().toFloat(), value.toFloat())
         //is Number -> Entry(measuredAt.toEpochMilli().toFloat(), value.toFloat())
         //else -> Entry() // TODOx
     }
 }
 fun Double.toMetricNumber() = MetricNumber(value = this)
 
-fun List<MeasuredValue>.toEntry(): List<Entry> {
-    return map { it.toEntry() }
+fun List<MeasuredValue>.toEntries(): List<Entry> {
+    return map { it.toEntries() }
 }
 //////////////////////////////
 sealed interface MetricValue

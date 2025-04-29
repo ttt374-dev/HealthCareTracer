@@ -54,5 +54,6 @@
     <string name="edit">Edit</string>
     <string name="count">Count</string>
     <string name="analysis">Analysis</string>
+    <string name="target">Target</string>
 
 </resources>

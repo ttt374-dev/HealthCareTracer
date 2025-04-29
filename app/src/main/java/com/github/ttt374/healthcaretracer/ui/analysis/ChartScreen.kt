@@ -15,6 +15,7 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import java.time.Instant
@@ -122,7 +123,7 @@ fun HealthChart(chartSeriesList: List<ChartSeries>, timeRange: TimeRange) {
 private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     val colorList = listOf(
         MaterialTheme.colorScheme.primary,
-        MaterialTheme.colorScheme.secondary,
+        //MaterialTheme.colorScheme.secondary,
         MaterialTheme.colorScheme.tertiary,
         MaterialTheme.colorScheme.error,
         MaterialTheme.colorScheme.outline,
@@ -130,13 +131,13 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
     )
 
     return this.withIndex().flatMap { (index, series) ->
-        val label = series.metricType.resId.let { stringResource(it) }
-        val targetLabel = series.metricType.resId.let { stringResource(it) } ?: ""   // TODO
+        val label = stringResource(series.resId)
+        val targetLabel = (stringResource(R.string.target) + stringResource(series.resId))
         val color = colorList.getOrElse(index % colorList.size) { MaterialTheme.colorScheme.primary }
 
         listOfNotNull(
             LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()),
-            //LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)   // TODO
+            LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true)
         )
     }
 }

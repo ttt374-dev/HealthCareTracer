@@ -16,91 +16,81 @@ fun MeasuredValue.toEntry() = Entry(measuredAt.toEpochMilli().toFloat(), value.t
 fun List<MeasuredValue>.toEntry(): List<Entry> {
     return map { it.toEntry() }
 }
-///////////////////////////////////////////
-// def
-data class MetricDef(
-    val id: String,
-    val resId: Int,
-    val targetResId: Int?,
-    val selector: (Vitals) -> Double?,
-    val format: (Number?) -> AnnotatedString = { it.toAnnotatedString() }
-)
-object MetricDefs {
-    val BP_UPPER = MetricDef(
-        id = "bp_upper",
-        resId = R.string.bpUpper,
-        targetResId = R.string.targetBpUpper,
-        selector = { it.bp?.upper?.toDouble() },
-        format = { it.toAnnotatedString("%.0f") }
-    )
-    val BP_LOWER = MetricDef(
-        id = "bp_lower",
-        resId = R.string.bpLower,
-        targetResId = R.string.targetBpLower,
-        selector = { it.bp?.lower?.toDouble() },
-        format = { it.toAnnotatedString("%.0f") }
-    )
-    val PULSE = MetricDef(
-        id = "pulse",
-        resId = R.string.pulse,
-        targetResId = null,
-        selector = { it.pulse?.toDouble() },
-        format = { it.toAnnotatedString("%.0f") }
-    )
-    val BODY_TEMP = MetricDef(
-        id = "body_temp",
-        resId = R.string.bodyTemperature,
-        targetResId = null,
-        selector = { it.bodyTemperature },
-        format = { it.toAnnotatedString("%.1f") }
-    )
-    val BODY_WEIGHT = MetricDef(
-        id = "body_weight",
-        resId = R.string.bodyWeight,
-        targetResId = R.string.targetBodyWeight,
-        selector = { it.bodyWeight },
-        format = { it.toAnnotatedString("%.1f") }
-    )
-}
-/////////////
-// category
 
+
+///////////////////////////////////////////
 enum class MetricType(
     val resId: Int,
     val selector: (Vitals) -> Double?,
     val format: (Number?) -> AnnotatedString = { it.toAnnotatedString() },
-    val defs: List<MetricDef>
+    //val defs: List<MetricDef>
 ) {
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,
         selector = { it.bp?.upper?.toDouble() },
-        defs = listOf(
-            MetricDefs.BP_UPPER,
-            MetricDefs.BP_LOWER
-        )
     ),
     HEART(
         resId = R.string.pulse,
         selector = { it.pulse?.toDouble()},
-        defs = listOf(
-            MetricDefs.PULSE
-        )
     ),
     TEMPERATURE(
         resId = R.string.bodyTemperature,
         selector = { it.bodyTemperature },
-        defs = listOf(
-            MetricDefs.BODY_TEMP
-        )
     ),
     WEIGHT(
         resId = R.string.bodyWeight,
         selector = { it.bodyWeight },
-        defs = listOf(
-            MetricDefs.BODY_WEIGHT
-        )
     )
 }
+//// def
+//data class MetricDef(
+//    val id: String,
+//    val resId: Int,
+//    val targetResId: Int?,
+//    val selector: (Vitals) -> Double?,
+//    val format: (Number?) -> AnnotatedString = { it.toAnnotatedString() }
+//)
+//object MetricDefs {
+//    val BP_UPPER = MetricDef(
+//        id = "bp_upper",
+//        resId = R.string.bpUpper,
+//        targetResId = R.string.targetBpUpper,
+//        selector = { it.bp?.upper?.toDouble() },
+//        format = { it.toAnnotatedString("%.0f") }
+//    )
+//    val BP_LOWER = MetricDef(
+//        id = "bp_lower",
+//        resId = R.string.bpLower,
+//        targetResId = R.string.targetBpLower,
+//        selector = { it.bp?.lower?.toDouble() },
+//        format = { it.toAnnotatedString("%.0f") }
+//    )
+//    val PULSE = MetricDef(
+//        id = "pulse",
+//        resId = R.string.pulse,
+//        targetResId = null,
+//        selector = { it.pulse?.toDouble() },
+//        format = { it.toAnnotatedString("%.0f") }
+//    )
+//    val BODY_TEMP = MetricDef(
+//        id = "body_temp",
+//        resId = R.string.bodyTemperature,
+//        targetResId = null,
+//        selector = { it.bodyTemperature },
+//        format = { it.toAnnotatedString("%.1f") }
+//    )
+//    val BODY_WEIGHT = MetricDef(
+//        id = "body_weight",
+//        resId = R.string.bodyWeight,
+//        targetResId = R.string.targetBodyWeight,
+//        selector = { it.bodyWeight },
+//        format = { it.toAnnotatedString("%.1f") }
+//    )
+//}
+/////////////
+// category
+
+
 //object MetricDefRegistry {
 //    val allDefs: List<MetricDef> = MetricType.entries.flatMap { it.defs }
 //

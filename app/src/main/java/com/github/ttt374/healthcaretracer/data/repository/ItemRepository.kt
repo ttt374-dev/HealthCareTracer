@@ -5,7 +5,6 @@ import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
-import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

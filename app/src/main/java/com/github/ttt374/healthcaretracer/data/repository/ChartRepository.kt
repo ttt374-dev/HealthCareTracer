@@ -2,7 +2,6 @@ package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
-import com.github.ttt374.healthcaretracer.data.metric.MetricDef
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.toEntry
 import com.github.ttt374.healthcaretracer.data.metric.ChartData

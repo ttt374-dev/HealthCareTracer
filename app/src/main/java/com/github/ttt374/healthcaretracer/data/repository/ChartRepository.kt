@@ -2,6 +2,8 @@ package com.github.ttt374.healthcaretracer.data.repository
 
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.toEntries
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
@@ -17,51 +19,67 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class ChartRepository @Inject constructor(private val itemRepository: ItemRepository, configRepository: ConfigRepository){
+class ChartRepository @Inject constructor(
+    private val itemRepository: ItemRepository,
+    configRepository: ConfigRepository
+) {
     private val targetValuesFlow = configRepository.dataFlow.map { it.targetVitals }
-//    private fun getChartSeriesFlow(metricType: MetricType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartSeries> {
-//        return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
-//            val entries = list.toEntry()
-//            //val mv  = metricType.selector(targetValues)
-//
-//            //val targetEntries = metricType.selector(targetValues)?.let { mv -> entries.toTargetEntries(, timeRange)}
-//            ChartSeries(metricType.resId, entries, null)
-//            //ChartSeries(metricType, entries, targetEntries)  // TODO: target entries
-//        }
-//    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     fun getChartDataFlow(metricType: MetricType, timeRange: TimeRange): Flow<ChartData> {
         return targetValuesFlow.flatMapLatest { targetValues ->
-            when (metricType){
-                MetricType.BLOOD_PRESSURE -> {
-                    itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
-                        val upperEntries = list.map { mv ->
-                            MeasuredValue(mv.measuredAt, (mv.value as MetricValue.BloodPressure).value.upper.toMetricValue())  // TODO cast check
-                        }.toEntries()
-                        val upperTargetEntries = targetValues.bp?.upper?.let { tv -> upperEntries.toTargetEntries(tv, timeRange) }
-                        val lowerEntries = list.map { mv ->
-                            MeasuredValue(mv.measuredAt, (mv.value as MetricValue.BloodPressure).value.lower.toMetricValue())
-                        }.toEntries()
-                        val lowerTargetEntries = targetValues.bp?.lower?.let { tv -> lowerEntries.toTargetEntries(tv, timeRange) }
-                        ChartData(metricType, listOf(
-                            ChartSeries(R.string.bpUpper, upperEntries, upperTargetEntries),
-                            ChartSeries(R.string.bpLower, lowerEntries, lowerTargetEntries)
-                        ))
-                    }
-                }
-                else -> {
-                    itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
-                    //getChartSeriesFlow(metricType, timeRange, targetValues).map {
-                        val actualEntries = list.toEntries()
-                        val targetEntries = metricType.selector(targetValues)?.let { mv -> actualEntries.toTargetEntries((mv as MetricValue.Double).value, timeRange )}
-                        ChartData(metricType, listOf(ChartSeries(metricType.resId, actualEntries, targetEntries)))
-                    }
-                }
+            when (metricType) {
+                MetricType.BLOOD_PRESSURE -> getBloodPressureChartDataFlow(timeRange, targetValues)
+                else -> getDefaultChartDataFlow(metricType, timeRange, targetValues)
             }
         }
     }
-}
+    private fun createBpEntries(measuredValues: List<MeasuredValue>, selector: (BloodPressure) -> Int): List<Entry> {
+        return measuredValues.mapNotNull {
+            val bp = it.value as? MetricValue.BloodPressure ?: return@mapNotNull null
+            MeasuredValue(it.measuredAt, selector(bp.value).toMetricValue()).toEntries()
+        }
+    }
+    data class BpEntries (val upper: List<Entry>?, val lower: List<Entry>?)
 
+    private fun getBloodPressureChartDataFlow(timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
+        val metricType = MetricType.BLOOD_PRESSURE
+        return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
+            val bpList = list.mapNotNull {
+                (it.value as? MetricValue.BloodPressure)?.let { bp -> MeasuredValue(it.measuredAt, bp) }
+            }
+
+            val actualEntries = BpEntries(
+                createBpEntries(bpList, { it.upper }),
+                createBpEntries(bpList, { it.lower })
+            )
+            val targetEntries = BpEntries(
+                targetValues.bp?.upper?.let { actualEntries.upper?.toTargetEntries(it, timeRange)},
+                targetValues.bp?.lower?.let { actualEntries.lower?.toTargetEntries(it, timeRange)},
+            )
+
+            ChartData(metricType,
+                listOf(
+                    ChartSeries(R.string.bpUpper, actualEntries.upper ?: emptyList(), targetEntries.upper),
+                    ChartSeries(R.string.bpLower, actualEntries.lower ?: emptyList(), targetEntries.lower),
+                )
+            )
+        }
+    }
+
+    private fun getDefaultChartDataFlow(metricType: MetricType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
+        return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
+            val actualEntries = list.toEntries()
+            val targetValue = metricType.selector(targetValues) as? MetricValue.Double
+            val targetEntries = targetValue?.let { actualEntries.toTargetEntries(it.value, timeRange) }
+
+            ChartData(
+                metricType,
+                listOf(ChartSeries(metricType.resId, actualEntries, targetEntries))
+            )
+        }
+    }
+}
 internal fun List<Entry>.toTargetEntries(targetValue: Number, timeRange: TimeRange): List<Entry> {
     if (isEmpty()) return emptyList()
     val startX = timeRange.startDate()?.toEpochMilli()?.toFloat() ?: first().x

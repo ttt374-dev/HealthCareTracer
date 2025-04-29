@@ -60,8 +60,6 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
         pageCount = { MetricType.entries.size }
     )
     val displayMode by viewModel.displayMode.collectAsState()
-    // isLoading を監視
-    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }
@@ -115,20 +113,6 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
     }
 }
 
-//@Composable
-//fun ToggleButton(displayMode: DisplayMode, onModeChange: (DisplayMode) -> Unit) {
-//    Row {
-//        listOf(DisplayMode.CHART, DisplayMode.STATISTICS).forEach { mode ->
-//            Button(
-//                onClick = { onModeChange(mode) },
-//                colors = if (displayMode == mode) ButtonDefaults.buttonColors() else ButtonDefaults.outlinedButtonColors(),
-//                modifier = Modifier.padding(horizontal = 4.dp)
-//            ) {
-//                Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
-//            }
-//        }
-//    }
-//}
 @Composable
 fun ToggleDisplayMode(
     displayMode: DisplayMode,

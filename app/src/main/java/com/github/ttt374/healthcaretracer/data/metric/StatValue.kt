@@ -2,6 +2,7 @@ package com.github.ttt374.healthcaretracer.data.metric
 
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
+import com.github.ttt374.healthcaretracer.ui.analysis.StatValue
 
 
 //////////

@@ -5,10 +5,10 @@ import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
+import com.github.ttt374.healthcaretracer.data.metric.StatValue
 import com.github.ttt374.healthcaretracer.data.metric.toDayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.toMetricNumber
-import com.github.ttt374.healthcaretracer.data.metric.toStatValueFromMetric
-import com.github.ttt374.healthcaretracer.ui.analysis.StatValue
+import com.github.ttt374.healthcaretracer.data.metric.toStatValue
 import com.github.ttt374.healthcaretracer.ui.home.toDailyItemList
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +29,7 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
     }
     private fun getStatValueFlow(metricType: MetricType, days: Long?): Flow<StatValue<MetricValue>> {
         return itemRepository.getMeasuredValuesFlow(metricType, days).map { items ->
-            items.map { it.value }.toStatValueFromMetric()
+            items.map { it.value }.toStatValue()
         }
     }
     private fun getDayPeriodStatValueFlow(metricType: MetricType, days: Long?): Flow<Map<DayPeriod, StatValue<MetricValue>>> {
@@ -39,7 +39,7 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
                     measuredAt.toDayPeriod(dayPeriodConfig)
                 }
                 DayPeriod.entries.associateWith { period ->
-                    grouped[period].orEmpty().map { it.value }.toStatValueFromMetric()
+                    grouped[period].orEmpty().map { it.value }.toStatValue()
                 }
             }
         }
@@ -47,7 +47,7 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
     fun getMeGapStatValueFlow(days: Long? = null): Flow<StatValue<MetricValue>>  {
         return  dayPeriodConfigFlow.flatMapLatest { dayPeriodConfig ->
             itemRepository.getRecentItemsFlow(days).map { list ->
-                list.toDailyItemList().mapNotNull { it.meGap(dayPeriodConfig)?.toMetricNumber()}.toStatValueFromMetric()
+                list.toDailyItemList().mapNotNull { it.meGap(dayPeriodConfig)?.toMetricNumber()}.toStatValue()
             }
         }
     }

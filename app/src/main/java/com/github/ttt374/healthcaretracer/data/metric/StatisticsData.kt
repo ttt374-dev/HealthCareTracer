@@ -1,14 +1,32 @@
 package com.github.ttt374.healthcaretracer.data.metric
 
+import androidx.compose.ui.text.AnnotatedString
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
-import com.github.ttt374.healthcaretracer.ui.analysis.StatValue
+import com.github.ttt374.healthcaretracer.ui.analysis.MetricValueFormatter
+
+
+data class StatValue<T>(
+    val avg: T? = null,
+    val max: T? = null,
+    val min: T? = null,
+    val count: Int = 0,
+)
+fun StatValue<MetricValue>.get(type: StatType): MetricValue? {
+    return when (type) {
+        StatType.Average -> avg
+        StatType.Max -> max
+        StatType.Min -> min
+        StatType.Count -> count.toMetricValue()
+    }
+}
+
 
 enum class StatType (val resId: Int){ Average(R.string.average ), Max(R.string.max), Min(R.string.min),
     Count(R.string.count);}
 data class StatData<T> (val metricType: MetricType = MetricType.Default, val all: StatValue<T> = StatValue(), val byPeriod: Map<DayPeriod, StatValue<T>> = emptyMap())
 
-fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
+fun List<MetricValue>.toStatValue(): StatValue<MetricValue> {
     return when (this.firstOrNull()){
         is MetricValue.Double -> {
             val list = this.map { (it as MetricValue.Double).value }
@@ -20,9 +38,8 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
             StatValue(listDouble.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
         is MetricValue.BloodPressure -> {
-            val upperStatValue = this.map { (it as MetricValue.BloodPressure).value.upper.toMetricValue() }.toStatValueFromMetric()
-            val lowerStatValue = this.map { (it as MetricValue.BloodPressure).value.lower.toMetricValue() }.toStatValueFromMetric()
-
+            val upperStatValue = this.map { (it as MetricValue.BloodPressure).value.upper.toMetricValue() }.toStatValue()
+            val lowerStatValue = this.map { (it as MetricValue.BloodPressure).value.lower.toMetricValue() }.toStatValue()
 
             StatValue(
                 avg = ((upperStatValue.avg as? MetricValue.Int)?.value to (lowerStatValue.avg as? MetricValue.Int)?.value).toBloodPressure()?.toMetricValue(),

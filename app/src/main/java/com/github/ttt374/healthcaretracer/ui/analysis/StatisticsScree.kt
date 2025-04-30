@@ -18,7 +18,8 @@ import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import com.github.ttt374.healthcaretracer.data.metric.StatData
 import com.github.ttt374.healthcaretracer.data.metric.StatType
-import com.github.ttt374.healthcaretracer.data.metric.toMetricValue
+import com.github.ttt374.healthcaretracer.data.metric.StatValue
+import com.github.ttt374.healthcaretracer.data.metric.get
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 
 typealias MetricValueFormatter = (MetricValue) -> AnnotatedString
@@ -62,21 +63,11 @@ fun StatValueRow(label: String, statValue: StatValue<MetricValue>, format: Metri
         statValue.formatMetricValue(statType, format)
     })
 }
-data class StatValue<T>(
-    val avg: T? = null,
-    val max: T? = null,
-    val min: T? = null,
-    val count: Int = 0,
-)
-fun StatValue<MetricValue>.get(type: StatType): MetricValue? {
-    return when (type) {
-        StatType.Average -> avg
-        StatType.Max -> max
-        StatType.Min -> min
-        StatType.Count -> count.toMetricValue()
-    }
-}
 
+@Composable
+internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingVertical: Dp = 4.dp){
+    HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(vertical = paddingVertical))
+}
 fun StatValue<MetricValue>.formatMetricValue(statType: StatType, format: MetricValueFormatter? = null): AnnotatedString {
     val metricValue = get(statType)
     return if (metricValue != null) {
@@ -84,8 +75,4 @@ fun StatValue<MetricValue>.formatMetricValue(statType: StatType, format: MetricV
     } else {
         AnnotatedString("-")
     }
-}
-@Composable
-internal fun CustomDivider(thickness: Dp = 2.dp, color: Color = Color.Gray, paddingVertical: Dp = 4.dp){
-    HorizontalDivider(thickness = thickness, color = color, modifier = Modifier.padding(vertical = paddingVertical))
 }

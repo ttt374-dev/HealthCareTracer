@@ -20,13 +20,14 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
             StatValue(listDouble.averageOrNull()?.toMetricValue(), list.maxOrNull()?.toMetricValue(), list.minOrNull()?.toMetricValue(), list.count())
         }
         is MetricValue.BloodPressure -> {
-            val upperStatValue = this.map { (it as MetricValue.BloodPressure).value.upper.toDouble() }.toStatValue()
-            val lowerStatValue = this.map { (it as MetricValue.BloodPressure).value.lower.toDouble() }.toStatValue()
+            val upperStatValue = this.map { (it as MetricValue.BloodPressure).value.upper.toMetricValue() }.toStatValueFromMetric()
+            val lowerStatValue = this.map { (it as MetricValue.BloodPressure).value.lower.toMetricValue() }.toStatValueFromMetric()
+
 
             StatValue(
-                avg = (upperStatValue.avg to lowerStatValue.avg).toBloodPressure()?.toMetricValue(),
-                max = (upperStatValue.max to lowerStatValue.max).toBloodPressure()?.toMetricValue(),
-                min = (upperStatValue.max to lowerStatValue.min).toBloodPressure()?.toMetricValue(),
+                avg = ((upperStatValue.avg as? MetricValue.Int)?.value to (lowerStatValue.avg as? MetricValue.Int)?.value).toBloodPressure()?.toMetricValue(),
+                max = ((upperStatValue.max as? MetricValue.Int)?.value to (lowerStatValue.max as? MetricValue.Int)?.value).toBloodPressure()?.toMetricValue(),
+                min = ((upperStatValue.min as? MetricValue.Int)?.value to (lowerStatValue.min as? MetricValue.Int)?.value).toBloodPressure()?.toMetricValue(),
                 count = upperStatValue.count
             )
         }
@@ -34,5 +35,7 @@ fun List<MetricValue>.toStatValueFromMetric(): StatValue<MetricValue> {
     }
 }
 
-fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
-fun List<Double>.averageOrNull(): Double? = this.takeIf { it.isNotEmpty() }?.average()
+//fun List<Double>.toStatValue() = StatValue(avg = averageOrNull(), max = maxOrNull(), min = minOrNull(), count = count())
+//fun List<Double>.averageOrNull(): Double? = this.takeIf { it.isNotEmpty() }?.average()
+
+fun Iterable<Double>.averageOrNull(): Double? = if (this.any()) this.average() else null

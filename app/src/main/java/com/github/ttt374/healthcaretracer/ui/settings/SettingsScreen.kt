@@ -49,6 +49,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DialogState
 import com.github.ttt374.healthcaretracer.ui.common.DialogStateImpl
+import com.github.ttt374.healthcaretracer.ui.common.HorizontalSelector
 import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
@@ -65,10 +66,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     // dialogs
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
-
     val bpGuidelineState = rememberDialogState()
-
-
 
     @Composable
     fun rememberTargetDialogStates(): Map<TargetVitals, DialogState> {
@@ -102,7 +100,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             DayPeriod.entries.associateWith { DialogStateImpl() }
         }
     }
-
     val dayPeriodDialogState = rememberDayPeriodDialogStates()
 
     DayPeriod.entries.forEach { dayPeriod ->
@@ -118,7 +115,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
-    ///
+    ////////////////////////////////////////////////
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.settings)) },
         bottomBar = { CustomBottomAppBar(appNavigator) }
@@ -224,29 +221,7 @@ internal fun IntRange.toDisplayString(): String {
         "$start - $endInclusive"
     }
 }
-@Composable
-fun HorizontalSelector(
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
-) {
-    Row {
-        options.forEach { option ->
-            Text(
-                text = "[$option]",
-                modifier = Modifier
-                    .padding(4.dp)
-                    .clickable { onOptionSelected(option) }
-                    .background(
-                        if (option == selectedOption) Color.LightGray else Color.Transparent,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(horizontal = 8.dp, vertical = 2.dp),
-                color = if (option == selectedOption) Color.Black else Color.Gray
-            )
-        }
-    }
-}
+
 @Composable
 fun LocalTimeDialog(localTime: LocalTime, onTimeSelected: (LocalTime) -> Unit, onDismiss: () -> Unit){
     val zone = ZoneId.systemDefault()

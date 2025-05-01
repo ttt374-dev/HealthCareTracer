@@ -1,6 +1,8 @@
 package com.github.ttt374.healthcaretracer.ui.analysis
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,6 +43,7 @@ import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
+import com.github.ttt374.healthcaretracer.ui.common.HorizontalSelector
 import com.github.ttt374.healthcaretracer.ui.common.TimeRangeDropdown
 import kotlinx.coroutines.launch
 
@@ -123,55 +127,62 @@ fun createFormatter(guideline: BloodPressureGuideline): MetricValueFormatter {
     return format
 }
 
+internal fun String.toDisplayMode() = when (this){
+    DisplayMode.CHART.toString() -> DisplayMode.CHART
+    DisplayMode.STATISTICS.toString() -> DisplayMode.STATISTICS
+    else -> DisplayMode.Default
+}
+
 @Composable
 fun ToggleDisplayMode(
     displayMode: DisplayMode,
     onDisplayModeChange: (DisplayMode) -> Unit
 ) {
-    SegmentedButtonGroup(
+    HorizontalSelector(
         options = DisplayMode.entries,
         selectedOption = displayMode,
         onOptionSelected = onDisplayModeChange,
-        optionText = { mode -> stringResource(mode.resId) },
+        optionText = { mode -> stringResource(mode.resId)}
     )
 }
 
-@Composable
-fun <T> SegmentedButtonGroup(
-    options: List<T>,
-    selectedOption: T,
-    onOptionSelected: (T) -> Unit,
-    optionText: @Composable (T) -> String
-) {
-    val paddingDp = 3.dp
-    Row(
-        modifier = Modifier
-            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-            .clip(RoundedCornerShape(8.dp))
-    ) {
-        options.forEachIndexed { index, option ->
-            val isSelected = option == selectedOption
-            val shape = when (index) {
-                0 -> RoundedCornerShape(topStart = paddingDp, bottomStart = paddingDp)
-                options.lastIndex -> RoundedCornerShape(topEnd = paddingDp, bottomEnd = paddingDp)
-                else -> RoundedCornerShape(0.dp)
-            }
-            Button(
-                onClick = { onOptionSelected(option) },
-                shape = shape,
-                colors = if (isSelected) {
-                    ButtonDefaults.buttonColors()
-                } else {
-                    ButtonDefaults.outlinedButtonColors()
-                },
-                contentPadding = PaddingValues(horizontal = paddingDp, vertical = paddingDp),
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = optionText(option),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
+
+//@Composable
+//fun <T> SegmentedButtonGroup(
+//    options: List<T>,
+//    selectedOption: T,
+//    onOptionSelected: (T) -> Unit,
+//    optionText: @Composable (T) -> String
+//) {
+//    val paddingDp = 3.dp
+//    Row(
+//        modifier = Modifier
+//            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+//            .clip(RoundedCornerShape(8.dp))
+//    ) {
+//        options.forEachIndexed { index, option ->
+//            val isSelected = option == selectedOption
+//            val shape = when (index) {
+//                0 -> RoundedCornerShape(topStart = paddingDp, bottomStart = paddingDp)
+//                options.lastIndex -> RoundedCornerShape(topEnd = paddingDp, bottomEnd = paddingDp)
+//                else -> RoundedCornerShape(0.dp)
+//            }
+//            Button(
+//                onClick = { onOptionSelected(option) },
+//                shape = shape,
+//                colors = if (isSelected) {
+//                    ButtonDefaults.buttonColors()
+//                } else {
+//                    ButtonDefaults.outlinedButtonColors()
+//                },
+//                contentPadding = PaddingValues(horizontal = paddingDp, vertical = paddingDp),
+//                modifier = Modifier.weight(1f)
+//            ) {
+//                Text(
+//                    text = optionText(option),
+//                    style = MaterialTheme.typography.bodyMedium
+//                )
+//            }
+//        }
+//    }
+//}

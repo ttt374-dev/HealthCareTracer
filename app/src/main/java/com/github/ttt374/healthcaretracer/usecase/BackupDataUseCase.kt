@@ -18,13 +18,17 @@ import java.io.Writer
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+
 abstract class CsvField<T>(
     val csvName: String,
     val isRequired: Boolean
 ) {
     abstract fun format(item: Item): String
-    abstract fun parse(line: Array<String>, map: Map<String, Int>): T?
-
+    //abstract fun parse(line: Array<String>, map: Map<String, Int>): T?
+    abstract fun parse(string: String): T?
+    fun parseLine(line: Array<String>, map: Map<String, Int>): T? {
+        return line.getOrNull(map[MeasuredAt.csvName] ?: -1)?.let { parse(it) }
+    }
     companion object {
         val entries: List<CsvField<*>> = listOf(
             MeasuredAt, BpUpper, BpLower, Pulse, BodyWeight, BodyTemp, Location, Memo
@@ -34,50 +38,44 @@ abstract class CsvField<T>(
     object MeasuredAt : CsvField<Instant>("measuredAt", true) {
         private val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
         override fun format(item: Item): String = formatter.format(item.measuredAt)
-        override fun parse(line: Array<String>, map: Map<String, Int>): Instant? =
-            line.getOrNull(map[csvName] ?: -1)?.takeIf { it.isNotBlank() }?.let { Instant.parse(it) }
+        override fun parse(string: String): Instant? =
+            string.takeIf { it.isNotBlank() }?.let { Instant.parse(it) }
     }
 
     object BpUpper : CsvField<Int>("BP upper", true) {
         override fun format(item: Item): String = item.vitals.bp?.upper?.toString() ?: ""
-        override fun parse(line: Array<String>, map: Map<String, Int>): Int? =
-            line.getOrNull(map[csvName] ?: -1)?.toIntOrNull()
+        override fun parse(string: String): Int? = string.toIntOrNull()
     }
 
     object BpLower : CsvField<Int>("BP lower", true) {
         override fun format(item: Item): String = item.vitals.bp?.lower?.toString() ?: ""
-        override fun parse(line: Array<String>, map: Map<String, Int>): Int? =
-            line.getOrNull(map[csvName] ?: -1)?.toIntOrNull()
+        override fun parse(string: String): Int? = string.toIntOrNull()
     }
 
     object Pulse : CsvField<Int>("pulse", false) {
         override fun format(item: Item): String = item.vitals.pulse?.toString() ?: ""
-        override fun parse(line: Array<String>, map: Map<String, Int>): Int? =
-            line.getOrNull(map[csvName] ?: -1)?.toDoubleOrNull()?.toInt()
+        override fun parse(string: String): Int? = string.toDoubleOrNull()?.toInt()
     }
 
     object BodyWeight : CsvField<Double>("body weight", false) {
         override fun format(item: Item): String = item.vitals.bodyWeight?.toString() ?: ""
-        override fun parse(line: Array<String>, map: Map<String, Int>): Double? =
-            line.getOrNull(map[csvName] ?: -1)?.toDoubleOrNull()
+        override fun parse(string: String): Double? = string.toDoubleOrNull()
     }
 
     object BodyTemp : CsvField<Double>("body temperature", false) {
         override fun format(item: Item): String = item.vitals.bodyTemperature?.toString() ?: ""
-        override fun parse(line: Array<String>, map: Map<String, Int>): Double? =
-            line.getOrNull(map[csvName] ?: -1)?.toDoubleOrNull()
+        override fun parse(string: String): Double? = string.toDoubleOrNull()
     }
 
     object Location : CsvField<String>("location", false) {
         override fun format(item: Item): String = item.location
-        override fun parse(line: Array<String>, map: Map<String, Int>): String =
-            line.getOrNull(map[csvName] ?: -1) ?: ""
+        override fun parse(string: String): String = string
     }
 
     object Memo : CsvField<String>("memo", false) {
         override fun format(item: Item): String = item.memo
-        override fun parse(line: Array<String>, map: Map<String, Int>): String =
-            line.getOrNull(map[csvName] ?: -1) ?: ""
+        override fun parse(string: String): String =
+            string
     }
 }
 
@@ -142,21 +140,21 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
                 try {
                     val requiredMissing = CsvField.entries
                         .filter { it.isRequired }
-                        .any { it.parse(line, indexMap) == null }
+                        .any { it.parseLine(line, indexMap) == null }
 
                     if (requiredMissing) {
                         Log.e("read csv", "Row $index skipped: missing required fields")
                         line = csvReader.readNext(); index++; continue
                     }
 
-                    val measuredAt = CsvField.MeasuredAt.parse(line, indexMap)!!
-                    val upper = CsvField.BpUpper.parse(line, indexMap)
-                    val lower = CsvField.BpLower.parse(line, indexMap)
-                    val pulse = CsvField.Pulse.parse(line, indexMap)
-                    val bodyWeight = CsvField.BodyWeight.parse(line, indexMap)
-                    val bodyTemp = CsvField.BodyTemp.parse(line, indexMap)
-                    val location = CsvField.Location.parse(line, indexMap) ?: ""
-                    val memo = CsvField.Memo.parse(line, indexMap) ?: ""
+                    val measuredAt = CsvField.MeasuredAt.parseLine(line, indexMap)!!
+                    val upper = CsvField.BpUpper.parseLine(line, indexMap)
+                    val lower = CsvField.BpLower.parseLine(line, indexMap)
+                    val pulse = CsvField.Pulse.parseLine(line, indexMap)
+                    val bodyWeight = CsvField.BodyWeight.parseLine(line, indexMap)
+                    val bodyTemp = CsvField.BodyTemp.parseLine(line, indexMap)
+                    val location = CsvField.Location.parseLine(line, indexMap) ?: ""
+                    val memo = CsvField.Memo.parseLine(line, indexMap) ?: ""
 
                     result.add(
                         Item(

@@ -3,13 +3,10 @@ package com.github.ttt374.healthcaretracer.usecase
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.text.AnnotatedString
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
-import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.opencsv.CSVReader
 import com.opencsv.CSVWriter
 import kotlinx.coroutines.Dispatchers
@@ -38,69 +35,59 @@ abstract class CsvField<T>(
     val csvName: String,
     val isRequired: Boolean,
     val format: (item: Item) -> String,
+    val parseString: (string: String) -> CsvValue? = { CsvValue.String("asdf") },
+    val parse: (string: String) -> CsvValue = { CsvValue.String(it) },
 ) {
     //abstract fun format(item: Item): String
     //abstract fun parse(line: Array<String>, map: Map<String, Int>): T?
-    abstract fun parse(string: String): T?
-    fun parseLine(line: Array<String>, map: Map<String, Int>): T? {
+    //abstract fun parse(string: String): T?
+    fun parseLine(line: List<String>, map: Map<String, Int>): CsvValue? {
         return line.getOrNull(map[MeasuredAt.csvName] ?: -1)?.let { parse(it) }
     }
     companion object {
         val entries: List<CsvField<*>> = listOf(
-            MeasuredAt, BpUpper, BpLower, Pulse, BodyWeight, BodyTemp, Location, Memo
+            MeasuredAt, BpUpper, BpLower, Pulse  // , BodyWeight, BodyTemp, Location, Memo
         )
     }
-
     object MeasuredAt : CsvField<CsvValue>("measuredAt", true,
         { item ->
             val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
             formatter.format(item.measuredAt)
-        }
-    ) {
-        //private val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
-        //override fun format(item: Item): String = formatter.format(item.measuredAt)
-        override fun parse(string: String): CsvValue.Instant? =
-            string.takeIf { it.isNotBlank() }?.let { Instant.parse(it).toCsvValue() }
-    }
-
+        },
+        { string -> string.takeIf { it.isNotBlank() }?.let { Instant.parse(it).toCsvValue() } }
+    )
     object BpUpper : CsvField<CsvValue>("BP upper", true,
-        { it.vitals.bp?.upper?.toString() ?: ""}
-    ) {
-        //override fun format(item: Item): String = item.vitals.bp?.upper?.toString() ?: ""
-        override fun parse(string: String) = string.toIntOrNull()?.toCsvValue()
-    }
+        { it.vitals.bp?.upper?.toString() ?: ""},
+        { it.toIntOrNull()?.toCsvValue()}
+    )
 
     object BpLower : CsvField<CsvValue>("BP lower", true,
-        { it.vitals.bp?.lower?.toString() ?: ""}
-    ) {
-        override fun parse(string: String) = string.toIntOrNull()?.toCsvValue()
-    }
+        { it.vitals.bp?.lower?.toString() ?: ""},
+        { it.toIntOrNull()?.toCsvValue()}
+    )
 
     object Pulse : CsvField<CsvValue>("pulse", false,
-        { it.vitals.pulse?.toString() ?: ""}
-    ) {
-        override fun parse(string: String) = string.toDoubleOrNull()?.toInt()?.toCsvValue()
-    }
-
-    object BodyWeight : CsvField<CsvValue>("body weight", false,
-        { it.vitals.bodyWeight?.toString() ?: ""}
-    ) {
-        override fun parse(string: String) = string.toDoubleOrNull()?.toCsvValue()
-    }
-
-    object BodyTemp : CsvField<CsvValue>("body temperature", false,
-        { it.vitals.bodyTemperature?.toString() ?: ""}
-    ) {
-        override fun parse(string: String) = string.toDoubleOrNull()?.toCsvValue()
-    }
-
-    object Location : CsvField<CsvValue>("location", false, { it.location }){
-        override fun parse(string: String) = string.toCsvValue()
-    }
-
-    object Memo : CsvField<CsvValue>("memo", false, { it.memo }) {
-        override fun parse(string: String) = string.toCsvValue()
-    }
+        { it.vitals.pulse?.toString() ?: ""}, { it.toIntOrNull()?.toCsvValue()}
+    )
+//    object BodyWeight : CsvField<CsvValue>("body weight", false,
+//        { it.vitals.bodyWeight?.toString() ?: ""}
+//    ) {
+//        override fun parse(string: String) = string.toDoubleOrNull()?.toCsvValue()
+//    }
+//
+//    object BodyTemp : CsvField<CsvValue>("body temperature", false,
+//        { it.vitals.bodyTemperature?.toString() ?: ""}
+//    ) {
+//        override fun parse(string: String) = string.toDoubleOrNull()?.toCsvValue()
+//    }
+//
+//    object Location : CsvField<CsvValue>("location", false, { it.location }){
+//        override fun parse(string: String) = string.toCsvValue()
+//    }
+//
+//    object Memo : CsvField<CsvValue>("memo", false, { it.memo }) {
+//        override fun parse(string: String) = string.toCsvValue()
+//    }
 }
 
 /////////////////////////////////
@@ -152,73 +139,57 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
         "Import successful"
     }.onFailure { e -> Log.e("ImportDataUseCase", "CSV import failed", e) }
 
+
     private fun readItemsFromCsv(reader: Reader): List<Item> {
         val result = mutableListOf<Item>()
-
         CSVReader(reader).use { csvReader ->
             val headers = csvReader.readNext()?.map { it.trim() } ?: return emptyList()
             val indexMap = headers.withIndex().associate { it.value to it.index }
 
-            var index = 1
+            var rowIndex = 1
             var line = csvReader.readNext()
             while (line != null) {
                 try {
-                    val requiredMissing = CsvField.entries
-                        .filter { it.isRequired }
-                        .any { it.parseLine(line, indexMap) == null }
+                    line.toList().parseToItem(indexMap, rowIndex)?.let { result.add(it)}
 
-                    if (requiredMissing) {
-                        Log.e("read csv", "Row $index skipped: missing required fields")
-                        line = csvReader.readNext(); index++; continue
-                    }
-
-                    val measuredAt = CsvField.MeasuredAt.parseLine(line, indexMap)!! as CsvValue.Instant
-                    val upper = CsvField.BpUpper.parseLine(line, indexMap) as CsvValue.Int
-                    val lower = CsvField.BpLower.parseLine(line, indexMap) as CsvValue.Int
-                    val pulse = CsvField.Pulse.parseLine(line, indexMap) as CsvValue.Int
-                    val bodyWeight = CsvField.BodyWeight.parseLine(line, indexMap) as CsvValue.Double
-                    val bodyTemp = CsvField.BodyTemp.parseLine(line, indexMap) as CsvValue.Double
-                    val location = (CsvField.Location.parseLine(line, indexMap) ?: "") as CsvValue.String
-                    val memo = (CsvField.Memo.parseLine(line, indexMap) ?: "") as CsvValue.String
-
-                    result.add(
-                        Item(
-                            measuredAt = measuredAt.value,
-                            vitals = Vitals(
-                                bp = (upper.value to lower.value).toBloodPressure(),
-                                pulse = pulse.value,
-                                bodyWeight = bodyWeight.value,
-                                bodyTemperature = bodyTemp.value
-                            ),
-                            location = location.value,
-                            memo = memo.value
-                        )
-                    )
                 } catch (e: Exception) {
-                    Log.e("read csv", "Row $index error: ${e.message}")
+                    Log.e("read csv", "Row $rowIndex error: ${e.message}")
                 }
-                line = csvReader.readNext(); index++
+                line = csvReader.readNext(); rowIndex++
             }
         }
 
         return result
     }
-
-
-
-
 }
-/////////////////////
-// for export
-fun Item.toCsvRow(formatter: DateTimeFormatter): Array<String> = arrayOf(
-    id.toString(),
-    formatter.format(measuredAt),
-    vitals.bp?.upper?.toString() ?: "",
-    vitals.bp?.lower?.toString() ?: "",
-    vitals.pulse?.toString() ?: "",
-    vitals.bodyWeight?.toString() ?: "",
-    vitals.bodyTemperature?.toString() ?: "",
-    location,
-    memo
-)
-// for import
+fun List<String>.parseToItem(indexMap: Map<String, Int>, rowIndex: Int): Item? {
+    // 1回のループで全部パースしてキャッシュ
+    val parsedValues = CsvField.entries.associateWith { it.parseLine(this, indexMap) }
+    val missingRequired = CsvField.entries.filter { it.isRequired }.filter { parsedValues[it] == null }
+    if (missingRequired.isNotEmpty()) {
+        Log.e("read csv", "Row $rowIndex skipped: missing required fields - ${missingRequired.joinToString { it.csvName }}")
+        return null
+    }
+
+    // 必須は !! で安全に取り出し、任意は ? で取り出す
+    val measuredAt = parsedValues[CsvField.MeasuredAt] as CsvValue.Instant
+    val upper = parsedValues[CsvField.BpUpper] as CsvValue.Int
+    val lower = parsedValues[CsvField.BpLower] as CsvValue.Int
+    val pulse = parsedValues[CsvField.Pulse] as CsvValue.Int
+//        val bodyWeight = parsedValues[CsvField.BodyWeight] as? CsvValue.Double
+//        val bodyTemp = parsedValues[CsvField.BodyTemp] as? CsvValue.Double
+//        val location = (parsedValues[CsvField.Location] as? CsvValue.String)?.value ?: ""
+//        val memo = (parsedValues[CsvField.Memo] as? CsvValue.String)?.value ?: ""
+
+    return Item(
+        measuredAt = measuredAt.value,
+        vitals = Vitals(
+            bp = (upper.value to lower.value).toBloodPressure(),
+            pulse = pulse.value,
+//                bodyWeight = bodyWeight?.value,
+//                bodyTemperature = bodyTemp?.value
+        ),
+//            location = location,
+//            memo = memo
+    )
+}

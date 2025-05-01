@@ -86,7 +86,6 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                 Spacer(modifier = Modifier.weight(1f))
                 // Chart / Statistics 切り替えボタン
                 ToggleDisplayMode(displayMode = displayMode, { viewModel.setDisplayMode(it) })
-                //Text(timeRange.toDisplayString(chartData.chartSeriesList.firstDate() ?: Instant.now()))
             }
             TabRow(selectedTabIndex = pagerState.currentPage) {
                 MetricType.entries.forEachIndexed { index, type ->
@@ -127,12 +126,6 @@ fun createFormatter(guideline: BloodPressureGuideline): MetricValueFormatter {
     return format
 }
 
-internal fun String.toDisplayMode() = when (this){
-    DisplayMode.CHART.toString() -> DisplayMode.CHART
-    DisplayMode.STATISTICS.toString() -> DisplayMode.STATISTICS
-    else -> DisplayMode.Default
-}
-
 @Composable
 fun ToggleDisplayMode(
     displayMode: DisplayMode,
@@ -145,44 +138,3 @@ fun ToggleDisplayMode(
         optionText = { mode -> stringResource(mode.resId)}
     )
 }
-
-
-//@Composable
-//fun <T> SegmentedButtonGroup(
-//    options: List<T>,
-//    selectedOption: T,
-//    onOptionSelected: (T) -> Unit,
-//    optionText: @Composable (T) -> String
-//) {
-//    val paddingDp = 3.dp
-//    Row(
-//        modifier = Modifier
-//            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-//            .clip(RoundedCornerShape(8.dp))
-//    ) {
-//        options.forEachIndexed { index, option ->
-//            val isSelected = option == selectedOption
-//            val shape = when (index) {
-//                0 -> RoundedCornerShape(topStart = paddingDp, bottomStart = paddingDp)
-//                options.lastIndex -> RoundedCornerShape(topEnd = paddingDp, bottomEnd = paddingDp)
-//                else -> RoundedCornerShape(0.dp)
-//            }
-//            Button(
-//                onClick = { onOptionSelected(option) },
-//                shape = shape,
-//                colors = if (isSelected) {
-//                    ButtonDefaults.buttonColors()
-//                } else {
-//                    ButtonDefaults.outlinedButtonColors()
-//                },
-//                contentPadding = PaddingValues(horizontal = paddingDp, vertical = paddingDp),
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text(
-//                    text = optionText(option),
-//                    style = MaterialTheme.typography.bodyMedium
-//                )
-//            }
-//        }
-//    }
-//}

@@ -18,6 +18,69 @@ import java.io.Writer
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+abstract class CsvField<T>(
+    val csvName: String,
+    val isRequired: Boolean
+) {
+    abstract fun format(item: Item): String
+    abstract fun parse(line: Array<String>, map: Map<String, Int>): T?
+
+    companion object {
+        val entries: List<CsvField<*>> = listOf(
+            MeasuredAt, BpUpper, BpLower, Pulse, BodyWeight, BodyTemp, Location, Memo
+        )
+    }
+
+    object MeasuredAt : CsvField<Instant>("measuredAt", true) {
+        private val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
+        override fun format(item: Item): String = formatter.format(item.measuredAt)
+        override fun parse(line: Array<String>, map: Map<String, Int>): Instant? =
+            line.getOrNull(map[csvName] ?: -1)?.takeIf { it.isNotBlank() }?.let { Instant.parse(it) }
+    }
+
+    object BpUpper : CsvField<Int>("BP upper", true) {
+        override fun format(item: Item): String = item.vitals.bp?.upper?.toString() ?: ""
+        override fun parse(line: Array<String>, map: Map<String, Int>): Int? =
+            line.getOrNull(map[csvName] ?: -1)?.toIntOrNull()
+    }
+
+    object BpLower : CsvField<Int>("BP lower", true) {
+        override fun format(item: Item): String = item.vitals.bp?.lower?.toString() ?: ""
+        override fun parse(line: Array<String>, map: Map<String, Int>): Int? =
+            line.getOrNull(map[csvName] ?: -1)?.toIntOrNull()
+    }
+
+    object Pulse : CsvField<Int>("pulse", false) {
+        override fun format(item: Item): String = item.vitals.pulse?.toString() ?: ""
+        override fun parse(line: Array<String>, map: Map<String, Int>): Int? =
+            line.getOrNull(map[csvName] ?: -1)?.toDoubleOrNull()?.toInt()
+    }
+
+    object BodyWeight : CsvField<Double>("body weight", false) {
+        override fun format(item: Item): String = item.vitals.bodyWeight?.toString() ?: ""
+        override fun parse(line: Array<String>, map: Map<String, Int>): Double? =
+            line.getOrNull(map[csvName] ?: -1)?.toDoubleOrNull()
+    }
+
+    object BodyTemp : CsvField<Double>("body temperature", false) {
+        override fun format(item: Item): String = item.vitals.bodyTemperature?.toString() ?: ""
+        override fun parse(line: Array<String>, map: Map<String, Int>): Double? =
+            line.getOrNull(map[csvName] ?: -1)?.toDoubleOrNull()
+    }
+
+    object Location : CsvField<String>("location", false) {
+        override fun format(item: Item): String = item.location
+        override fun parse(line: Array<String>, map: Map<String, Int>): String =
+            line.getOrNull(map[csvName] ?: -1) ?: ""
+    }
+
+    object Memo : CsvField<String>("memo", false) {
+        override fun format(item: Item): String = item.memo
+        override fun parse(line: Array<String>, map: Map<String, Int>): String =
+            line.getOrNull(map[csvName] ?: -1) ?: ""
+    }
+}
+
 
 class ExportDataUseCase( private val itemRepository: ItemRepository) {
     suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
@@ -26,7 +89,7 @@ class ExportDataUseCase( private val itemRepository: ItemRepository) {
         withContext(Dispatchers.IO) {
             contentResolver.openOutputStream(uri)?.use { outputStream ->
                 OutputStreamWriter(outputStream).use { writer ->
-                    writeToCsv(writer, items)
+                    writeItemsToCsv(writer, items)
                 }
             }
         }
@@ -34,27 +97,21 @@ class ExportDataUseCase( private val itemRepository: ItemRepository) {
     }.onFailure { e -> Log.e("ExportDataUseCase", "CSV export failed", e) }
 
     ///////////
-    private fun writeToCsv(writer: Writer, items: List<Item>){
+    fun writeItemsToCsv(writer: Writer, items: List<Item>) {
         CSVWriter(writer).use { csvWriter ->
-            csvWriter.writeNext(arrayOf("id", "measuredAt", "BP upper", "BP lower", "pulse", "body weight", "body temperature", "location", "memo"))
-            val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
+            // 1. ヘッダー行を書き出し
+            val headers = CsvField.entries.map { it.csvName }
+            csvWriter.writeNext(headers.toTypedArray())
 
-            items.forEach { item ->
-                val data = arrayOf(
-                    item.id.toString(),
-                    formatter.format(item.measuredAt),
-                    item.vitals.bp?.upper.toString(),
-                    item.vitals.bp?.lower.toString(),
-                    item.vitals.pulse.toString(),
-                    item.vitals.bodyWeight.toString(),
-                    item.vitals.bodyTemperature.toString(),
-                    item.location,
-                    item.memo,
-                )
-                csvWriter.writeNext(data)
+            // 2. 各 Item を CsvField で format して行を構成
+            for (item in items) {
+                val row = CsvField.entries.map { it.format(item) }
+                csvWriter.writeNext(row.toTypedArray())
             }
         }
     }
+
+
 }
 ////////////////
 class ImportDataUseCase(private val itemRepository: ItemRepository){
@@ -64,7 +121,7 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
         withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)?.use { inputStream ->
                 InputStreamReader(inputStream).use { reader ->
-                    val importedItems = readCsv(reader)
+                    val importedItems = readItemsFromCsv(reader)
                     itemRepository.replaceAllItems(importedItems)
                 }
             }
@@ -72,83 +129,73 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
         "Import successful"
     }.onFailure { e -> Log.e("ImportDataUseCase", "CSV import failed", e) }
 
-    private fun readCsv(reader: Reader): List<Item> {
-        val importedItems = mutableListOf<Item>()
-        val allFields = listOf(
-            "measuredAt", "BP upper", "BP lower",
-            "pulse", "body weight", "body temperature", "location", "memo"
-        )
-
-        val requiredFields = listOf("measuredAt", "BP upper", "BP lower")
+    fun readItemsFromCsv(reader: Reader): List<Item> {
+        val result = mutableListOf<Item>()
 
         CSVReader(reader).use { csvReader ->
             val headers = csvReader.readNext()?.map { it.trim() } ?: return emptyList()
-
-            val headerIndexMap = headers.withIndex()
-                .filter { it.value in allFields }
-                .associate { it.value to it.index }
+            val indexMap = headers.withIndex().associate { it.value to it.index }
 
             var index = 1
             var line = csvReader.readNext()
             while (line != null) {
                 try {
-                    // skip if any required field is missing in the header or data
-                    val missingRequired = requiredFields.any { field ->
-                        headerIndexMap[field]?.let { line.getOrNull(it).isNullOrBlank() } != false
-                    }
-                    if (missingRequired) {
-                        Log.e("parse csv", "Row $index skipped: missing required fields")
-                        index++
-                        line = csvReader.readNext()
-                        continue
-                    }
-                    val item = Item(
-                        measuredAt = Instant.parse(line[headerIndexMap.getValue("measuredAt")]),
-                        vitals = Vitals(
-                            bp = (line[headerIndexMap.getValue("BP upper")].toIntOrNull() to line[headerIndexMap.getValue("BP lower")].toIntOrNull()).toBloodPressure(),
-                            //bpLower = line[headerIndexMap.getValue("BP lower")].toIntOrNull(),
-                            pulse = headerIndexMap["pulse"]?.let { line.getOrNull(it)?.toDoubleOrNull()?.toInt() },
-                            bodyWeight = headerIndexMap["body weight"]?.let { line.getOrNull(it)?.toDoubleOrNull() },
-                            bodyTemperature = headerIndexMap["body temperature"]?.let { line.getOrNull(it)?.toDoubleOrNull() }),
-                        location = headerIndexMap["location"]?.let { line.getOrNull(it) } ?: "",
-                        memo = headerIndexMap["memo"]?.let { line.getOrNull(it) } ?: ""
-                    )
+                    val requiredMissing = CsvField.entries
+                        .filter { it.isRequired }
+                        .any { it.parse(line, indexMap) == null }
 
-                    importedItems.add(item)
+                    if (requiredMissing) {
+                        Log.e("read csv", "Row $index skipped: missing required fields")
+                        line = csvReader.readNext(); index++; continue
+                    }
+
+                    val measuredAt = CsvField.MeasuredAt.parse(line, indexMap)!!
+                    val upper = CsvField.BpUpper.parse(line, indexMap)
+                    val lower = CsvField.BpLower.parse(line, indexMap)
+                    val pulse = CsvField.Pulse.parse(line, indexMap)
+                    val bodyWeight = CsvField.BodyWeight.parse(line, indexMap)
+                    val bodyTemp = CsvField.BodyTemp.parse(line, indexMap)
+                    val location = CsvField.Location.parse(line, indexMap) ?: ""
+                    val memo = CsvField.Memo.parse(line, indexMap) ?: ""
+
+                    result.add(
+                        Item(
+                            measuredAt = measuredAt,
+                            vitals = Vitals(
+                                bp = (upper to lower).toBloodPressure(),
+                                pulse = pulse,
+                                bodyWeight = bodyWeight,
+                                bodyTemperature = bodyTemp
+                            ),
+                            location = location,
+                            memo = memo
+                        )
+                    )
                 } catch (e: Exception) {
-                    Log.e("parse csv", "Row $index failed: ${e.message}")
+                    Log.e("read csv", "Row $index error: ${e.message}")
                 }
-                index++
-                line = csvReader.readNext()
+                line = csvReader.readNext(); index++
             }
         }
-        return importedItems
+
+        return result
     }
 
-//    private fun readCsv(reader: Reader): List<Item>{
-//        val importedItems = mutableListOf<Item>()
-//        CSVReader(reader).use { csvReader ->
-//            csvReader.readAll().drop(1).forEachIndexed { index, columns ->
-//                if (columns.size < 9) {
-//                    Log.e("parse csv", "Row $index skipped: insufficient columns")
-//                    return@forEachIndexed
-//                }
-//                try {
-//                    val item = Item(measuredAt = Instant.parse(columns[1]),
-//                        bpUpper = columns[2].toIntOrNull(),
-//                        bpLower = columns[3].toIntOrNull(),
-//                        pulse = columns[4].toIntOrNull(),
-//                        bodyWeight = columns[5].toDoubleOrNull(),
-//                        bodyTemperature = columns[6].toDoubleOrNull(),
-//                        location = columns[7],
-//                        memo = columns[8]
-//                    )
-//                    importedItems.add(item)
-//                } catch (e: Exception){
-//                    Log.e("parse csv", "Row $index failed: ${e.message}")
-//                }
-//            }
-//        }
-//        return importedItems.toList()
-//    }
+
+
+
 }
+/////////////////////
+// for export
+fun Item.toCsvRow(formatter: DateTimeFormatter): Array<String> = arrayOf(
+    id.toString(),
+    formatter.format(measuredAt),
+    vitals.bp?.upper?.toString() ?: "",
+    vitals.bp?.lower?.toString() ?: "",
+    vitals.pulse?.toString() ?: "",
+    vitals.bodyWeight?.toString() ?: "",
+    vitals.bodyTemperature?.toString() ?: "",
+    location,
+    memo
+)
+// for import

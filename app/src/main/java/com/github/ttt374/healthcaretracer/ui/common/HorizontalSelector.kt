@@ -35,28 +35,3 @@ fun <T>HorizontalSelector(
         }
     }
 }
-
-//@Composable
-//fun HorizontalSelector(
-//    options: List<String>,
-//    selectedOption: String,
-//    onOptionSelected: (String) -> Unit
-//) {
-//    Row {
-//        options.forEach { option ->
-//            Text(
-//                text = "[$option]",
-//                modifier = Modifier
-//                    .padding(4.dp)
-//                    .clickable { onOptionSelected(option) }
-//                    .background(
-//                        if (option == selectedOption) Color.LightGray else Color.Transparent,
-//                        shape = RoundedCornerShape(4.dp)
-//                    )
-//                    .padding(horizontal = 8.dp, vertical = 2.dp),
-//                color = if (option == selectedOption) Color.Black else Color.Gray
-//            )
-//        }
-//    }
-//}
-//

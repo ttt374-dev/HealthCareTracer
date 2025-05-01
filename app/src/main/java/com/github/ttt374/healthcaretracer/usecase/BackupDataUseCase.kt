@@ -29,57 +29,47 @@ fun String.toInstantOrNull(): Instant? {
     }
 }
 enum class CsvField(
-    //val fieldName: String,
-    val required: Boolean,
     val format: (Item) -> String,
     val parse: (String) -> (CsvItemPartial) -> CsvItemPartial,
     val specificFieldName: String? = null,
 ) {
     MEASURED_AT(
         specificFieldName = "Measured at",
-        required = true,
         format = { it.measuredAt.toString() },
         parse = { str -> { it.copy(measuredAt = str.toInstantOrNull()) } }
     ),
     BP_UPPER(
         specificFieldName = "Bp upper",
-        required = true,
         format = { it.vitals.bp?.upper?.toString().orEmpty() },
         parse = { str -> { it.copy(bpUpper = str.toIntOrNull()) } }
     ),
     BP_LOWER(
         specificFieldName = "Bp lower",
-        required = true,
         format = { it.vitals.bp?.lower?.toString().orEmpty() },
         parse = { str -> { it.copy(bpLower = str.toIntOrNull()) } }
     ),
     PULSE(
         specificFieldName = "Pulse",
-        required = false,
         format = { it.vitals.pulse?.toString().orEmpty() },
         parse = { str -> { it.copy(pulse = str.toIntOrNull()) } }
     ),
     BODY_WEIGHT(
         specificFieldName = "Body weight",
-        required = false,
         format = { it.vitals.bodyWeight?.toString().orEmpty() },
         parse = { str -> { it.copy(bodyWeight = str.toDoubleOrNull()) } }
     ),
     BODY_TEMPERATURE(
         specificFieldName = "Body temperature",
-        required = false,
         format = { it.vitals.bodyTemperature?.toString().orEmpty() },
         parse = { str -> { it.copy(bodyTemperature = str.toDoubleOrNull()) } }
     ),
     LOCATION(
         specificFieldName = "Location",
-        required = false,
         format = { it.location },
         parse = { str -> { it.copy(location = str) } }
     ),
     MEMO(
         specificFieldName = "Memo",
-        required = false,
         format = { it.memo },
         parse = { str -> { it.copy(memo = str) } }
     );
@@ -184,13 +174,13 @@ class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepo
                     val value = line.getOrNull(idx).orEmpty()
                     partial = field.parse(value)(partial)
                 }
-                // skip if required fields are missing
-                val missingFields = CsvField.entries.filter { it.required && it !in fieldMap.keys }.map { it.name }
-                if (missingFields.isNotEmpty()) {
-                    Log.e("csv reader", "Required fields missing in line $rowIndex: ${missingFields.joinToString(", ")}")
-                    line = csvReader.readNext()
-                    continue
-                }
+//                // skip if required fields are missing
+//                val missingFields = CsvField.entries.filter { it.required && it !in fieldMap.keys }.map { it.name }
+//                if (missingFields.isNotEmpty()) {
+//                    Log.e("csv reader", "Required fields missing in line $rowIndex: ${missingFields.joinToString(", ")}")
+//                    line = csvReader.readNext()
+//                    continue
+//                }
                 items.add(partial.toItem())
                 line = csvReader.readNext()
                 rowIndex++

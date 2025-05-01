@@ -8,8 +8,10 @@ import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepositoryImpl
+import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapper
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
+import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapperImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,10 +25,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideExportDataUseCase(itemRepository: ItemRepository) = ExportDataUseCase(itemRepository)
+    fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper = ContentResolverWrapperImpl(context.contentResolver)
 
     @Provides
-    fun provideImportDataUseCase(itemRepository: ItemRepository) = ImportDataUseCase(itemRepository)
+    fun provideExportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper) = ExportDataUseCase(itemRepository, contentResolverWrapper)
+
+    @Provides
+    fun provideImportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper) = ImportDataUseCase(itemRepository, contentResolverWrapper)
 }
 @Module
 @InstallIn(SingletonComponent::class)

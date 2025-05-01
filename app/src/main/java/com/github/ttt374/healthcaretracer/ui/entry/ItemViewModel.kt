@@ -47,6 +47,6 @@ class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCas
     }
     private suspend fun autoBackup(){
         val downloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        exportDataUseCase(File(downloadFolder, "items-autosave.csv").toUri(), context.contentResolver)
+        exportDataUseCase(File(downloadFolder, "items-autosave.csv").toUri())
     }
 }

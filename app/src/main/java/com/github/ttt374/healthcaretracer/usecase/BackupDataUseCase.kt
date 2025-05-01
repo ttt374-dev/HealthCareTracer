@@ -12,7 +12,9 @@ import com.opencsv.CSVWriter
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.io.Reader
 import java.io.Writer
@@ -109,12 +111,26 @@ fun CsvItemPartial.toItem(): Item = Item(
 
 /////////////////////////////////
 
-class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepository) {
-    suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
+interface ContentResolverWrapper {
+    fun openOutputStream(uri: Uri): OutputStream?
+    fun openInputStream(uri: Uri): InputStream?
+}
+class ContentResolverWrapperImpl @Inject constructor(private val contentResolver: ContentResolver) : ContentResolverWrapper {
+    override fun openOutputStream(uri: Uri): OutputStream? {
+        return contentResolver.openOutputStream(uri)
+    }
+    override fun openInputStream(uri: Uri): InputStream? {
+        return contentResolver.openInputStream(uri)
+    }
+}
+
+
+class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepository, private val contentResolverWrapper: ContentResolverWrapper) {
+    suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
 
         withContext(Dispatchers.IO) {
-            contentResolver.openOutputStream(uri)?.use { outputStream ->
+            contentResolverWrapper.openOutputStream(uri)?.use { outputStream ->
                 OutputStreamWriter(outputStream).use { writer ->
                     writeItemsToCsv(writer, items)
                 }
@@ -139,10 +155,10 @@ class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepo
     }
 }
 ////////////////
-class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepository){
-    suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
+class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepository, private val contentResolverWrapper: ContentResolverWrapper){
+    suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         withContext(Dispatchers.IO) {
-            contentResolver.openInputStream(uri)?.use { inputStream ->
+            contentResolverWrapper.openInputStream(uri)?.use { inputStream ->
                 InputStreamReader(inputStream).use { reader ->
                     val importedItems = readItemsFromCsv(reader)
                     itemRepository.replaceAllItems(importedItems)

@@ -18,7 +18,6 @@ import com.github.ttt374.healthcaretracer.data.repository.Config
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     configRepository: ConfigRepository,
-    @ApplicationContext private val context: Context,
     private val exportDataUseCase: ExportDataUseCase,
     private val importDataUseCase: ImportDataUseCase,): ViewModel()
 {
@@ -26,12 +25,12 @@ class HomeViewModel @Inject constructor(
 
     fun exportData(uri: Uri){
         viewModelScope.launch {
-            exportDataUseCase(uri, context.contentResolver)
+            exportDataUseCase(uri)
         }
     }
     fun importData(uri: Uri){
         viewModelScope.launch {
-            importDataUseCase(uri, context.contentResolver)
+            importDataUseCase(uri)
         }
     }
 }

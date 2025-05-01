@@ -7,6 +7,7 @@ import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.data.repository.ItemRepositoryImpl
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import dagger.Module
@@ -27,22 +28,40 @@ object BackupModule {
     @Provides
     fun provideImportDataUseCase(itemRepository: ItemRepository) = ImportDataUseCase(itemRepository)
 }
-
 @Module
 @InstallIn(SingletonComponent::class)
-object ItemModule {
+object ItemRepositoryModule {
     @Provides
-    fun provideItemRepository(itemDao: ItemDao) =
-        ItemRepository(itemDao)
-
+    @Singleton
+    fun provideItemRepository(itemDao: ItemDao): ItemRepository {
+        return ItemRepositoryImpl(itemDao)
+    }
+    @Singleton
     @Provides
     fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()
 
     @Singleton
     @Provides
     fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase = ItemDatabase.getDatabase(context)
-
 }
+
+//@Module
+//@InstallIn(SingletonComponent::class)
+//object ItemModule {
+//    @Singleton
+//    @Provides
+//    fun provideItemRepository(itemDao: ItemDao) =
+//        ItemRepositoryImpl(itemDao)
+//
+//    @Singleton
+//    @Provides
+//    fun provideItemDao(itemDatabase: ItemDatabase): ItemDao = itemDatabase.itemDao()
+//
+//    @Singleton
+//    @Provides
+//    fun provideItemDatabase(@ApplicationContext context: Context): ItemDatabase = ItemDatabase.getDatabase(context)
+//
+//}
 
 @Module
 @InstallIn(SingletonComponent::class)

@@ -9,6 +9,7 @@ import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.opencsv.CSVReader
 import com.opencsv.CSVWriter
+import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
@@ -108,7 +109,7 @@ fun CsvItemPartial.toItem(): Item = Item(
 
 /////////////////////////////////
 
-class ExportDataUseCase( private val itemRepository: ItemRepository) {
+class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepository) {
     suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
         val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
 
@@ -136,11 +137,9 @@ class ExportDataUseCase( private val itemRepository: ItemRepository) {
             }
         }
     }
-
-
 }
 ////////////////
-class ImportDataUseCase(private val itemRepository: ItemRepository){
+class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepository){
     suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
         withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -153,7 +152,7 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
         "Import successful"
     }.onFailure { e -> Log.e("ImportDataUseCase", "CSV import failed", e) }
 
-    fun readItemsFromCsv(reader: Reader): List<Item> {
+    private fun readItemsFromCsv(reader: Reader): List<Item> {
         val items = mutableListOf<Item>()
         CSVReader(reader).use { csvReader ->
             val headers = csvReader.readNext()?.map { it.trim() } ?: return emptyList()
@@ -162,25 +161,25 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
             }.toMap()
 
             var line = csvReader.readNext()
+            var rowIndex = 1
             while (line != null) {
                 var partial = CsvItemPartial()
                 for ((field, idx) in fieldMap) {
                     val value = line.getOrNull(idx).orEmpty()
                     partial = field.parse(value)(partial)
                 }
-
                 // skip if required fields are missing
-                if (CsvField.entries.any { it.required && it !in fieldMap.keys }) {
+                val missingFields = CsvField.entries.filter { it.required && it !in fieldMap.keys }.map { it.name }
+                if (missingFields.isNotEmpty()) {
+                    Log.e("csv reader", "Required fields missing in line $rowIndex: ${missingFields.joinToString(", ")}")
                     line = csvReader.readNext()
                     continue
                 }
-
                 items.add(partial.toItem())
                 line = csvReader.readNext()
+                rowIndex++
             }
         }
         return items
     }
-
-
 }

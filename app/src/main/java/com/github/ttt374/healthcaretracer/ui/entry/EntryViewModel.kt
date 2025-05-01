@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class EntryViewModel @Inject constructor (savedStateHandle: SavedStateHandle, private val itemRepository: ItemRepository): ViewModel() {
+class EntryViewModel @Inject constructor (savedStateHandle: SavedStateHandle): ViewModel() {
     private val dateString: String? = savedStateHandle["date"]
     private val date: LocalDate = dateString?.let { LocalDate.parse(it)} ?: LocalDate.now()
 
@@ -35,8 +35,8 @@ fun Instant.withDate(newDate: LocalDate, zone: ZoneId = ZoneId.systemDefault()):
     val newDateTime = LocalDateTime.of(newDate, currentDateTime.toLocalTime())
     return newDateTime.atZone(zone).toInstant()
 }
-fun Instant.toLocalTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalTime {
-    return Instant.parse(this.toString())
-        .atZone(zoneId)
-        .toLocalTime()
-}
+//fun Instant.toLocalTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalTime {
+//    return Instant.parse(this.toString())
+//        .atZone(zoneId)
+//        .toLocalTime()
+//}

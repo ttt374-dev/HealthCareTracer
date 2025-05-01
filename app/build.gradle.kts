@@ -75,6 +75,13 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // unittest
+
+    testImplementation("org.mockito:mockito-core:4.6.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("org.mockito:mockito-inline:4.6.1")
+
+
     // hilt
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.android)
@@ -98,8 +105,8 @@ dependencies {
     // calendar
     //implementation(libs.compose.calendar)
     implementation("com.kizitonwose.calendar:compose:2.6.2")
-    implementation("androidx.datastore:datastore-preferences:1.1.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    implementation("androidx.compose.foundation:foundation:1.7.8") 
+    implementation("androidx.datastore:datastore-preferences:1.1.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("androidx.compose.foundation:foundation:1.8.0")
 
 }

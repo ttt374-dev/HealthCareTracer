@@ -3,10 +3,13 @@ package com.github.ttt374.healthcaretracer.usecase
 import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.text.AnnotatedString
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import com.opencsv.CSVReader
 import com.opencsv.CSVWriter
 import kotlinx.coroutines.Dispatchers
@@ -19,11 +22,24 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+
+sealed class CsvValue() {
+    data class Double(val value: kotlin.Double) : CsvValue()
+    data class Int(val value: kotlin.Int) : CsvValue()
+    data class String(val value: kotlin.String) : CsvValue()
+    data class Instant(val value: java.time.Instant): CsvValue()
+}
+internal fun Instant.toCsvValue() = CsvValue.Instant(this)
+internal fun Int.toCsvValue() = CsvValue.Int(this)
+internal fun Double.toCsvValue() = CsvValue.Double(this)
+internal fun String.toCsvValue() = CsvValue.String(this)
+
 abstract class CsvField<T>(
     val csvName: String,
-    val isRequired: Boolean
+    val isRequired: Boolean,
+    val format: (item: Item) -> String,
 ) {
-    abstract fun format(item: Item): String
+    //abstract fun format(item: Item): String
     //abstract fun parse(line: Array<String>, map: Map<String, Int>): T?
     abstract fun parse(string: String): T?
     fun parseLine(line: Array<String>, map: Map<String, Int>): T? {
@@ -35,50 +51,59 @@ abstract class CsvField<T>(
         )
     }
 
-    object MeasuredAt : CsvField<Instant>("measuredAt", true) {
-        private val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
-        override fun format(item: Item): String = formatter.format(item.measuredAt)
-        override fun parse(string: String): Instant? =
-            string.takeIf { it.isNotBlank() }?.let { Instant.parse(it) }
+    object MeasuredAt : CsvField<CsvValue>("measuredAt", true,
+        { item ->
+            val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
+            formatter.format(item.measuredAt)
+        }
+    ) {
+        //private val formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.systemDefault())
+        //override fun format(item: Item): String = formatter.format(item.measuredAt)
+        override fun parse(string: String): CsvValue.Instant? =
+            string.takeIf { it.isNotBlank() }?.let { Instant.parse(it).toCsvValue() }
     }
 
-    object BpUpper : CsvField<Int>("BP upper", true) {
-        override fun format(item: Item): String = item.vitals.bp?.upper?.toString() ?: ""
-        override fun parse(string: String): Int? = string.toIntOrNull()
+    object BpUpper : CsvField<CsvValue>("BP upper", true,
+        { it.vitals.bp?.upper?.toString() ?: ""}
+    ) {
+        //override fun format(item: Item): String = item.vitals.bp?.upper?.toString() ?: ""
+        override fun parse(string: String) = string.toIntOrNull()?.toCsvValue()
     }
 
-    object BpLower : CsvField<Int>("BP lower", true) {
-        override fun format(item: Item): String = item.vitals.bp?.lower?.toString() ?: ""
-        override fun parse(string: String): Int? = string.toIntOrNull()
+    object BpLower : CsvField<CsvValue>("BP lower", true,
+        { it.vitals.bp?.lower?.toString() ?: ""}
+    ) {
+        override fun parse(string: String) = string.toIntOrNull()?.toCsvValue()
     }
 
-    object Pulse : CsvField<Int>("pulse", false) {
-        override fun format(item: Item): String = item.vitals.pulse?.toString() ?: ""
-        override fun parse(string: String): Int? = string.toDoubleOrNull()?.toInt()
+    object Pulse : CsvField<CsvValue>("pulse", false,
+        { it.vitals.pulse?.toString() ?: ""}
+    ) {
+        override fun parse(string: String) = string.toDoubleOrNull()?.toInt()?.toCsvValue()
     }
 
-    object BodyWeight : CsvField<Double>("body weight", false) {
-        override fun format(item: Item): String = item.vitals.bodyWeight?.toString() ?: ""
-        override fun parse(string: String): Double? = string.toDoubleOrNull()
+    object BodyWeight : CsvField<CsvValue>("body weight", false,
+        { it.vitals.bodyWeight?.toString() ?: ""}
+    ) {
+        override fun parse(string: String) = string.toDoubleOrNull()?.toCsvValue()
     }
 
-    object BodyTemp : CsvField<Double>("body temperature", false) {
-        override fun format(item: Item): String = item.vitals.bodyTemperature?.toString() ?: ""
-        override fun parse(string: String): Double? = string.toDoubleOrNull()
+    object BodyTemp : CsvField<CsvValue>("body temperature", false,
+        { it.vitals.bodyTemperature?.toString() ?: ""}
+    ) {
+        override fun parse(string: String) = string.toDoubleOrNull()?.toCsvValue()
     }
 
-    object Location : CsvField<String>("location", false) {
-        override fun format(item: Item): String = item.location
-        override fun parse(string: String): String = string
+    object Location : CsvField<CsvValue>("location", false, { it.location }){
+        override fun parse(string: String) = string.toCsvValue()
     }
 
-    object Memo : CsvField<String>("memo", false) {
-        override fun format(item: Item): String = item.memo
-        override fun parse(string: String): String =
-            string
+    object Memo : CsvField<CsvValue>("memo", false, { it.memo }) {
+        override fun parse(string: String) = string.toCsvValue()
     }
 }
 
+/////////////////////////////////
 
 class ExportDataUseCase( private val itemRepository: ItemRepository) {
     suspend operator fun invoke(uri: Uri, contentResolver: ContentResolver): Result<String> = runCatching {
@@ -127,7 +152,7 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
         "Import successful"
     }.onFailure { e -> Log.e("ImportDataUseCase", "CSV import failed", e) }
 
-    fun readItemsFromCsv(reader: Reader): List<Item> {
+    private fun readItemsFromCsv(reader: Reader): List<Item> {
         val result = mutableListOf<Item>()
 
         CSVReader(reader).use { csvReader ->
@@ -147,26 +172,26 @@ class ImportDataUseCase(private val itemRepository: ItemRepository){
                         line = csvReader.readNext(); index++; continue
                     }
 
-                    val measuredAt = CsvField.MeasuredAt.parseLine(line, indexMap)!!
-                    val upper = CsvField.BpUpper.parseLine(line, indexMap)
-                    val lower = CsvField.BpLower.parseLine(line, indexMap)
-                    val pulse = CsvField.Pulse.parseLine(line, indexMap)
-                    val bodyWeight = CsvField.BodyWeight.parseLine(line, indexMap)
-                    val bodyTemp = CsvField.BodyTemp.parseLine(line, indexMap)
-                    val location = CsvField.Location.parseLine(line, indexMap) ?: ""
-                    val memo = CsvField.Memo.parseLine(line, indexMap) ?: ""
+                    val measuredAt = CsvField.MeasuredAt.parseLine(line, indexMap)!! as CsvValue.Instant
+                    val upper = CsvField.BpUpper.parseLine(line, indexMap) as CsvValue.Int
+                    val lower = CsvField.BpLower.parseLine(line, indexMap) as CsvValue.Int
+                    val pulse = CsvField.Pulse.parseLine(line, indexMap) as CsvValue.Int
+                    val bodyWeight = CsvField.BodyWeight.parseLine(line, indexMap) as CsvValue.Double
+                    val bodyTemp = CsvField.BodyTemp.parseLine(line, indexMap) as CsvValue.Double
+                    val location = (CsvField.Location.parseLine(line, indexMap) ?: "") as CsvValue.String
+                    val memo = (CsvField.Memo.parseLine(line, indexMap) ?: "") as CsvValue.String
 
                     result.add(
                         Item(
-                            measuredAt = measuredAt,
+                            measuredAt = measuredAt.value,
                             vitals = Vitals(
-                                bp = (upper to lower).toBloodPressure(),
-                                pulse = pulse,
-                                bodyWeight = bodyWeight,
-                                bodyTemperature = bodyTemp
+                                bp = (upper.value to lower.value).toBloodPressure(),
+                                pulse = pulse.value,
+                                bodyWeight = bodyWeight.value,
+                                bodyTemperature = bodyTemp.value
                             ),
-                            location = location,
-                            memo = memo
+                            location = location.value,
+                            memo = memo.value
                         )
                     )
                 } catch (e: Exception) {

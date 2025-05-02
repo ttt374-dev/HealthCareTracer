@@ -34,5 +34,6 @@ class SettingsViewModel @Inject constructor(private val configRepository: Config
             configRepository.updateData{ config }
         }
     }
+
 }
 

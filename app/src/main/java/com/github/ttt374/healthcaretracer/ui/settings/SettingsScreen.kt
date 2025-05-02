@@ -47,14 +47,15 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-enum class TargetVitals(val resId: Int, val selector: (Vitals) -> Any?) {
-    BpUpper(R.string.targetBpUpper, { vitals: Vitals -> vitals.bp?.upper }),
-    BpLower(R.string.targetBpLower, { vitals: Vitals -> vitals.bp?.lower }),
-    BodyWeight(R.string.targetBodyWeight, { vitals: Vitals -> vitals.bodyWeight }) }
+enum class TargetVitals(val resId: Int, val selector: (Vitals) -> Any?, val validator: (String) -> Boolean, val keyboardType: KeyboardType) {
+    BpUpper(R.string.targetBpUpper, { vitals: Vitals -> vitals.bp?.upper }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
+    BpLower(R.string.targetBpLower, { vitals: Vitals -> vitals.bp?.lower }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
+    BodyWeight(R.string.targetBodyWeight, { vitals: Vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble, KeyboardType.Number),
+}
 
 object ConfigValidator {
-    fun validatePositiveNumber(input: String, parse: (String) -> Number?): Boolean =
-        parse(input)?.toDouble()?.let { it > 0.0 } == true
+//    fun validatePositiveNumber(input: String, parse: (String) -> Number?): Boolean =
+//        parse(input)?.toDouble()?.let { it > 0.0 } == true
 
     fun validatePositiveInt(input: String): Boolean =
         input.toIntOrNull()?.let { it > 0 } == true
@@ -64,12 +65,8 @@ object ConfigValidator {
 
     fun validateZoneId(input: String): Boolean =
         input.isNotBlank() && try { ZoneId.of(input); true } catch (e: DateTimeException){ false}
-        //try { ZoneId.of(input); true } catch (e: DateTimeException) { false }
 }
 
-fun provideDialogStates(keys: List<Enum<*>>): Map<Enum<*>, DialogState> {
-    return keys.associateWith { DialogStateImpl() }
-}
 @Composable
 fun rememberTargetDialogStates(): Map<TargetVitals, DialogState> {
     return remember { TargetVitals.entries.associateWith { DialogStateImpl() }}
@@ -88,50 +85,28 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     //val configValidator: ConfigValidator = ConfigValidator()
 
     // dialogs
-    val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
-    val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
     val bpGuidelineState = rememberDialogState()
-
-
     val targetVitalsDialogState = rememberTargetDialogStates()
+    TargetVitals.entries.forEach { targetVital ->
+        if (targetVitalsDialogState[targetVital]?.isOpen == true) {
 
-    //val targetBpUpperDialogState = rememberDialogState()
-    if (targetVitalsDialogState[TargetVitals.BpUpper]?.isOpen == true){
-        TextFieldDialog(title = { Text(stringResource(R.string.targetBpUpper))},
-            initialValue = config.targetVitals.bp?.upper.toString(),
-            onConfirm = {
-                val vitals = config.targetVitals.copy(bp = (it.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
-                viewModel.saveConfig(config.copy(targetVitals = vitals))},
-            validate = ConfigValidator::validatePositiveInt,
-            keyboardOptions = numberKeyboardOptions,
-            closeDialog = { targetVitalsDialogState[TargetVitals.BpUpper]?.close() }
-        )
+            TextFieldDialog(
+                title = { Text(stringResource(targetVital.resId)) },
+                initialValue = targetVital.selector(config.targetVitals)?.toString() ?: "",
+                onConfirm = { input ->
+                    val updatedVitals = when (targetVital) {
+                        TargetVitals.BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+                        TargetVitals.BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+                        TargetVitals.BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+                    }
+                    viewModel.saveConfig(config.copy(targetVitals = updatedVitals))
+                },
+                validate = targetVital.validator,
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVital.keyboardType),
+                closeDialog = { targetVitalsDialogState[targetVital]?.close() }
+            )
+        }
     }
-    //val targetBpLowerDialogState = rememberDialogState()
-    if (targetVitalsDialogState[TargetVitals.BpLower]?.isOpen == true){
-        TextFieldDialog(title = { Text(stringResource(R.string.targetBpLower))},
-            initialValue = config.targetVitals.bp?.lower.toString(),
-            onConfirm = {
-                val vitals = config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to it.toIntOrNull()).toBloodPressure())
-                viewModel.saveConfig(config.copy(targetVitals = vitals))},
-            validate = ConfigValidator::validatePositiveInt,
-            keyboardOptions = numberKeyboardOptions,
-            closeDialog = { targetVitalsDialogState[TargetVitals.BpLower]?.close() }
-        )
-    }
-    //val targetBodyWeightDialogState = rememberDialogState()
-    if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true){
-        TextFieldDialog(title = { Text(stringResource(R.string.targetBodyWeight))},
-            initialValue = config.targetVitals.bodyWeight.toString(),
-            onConfirm = {
-                val vitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
-                viewModel.saveConfig(config.copy(targetVitals = vitals))},
-            validate = ConfigValidator::validatePositiveDouble,
-            keyboardOptions = decimalKeyboardOptions,
-            closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() }
-        )
-    }
-
     val dayPeriodDialogState = rememberDayPeriodDialogStates()
 
     DayPeriod.entries.forEach { dayPeriod ->
@@ -147,12 +122,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
     val zoneIdDialogState = rememberDialogState()
     if (zoneIdDialogState.isOpen){
-        //val context = LocalContext.current
-        //val timeZoneStrList = remember { context.resources.getStringArray(R.array.timezone_list).toList() }
         SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timezoneList,
             onConfirm = { viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))},
             closeDialog = { zoneIdDialogState.close()},
-            //validate = { it.isNotBlank() && try { ZoneId.of(it); true } catch (e: DateTimeException){ false} }
             validate = ConfigValidator::validateZoneId
         )
 

@@ -4,28 +4,19 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -36,16 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.R
-import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
-import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
-import com.github.ttt374.healthcaretracer.shared.toBodyWeightString
-import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DialogState
@@ -66,9 +52,22 @@ enum class TargetVitals(val resId: Int, val selector: (Vitals) -> Any?) {
     BpLower(R.string.targetBpLower, { vitals: Vitals -> vitals.bp?.lower }),
     BodyWeight(R.string.targetBodyWeight, { vitals: Vitals -> vitals.bodyWeight }) }
 
+object ConfigValidator {
+    fun validatePositiveInt(input: String): Boolean =
+        input.toIntOrNull()?.let { it > 0 } == true
+
+    fun validatePositiveDouble(input: String): Boolean =
+        input.toDoubleOrNull()?.let { it > 0.0} == true
+
+    fun validateZoneId(input: String): Boolean =
+        input.isNotBlank() && try { ZoneId.of(input); true } catch (e: DateTimeException){ false}
+        //try { ZoneId.of(input); true } catch (e: DateTimeException) { false }
+}
+
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val config by viewModel.config.collectAsState()
+    //val configValidator: ConfigValidator = ConfigValidator()
 
     // dialogs
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
@@ -90,7 +89,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             onConfirm = {
                 val vitals = config.targetVitals.copy(bp = (it.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
                 viewModel.saveConfig(config.copy(targetVitals = vitals))},
-            validate = validatePosInt,
+            validate = ConfigValidator::validatePositiveInt,
             keyboardOptions = numberKeyboardOptions,
             closeDialog = { targetVitalsDialogState[TargetVitals.BpUpper]?.close() }
         )
@@ -102,7 +101,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             onConfirm = {
                 val vitals = config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to it.toIntOrNull()).toBloodPressure())
                 viewModel.saveConfig(config.copy(targetVitals = vitals))},
-            validate = validatePosInt,
+            validate = ConfigValidator::validatePositiveInt,
             keyboardOptions = numberKeyboardOptions,
             closeDialog = { targetVitalsDialogState[TargetVitals.BpLower]?.close() }
         )
@@ -114,7 +113,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             onConfirm = {
                 val vitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
                 viewModel.saveConfig(config.copy(targetVitals = vitals))},
-            validate = validatePosDouble,
+            validate = ConfigValidator::validatePositiveDouble,
             keyboardOptions = decimalKeyboardOptions,
             closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() }
         )
@@ -167,7 +166,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
         SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList,
             onConfirm = { viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))},
             closeDialog = { zoneIdDialogState.close()},
-            validate = { it.isNotBlank() && try { ZoneId.of(it); true } catch (e: DateTimeException){ false} })
+            //validate = { it.isNotBlank() && try { ZoneId.of(it); true } catch (e: DateTimeException){ false} }
+            validate = ConfigValidator::validateZoneId
+        )
 
 //        SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList, onConfirm = {
 //            try {

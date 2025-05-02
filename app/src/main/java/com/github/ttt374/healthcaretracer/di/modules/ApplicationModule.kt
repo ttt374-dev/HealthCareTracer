@@ -25,6 +25,16 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
+//
+//@Module
+//@InstallIn(SingletonComponent::class)
+//object ApplicationModule {
+//    @Provides
+//    @ApplicationContext
+//    fun provideApplicationContext(@ApplicationContext context: Context): Context {
+//        return context
+//    }
+//}
 
 @Module
 @InstallIn(SingletonComponent::class)

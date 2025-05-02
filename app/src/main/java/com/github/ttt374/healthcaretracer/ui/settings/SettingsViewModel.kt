@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
+import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data. repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,6 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,6 +37,16 @@ class SettingsViewModel @Inject constructor(private val configRepository: Config
             configRepository.updateData{ config }
         }
     }
-
+    fun updateTargetVitals(targetVital: TargetVitals, input: String){
+        viewModelScope.launch {
+            val currentConfig = config.first()
+            val updatedVitals = when (targetVital) {
+                TargetVitals.BpUpper -> currentConfig.targetVitals.copy(bp = (input.toIntOrNull() to currentConfig.targetVitals.bp?.lower).toBloodPressure())
+                TargetVitals.BpLower -> currentConfig.targetVitals.copy(bp = (currentConfig.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+                TargetVitals.BodyWeight -> currentConfig.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+            }
+            saveConfig(currentConfig.copy(targetVitals = updatedVitals))
+        }
+    }
 }
 

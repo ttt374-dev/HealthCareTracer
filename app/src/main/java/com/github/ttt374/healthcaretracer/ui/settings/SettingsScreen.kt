@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -28,7 +27,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -46,6 +44,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 enum class TargetVitals(val resId: Int, val selector: (Vitals) -> Any?, val validator: (String) -> Boolean, val keyboardType: KeyboardType) {
     BpUpper(R.string.targetBpUpper, { vitals: Vitals -> vitals.bp?.upper }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
@@ -54,9 +53,6 @@ enum class TargetVitals(val resId: Int, val selector: (Vitals) -> Any?, val vali
 }
 
 object ConfigValidator {
-//    fun validatePositiveNumber(input: String, parse: (String) -> Number?): Boolean =
-//        parse(input)?.toDouble()?.let { it > 0.0 } == true
-
     fun validatePositiveInt(input: String): Boolean =
         input.toIntOrNull()?.let { it > 0 } == true
 
@@ -68,7 +64,7 @@ object ConfigValidator {
 }
 
 @Composable
-fun rememberTargetDialogStates(): Map<TargetVitals, DialogState> {
+fun rememberTargetVitalsDialogStates(): Map<TargetVitals, DialogState> {
     return remember { TargetVitals.entries.associateWith { DialogStateImpl() }}
 }
 @Composable
@@ -86,20 +82,15 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     // dialogs
     val bpGuidelineState = rememberDialogState()
-    val targetVitalsDialogState = rememberTargetDialogStates()
+    val targetVitalsDialogState = rememberTargetVitalsDialogStates()
     TargetVitals.entries.forEach { targetVital ->
-        if (targetVitalsDialogState[targetVital]?.isOpen == true) {
+        if (targetVitalsDialogState.getValue(targetVital).isOpen) {
 
             TextFieldDialog(
                 title = { Text(stringResource(targetVital.resId)) },
                 initialValue = targetVital.selector(config.targetVitals)?.toString() ?: "",
                 onConfirm = { input ->
-                    val updatedVitals = when (targetVital) {
-                        TargetVitals.BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
-                        TargetVitals.BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-                        TargetVitals.BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
-                    }
-                    viewModel.saveConfig(config.copy(targetVitals = updatedVitals))
+                    viewModel.updateTargetVitals(targetVital, input)
                 },
                 validate = targetVital.validator,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVital.keyboardType),
@@ -110,10 +101,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     val dayPeriodDialogState = rememberDayPeriodDialogStates()
 
     DayPeriod.entries.forEach { dayPeriod ->
-        if (dayPeriodDialogState[dayPeriod]?.isOpen == true){
+        if (dayPeriodDialogState.getValue(dayPeriod).isOpen){
             LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
                 onTimeSelected = {
-                    //val timeOfDayConfig = config.timeOfDayConfig.copy(morning = it)
                     val timeOfDayConfig = config.dayPeriodConfig.update(dayPeriod, it)
                     viewModel.saveConfig(config.copy(dayPeriodConfig = timeOfDayConfig))
                 },
@@ -123,13 +113,18 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     val zoneIdDialogState = rememberDialogState()
     if (zoneIdDialogState.isOpen){
         SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timezoneList,
-            onConfirm = { viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))},
+            onConfirm = {
+                val zoneId = runCatching { ZoneId.of(it) }.getOrNull()
+                if (zoneId != null) viewModel.saveConfig(config.copy(zoneId = zoneId))
+
+//                viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))
+            },
             closeDialog = { zoneIdDialogState.close()},
             validate = ConfigValidator::validateZoneId
         )
 
     }
-    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
+    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault())  // .withZone(ZoneId.systemDefault())
     ////////////////////////////////////////////////
     Scaffold(
         topBar = { CustomTopAppBar(stringResource(R.string.settings)) },

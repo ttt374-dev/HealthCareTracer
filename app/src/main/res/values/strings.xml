@@ -5,7 +5,7 @@
 
     <string name="bpUpper">Systolic BP</string>
     <string name="bpLower">Diastolic BP</string>
-    <string name="targetBpUpper" translatable="false">Target Systolic BP</string>
+    <string name="targetBpUpper">Target Systolic BP</string>
 
     <string name="blood_pressure">Blood Pressure</string>
     <string name="pulse">Pulse</string>
@@ -55,4 +55,5 @@
     <string name="analysis">Analysis</string>
     <string name="target">Target</string>
     <string name="timeZone">Time Zone</string>
+    <string name="targetBpLower">Target Bp Lower</string>
 </resources>

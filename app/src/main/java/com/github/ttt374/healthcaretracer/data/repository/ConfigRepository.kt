@@ -67,7 +67,7 @@ object ZoneIdSerializer : KSerializer<ZoneId> {
 @Singleton
 class ConfigRepository(context: Context) : DataStoreRepository<Config> by DataStoreRepositoryImpl (
     context = context,
-    fileName = "config4", // AppConst.DataStoreFilename.CONFIG.filename,
+    fileName = "config5", // AppConst.DataStoreFilename.CONFIG.filename,
     serializer = GenericSerializer(serializer = Config.serializer(), default = Config())
 )
 

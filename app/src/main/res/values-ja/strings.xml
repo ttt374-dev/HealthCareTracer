@@ -55,4 +55,5 @@
     <string name="analysis">分析</string>
     <string name="target">目標</string>
     <string name="timeZone">タイムゾーン</string>
+    <string name="targetBpLower">目標拡張期血圧</string>
 </resources>

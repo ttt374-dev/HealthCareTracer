@@ -1,6 +1,5 @@
 package com.github.ttt374.healthcaretracer.ui.settings
 
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,7 @@ import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -68,29 +68,68 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     // dialogs
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
+    val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
     val bpGuidelineState = rememberDialogState()
+    val validatePosInt = { value: String -> value.toIntOrNull()?.let { it > 0} ?: false}
+    val validatePosDouble = { value: String -> value.toDoubleOrNull()?.let { it > 0.0 } ?: false}
 
-    @Composable
-    fun rememberTargetDialogStates(): Map<TargetVitals, DialogState> {
-        return remember { TargetVitals.entries.associateWith { DialogStateImpl() }}
+    val targetBpUpperDialogState = rememberDialogState()
+    if (targetBpUpperDialogState.isOpen){
+        TextFieldDialog(title = { Text(stringResource(R.string.targetBpUpper))},
+            initialValue = config.targetVitals.bp?.upper.toString(),
+            onConfirm = {
+                val vitals = config.targetVitals.copy(bp = (it.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+                viewModel.saveConfig(config.copy(targetVitals = vitals))},
+            validate = validatePosInt,
+            keyboardOptions = numberKeyboardOptions,
+            closeDialog = { targetBpUpperDialogState.close() }
+        )
     }
-    val targetVitalsDialogState = rememberTargetDialogStates()
-
-    if (targetVitalsDialogState[TargetVitals.BloodPressure]?.isOpen == true){
-        TargetBpDialog(config.targetVitals.bp, onConfirm = { bp ->
-            val newVitals = config.targetVitals.copy(bp = bp)
-            viewModel.saveConfig(config.copy(targetVitals = newVitals))
-        }, closeDialog = { targetVitalsDialogState[TargetVitals.BloodPressure]?.close() })
+    val targetBpLowerDialogState = rememberDialogState()
+    if (targetBpLowerDialogState.isOpen){
+        TextFieldDialog(title = { Text(stringResource(R.string.targetBpLower))},
+            initialValue = config.targetVitals.bp?.lower.toString(),
+            onConfirm = {
+                val vitals = config.targetVitals.copy(bp = (it.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+                viewModel.saveConfig(config.copy(targetVitals = vitals))},
+            validate = validatePosInt,
+            keyboardOptions = numberKeyboardOptions,
+            closeDialog = { targetBpLowerDialogState.close() }
+        )
     }
-    if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true)
-        TextFieldDialog(title = { Text(stringResource(R.string.targetBodyWeight))}, config.targetVitals.bodyWeight.toString(), onConfirm = {
-            val newVitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
-            viewModel.saveConfig(config.copy(targetVitals = newVitals))
-        },
-            closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
-            validate = { it.toDoubleOrNull()?.let { it > 0} ?: false },
-            keyboardOptions = decimalKeyboardOptions)
-
+    val targetBodyWeightDialogState = rememberDialogState()
+    if (targetBodyWeightDialogState.isOpen){
+        TextFieldDialog(title = { Text(stringResource(R.string.targetBodyWeight))},
+            initialValue = config.targetVitals.bodyWeight.toString(),
+            onConfirm = {
+                val vitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
+                viewModel.saveConfig(config.copy(targetVitals = vitals))},
+            validate = validatePosDouble,
+            keyboardOptions = decimalKeyboardOptions,
+            closeDialog = { targetBodyWeightDialogState.close() }
+        )
+    }
+//    @Composable
+//    fun rememberTargetDialogStates(): Map<TargetVitals, DialogState> {
+//        return remember { TargetVitals.entries.associateWith { DialogStateImpl() }}
+//    }
+//    val targetVitalsDialogState = rememberTargetDialogStates()
+//
+//    if (targetVitalsDialogState[TargetVitals.BloodPressure]?.isOpen == true){
+//        TargetBpDialog(config.targetVitals.bp, onConfirm = { bp ->
+//            val newVitals = config.targetVitals.copy(bp = bp)
+//            viewModel.saveConfig(config.copy(targetVitals = newVitals))
+//        }, closeDialog = { targetVitalsDialogState[TargetVitals.BloodPressure]?.close() })
+//    }
+//    if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true)
+//        TextFieldDialog(title = { Text(stringResource(R.string.targetBodyWeight))}, config.targetVitals.bodyWeight.toString(), onConfirm = {
+//            val newVitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
+//            viewModel.saveConfig(config.copy(targetVitals = newVitals))
+//        },
+//            closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
+//            validate = { it.toDoubleOrNull()?.let { it > 0} ?: false },
+//            keyboardOptions = decimalKeyboardOptions)
+//
 
     @Composable
     fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
@@ -116,7 +155,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
         val context = LocalContext.current
         val timeZoneStrList = remember { context.resources.getStringArray(R.array.timezone_list).toList() }
         SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList,
-            onConfirm = { viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))},   // TODO: error check
+            onConfirm = { viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))},
             closeDialog = { zoneIdDialogState.close()},
             validate = { it.isNotBlank() && try { ZoneId.of(it); true } catch (e: DateTimeException){ false} })
 
@@ -154,14 +193,19 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                     } )
                 BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
             }
-            SettingsRow(stringResource(TargetVitals.BloodPressure.resId)){
-                Text(config.targetVitals.bp.toAnnotatedString(config.bloodPressureGuideline),
-                    Modifier.clickable { targetVitalsDialogState[TargetVitals.BloodPressure]?.open() })
+            SettingsRow(stringResource(R.string.targetBpUpper)){
+                Text(config.targetVitals.bp?.upper.toString(),
+                    Modifier.clickable { targetBpUpperDialogState.open() })
             }
-            SettingsRow(stringResource(TargetVitals.BodyWeight.resId)){
-                Text(config.targetVitals.bodyWeight.toBodyWeightString(),
-                    Modifier.clickable {  targetVitalsDialogState[TargetVitals.BodyWeight]?.open() })
+            SettingsRow(stringResource(R.string.targetBpLower)){
+                Text(config.targetVitals.bp?.lower.toString(),
+                    Modifier.clickable { targetBpLowerDialogState.open() })
             }
+            SettingsRow(stringResource(R.string.targetBodyWeight)){
+                Text(config.targetVitals.bodyWeight.toString(),
+                    Modifier.clickable { targetBodyWeightDialogState.open() })
+            }
+
             DayPeriod.entries.forEach { dayPeriod ->
                 SettingsRow(stringResource(dayPeriod.resId)){
                     Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),
@@ -211,14 +255,14 @@ fun TargetBpDialog (bp: BloodPressure?, onConfirm: (BloodPressure) -> Unit, clos
         },
         confirmButton = {
             OutlinedButton(onClick = {
-                onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)); closeDialog()
-                closeDialog() }, modifier = Modifier.focusRequester(confirmButtonFocusRequester).focusTarget()
+                onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0));
+            }, modifier = Modifier.focusRequester(confirmButtonFocusRequester).focusTarget()
             ) {
                 Text("OK")
             }
         },
-        onConfirm = { onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)); closeDialog() },
-        //onCancel = { closeDialog() }
+        onConfirm = { onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)) },
+        closeDialog = closeDialog
         )
 }
 @Composable

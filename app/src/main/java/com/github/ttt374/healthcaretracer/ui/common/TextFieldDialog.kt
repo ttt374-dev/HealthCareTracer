@@ -12,15 +12,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 
+//@Composable
+//fun TextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, onConfirm: (String) -> Unit, closeDialog: () -> Unit = {},
+//                    keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
+//    var value by remember { mutableStateOf(initialValue) }
+//
+//    val focusRequester = remember { FocusRequester() }
+//    LaunchedEffect(Unit){
+//        focusRequester.requestFocus()
+//    }
+//    ConfirmDialog(title = title, text = { OutlinedTextField(value, { value = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
+//        onConfirm = { onConfirm(value)}, closeDialog = closeDialog)
+//}
 @Composable
 fun TextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, onConfirm: (String) -> Unit, closeDialog: () -> Unit = {},
                     keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
-    var text by remember { mutableStateOf(initialValue) }
 
-    val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit){
-        focusRequester.requestFocus()
+    val inputText = @Composable { value: String, onValueChange: (String) -> Unit, modifier: Modifier ->
+        OutlinedTextField(value, onValueChange, keyboardOptions = keyboardOptions, modifier = modifier)
     }
-    ConfirmDialog(title = title, text = { OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
-        onConfirm = { onConfirm(text)}, closeDialog = closeDialog)
+    InputDialog(initialValue, title = title, inputText = inputText, onConfirm = { onConfirm(it) }, closeDialog = closeDialog)
+
 }

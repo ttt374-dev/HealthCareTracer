@@ -122,8 +122,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             } catch (e: Exception){
                 Log.e("zoneId", e.message.toString())
             }
-        }, onCancel =  { zoneIdDialogState.close() },
-            closeDialog = { })
+        },
+            closeDialog = { zoneIdDialogState.close()})
     }
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
@@ -190,8 +190,8 @@ fun TargetBpDialog (bp: BloodPressure?, onConfirm: (BloodPressure) -> Unit, clos
     val confirmButtonFocusRequester = remember { FocusRequester() }
     //val focusManager = FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, confirmButtonFocusRequester))
 
-    ConfirmDialog(title = { Text(stringResource(R.string.targetBp))},
-        text = {
+    ConfirmDialog(title = @Composable { Text(stringResource(R.string.targetBp))},
+        text = @Composable {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(bpUpperString, {
                     bpUpperString = it
@@ -212,7 +212,7 @@ fun TargetBpDialog (bp: BloodPressure?, onConfirm: (BloodPressure) -> Unit, clos
             }
         },
         onConfirm = { onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)); closeDialog() },
-        onCancel = { closeDialog() }
+        //onCancel = { closeDialog() }
         )
 }
 @Composable

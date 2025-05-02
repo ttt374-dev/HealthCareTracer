@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.ui.common
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,14 +19,14 @@ import androidx.compose.ui.window.DialogProperties
 fun InputDialog(
     initialValue: String,
     title: @Composable () ->  Unit = {},
-    inputText: @Composable (String, (String) -> Unit, Modifier) -> Unit,
-    //onUpdateValue: (String) -> Unit,
+    inputText: @Composable (value: String, onValueChange: (String) -> Unit, modifier: Modifier) -> Unit,
     onConfirm: (value: String) -> Unit = {},
     confirmButtonLabel: String = "OK",
     dismissButtonLabel: String = "Cancel",
     closeDialog: () -> Unit = {},
-    validate: (String) -> Boolean = { false }
-
+    validate: (String) -> Boolean = { true },
+    closeAfterConfirm: Boolean = true,
+    dialogProperties: DialogProperties = DialogProperties(dismissOnClickOutside = true)
 ){
     var value by remember { mutableStateOf(initialValue) }
     val focusRequester = remember { FocusRequester() }
@@ -33,19 +34,23 @@ fun InputDialog(
         focusRequester.requestFocus()
     }
     val confirmButton = @Composable {
-        OutlinedButton(onClick = { onConfirm(value); closeDialog() }) {
+        TextButton(enabled = validate(value),
+            onClick = {
+                onConfirm(value);
+                if (closeAfterConfirm) closeDialog()
+            }) {
             Text(confirmButtonLabel)
         }
     }
     AlertDialog(onDismissRequest = { closeDialog()},
         confirmButton =  confirmButton,
         dismissButton = {
-            OutlinedButton( onClick = { closeDialog()}) {
+            TextButton( onClick = { closeDialog()}) {
                 Text(dismissButtonLabel)
             }
         },
         title = title,
         text = { inputText(value, { value = it }, Modifier.focusRequester(focusRequester)) },
-        properties = DialogProperties(dismissOnClickOutside = true) // 画面外タップでキャンセル
+        properties = dialogProperties,
     )
 }

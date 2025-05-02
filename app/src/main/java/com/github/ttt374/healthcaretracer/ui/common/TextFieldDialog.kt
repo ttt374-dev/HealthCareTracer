@@ -26,11 +26,12 @@ import androidx.compose.ui.focus.focusRequester
 //}
 @Composable
 fun TextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, onConfirm: (String) -> Unit, closeDialog: () -> Unit = {},
+                    validate: (String) -> Boolean = { true },
                     keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
 
     val inputText = @Composable { value: String, onValueChange: (String) -> Unit, modifier: Modifier ->
         OutlinedTextField(value, onValueChange, keyboardOptions = keyboardOptions, modifier = modifier)
     }
-    InputDialog(initialValue, title = title, inputText = inputText, onConfirm = { onConfirm(it) }, closeDialog = closeDialog)
+    InputDialog(initialValue, title = title, inputText = inputText, onConfirm = { onConfirm(it) }, closeDialog = closeDialog, validate = validate)
 
 }

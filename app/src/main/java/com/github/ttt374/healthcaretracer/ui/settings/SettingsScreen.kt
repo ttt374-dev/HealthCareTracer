@@ -54,6 +54,7 @@ import com.github.ttt374.healthcaretracer.ui.common.SelectableTextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -87,6 +88,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             viewModel.saveConfig(config.copy(targetVitals = newVitals))
         },
             closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
+            validate = { it.toDoubleOrNull()?.let { it > 0} ?: false },
             keyboardOptions = decimalKeyboardOptions)
 
 
@@ -113,17 +115,21 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     if (zoneIdDialogState.isOpen){
         val context = LocalContext.current
         val timeZoneStrList = remember { context.resources.getStringArray(R.array.timezone_list).toList() }
+        SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList,
+            onConfirm = { viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))},   // TODO: error check
+            closeDialog = { zoneIdDialogState.close()},
+            validate = { it.isNotBlank() && try { ZoneId.of(it); true } catch (e: DateTimeException){ false} })
 
-        SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList, onConfirm = {
-            try {
-                val zoneId = ZoneId.of(it)
-                viewModel.saveConfig(config.copy(zoneId = zoneId))
-                zoneIdDialogState.close()
-            } catch (e: Exception){
-                Log.e("zoneId", e.message.toString())
-            }
-        },
-            closeDialog = { zoneIdDialogState.close()})
+//        SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList, onConfirm = {
+//            try {
+//                val zoneId = ZoneId.of(it)
+//                viewModel.saveConfig(config.copy(zoneId = zoneId))
+//                zoneIdDialogState.close()
+//            } catch (e: Exception){
+//                Log.e("zoneId", e.message.toString())
+//            }
+//        },
+//            closeDialog = { zoneIdDialogState.close()})
     }
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())

@@ -6,18 +6,17 @@ import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.shared.Logger
-import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapper
+import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapper
+import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
+import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
-import com.github.ttt374.healthcaretracer.usecase.toInstantOrNull
+import com.github.ttt374.healthcaretracer.data.backup.toInstantOrNull
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.capture
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -46,7 +45,8 @@ class ExportDataUseCaseTest {
         //val contentResolverWrapper = mock<ContentResolverWrapper>()
         //val itemRepository = mock<ItemRepository>()
         val outputStream = ByteArrayOutputStream()
-        val exportDataUseCase = ExportDataUseCase(itemRepository, contentResolverWrapper)
+
+        val exportDataUseCase = ExportDataUseCase(itemRepository, CsvExporter(), contentResolverWrapper)
         //val uri = mock<Uri>()
 
         // モックデータ
@@ -80,20 +80,19 @@ class ImportCsvUseCaseTest {
     private lateinit var contentResolverWrapper: ContentResolverWrapper
     private lateinit var itemRepository: ItemRepository
     private lateinit var importDataUseCase: ImportDataUseCase
+    private lateinit var uri: Uri
 
     @Before
     fun setup() {
         contentResolverWrapper = mock()
         itemRepository = mock()
         val logger = mock<Logger>()
-        importDataUseCase = ImportDataUseCase(itemRepository, contentResolverWrapper, logger)
+        importDataUseCase = ImportDataUseCase(itemRepository, CsvImporter(logger), contentResolverWrapper)
+        uri = mock<Uri>()
     }
 
     @Test
     fun importTest() = runBlocking {
-        //val items = listOf(Item(measuredAt = "2022-01-01T00:00:00Z".toInstantOrNull()!!, vitals = Vitals(BloodPressure(120, 80), pulse=70)))
-        val uri = mock<Uri>()
-
         val importedCsvData = """
             "Measured at","Bp upper","Bp lower","Pulse","Body weight","Body temperature","Location","Memo"
             "2022-01-01T00:00:00Z","120","80","70","","","Tokyo","Test memo"
@@ -121,14 +120,11 @@ class ImportCsvUseCaseTest {
     }
     @Test
     fun importRequiredMissingTest() = runBlocking {
-        //val items = listOf(Item(measuredAt = "2022-01-01T00:00:00Z".toInstantOrNull()!!, vitals = Vitals(BloodPressure(120, 80), pulse=70)))
-        val uri = mock<Uri>()
-
         val importedCsvData = """
             "Measured at","Bp upper","Bp lower","Pulse","Body weight","Body temperature","Location","Memo"
-            "2022-01-01T00:00:00Z","120","80","70","","","Tokyo","Test memo"
-            "2022-01-02T00:00:00Z","130","","60","","","Osaka","Another memo"
-            "2022-01-03T00:00:00Z","","80","60","","","Osaka","Another memo"            
+            "2022-01-01T00:00:00Z","120","80","70","","","","ok"
+            "2022-01-02T00:00:00Z","130","","60","","","","ng: bp lower missing"
+            "2022-01-03T00:00:00Z","","80","60","","","","ng: bp upper missing"            
         """.trimIndent()
         val inputStream = ByteArrayInputStream(importedCsvData.toByteArray())
         whenever(contentResolverWrapper.openInputStream(uri)).thenReturn(inputStream)
@@ -138,8 +134,8 @@ class ImportCsvUseCaseTest {
 
         verify(itemRepository).replaceAllItems(captor.capture())
         val capturedItems = captor.firstValue
-        //assertEquals(1, capturedItems.size)
-        assertEquals(Item(), capturedItems[2])
+        assertEquals(1, capturedItems.size)
+//        assertEquals(Item(), capturedItems[2])
 
     }
 }

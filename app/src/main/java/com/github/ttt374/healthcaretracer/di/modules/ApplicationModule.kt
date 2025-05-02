@@ -10,10 +10,12 @@ import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepositoryImpl
 import com.github.ttt374.healthcaretracer.shared.AndroidLogger
 import com.github.ttt374.healthcaretracer.shared.Logger
-import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapper
+import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapper
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
-import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapperImpl
+import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapperImpl
+import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
+import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -28,13 +30,22 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper = ContentResolverWrapperImpl(context.contentResolver)
+    fun provideCsvExporter(): CsvExporter = CsvExporter()
 
     @Provides
-    fun provideExportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper) = ExportDataUseCase(itemRepository, contentResolverWrapper)
+    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter(logger)
 
     @Provides
-    fun provideImportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper, logger: Logger) = ImportDataUseCase(itemRepository, contentResolverWrapper, logger)
+    fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper =
+        ContentResolverWrapperImpl(context.contentResolver)
+
+    @Provides
+    fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter, contentResolverWrapper: ContentResolverWrapper) =
+        ExportDataUseCase(itemRepository, csvExporter, contentResolverWrapper)
+
+    @Provides
+    fun provideImportDataUseCase(itemRepository: ItemRepository, csvImporter: CsvImporter, contentResolverWrapper: ContentResolverWrapper) =
+        ImportDataUseCase(itemRepository, csvImporter, contentResolverWrapper)
 }
 @Module
 @InstallIn(SingletonComponent::class)

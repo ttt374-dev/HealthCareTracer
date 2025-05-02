@@ -1,4 +1,4 @@
-package com.github.ttt374.healthcaretracer.usecase
+package com.github.ttt374.healthcaretracer.data.backup
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -11,7 +11,8 @@ interface ContentResolverWrapper {
     fun openOutputStream(uri: Uri): OutputStream?
     fun openInputStream(uri: Uri): InputStream?
 }
-class ContentResolverWrapperImpl @Inject constructor(private val contentResolver: ContentResolver) : ContentResolverWrapper {
+class ContentResolverWrapperImpl @Inject constructor(private val contentResolver: ContentResolver) :
+    ContentResolverWrapper {
     override fun openOutputStream(uri: Uri): OutputStream? {
         return contentResolver.openOutputStream(uri)
     }

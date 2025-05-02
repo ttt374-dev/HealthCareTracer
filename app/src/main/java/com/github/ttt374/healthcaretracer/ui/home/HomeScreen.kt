@@ -73,6 +73,7 @@ fun HomeScreen(
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     val config by homeViewModel.config.collectAsState()
     val guideline = config.bloodPressureGuideline //   selectedGuideline
+    val zoneId = config.zoneId
 
     val importFilePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -97,7 +98,7 @@ fun HomeScreen(
     }
     LaunchedEffect(exportFilePickerDialogState.isOpen) {
         if (exportFilePickerDialogState.isOpen){
-            val filenameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm").withZone(ZoneId.systemDefault())
+            val filenameFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm").withZone(zoneId)
             val defaultFilename = "healthcare-${filenameFormatter.format(Instant.now())}.csv"
 
             exportFilePickerLauncher.launch(defaultFilename)

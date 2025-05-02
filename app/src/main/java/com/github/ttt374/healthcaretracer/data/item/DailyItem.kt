@@ -22,8 +22,8 @@ internal fun List<Item>.filterDayPeriod(dayPeriod: DayPeriod, timeOfDayConfig: D
     filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == dayPeriod}
 
 
-fun List<Item>.toDailyItemList(): List<DailyItem> {
-    return groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+fun List<Item>.toDailyItemList(zoneId: ZoneId = ZoneId.systemDefault()): List<DailyItem> {
+    return groupBy { it.measuredAt.atZone(zoneId).toLocalDate() }
         .map { (date, dailyItems) ->
             DailyItem(
                 date = date,

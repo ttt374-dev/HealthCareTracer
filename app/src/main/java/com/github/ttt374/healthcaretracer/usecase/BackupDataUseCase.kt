@@ -26,7 +26,7 @@ import java.io.Writer
 
 class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepository,
                                             private val csvExporter: CsvExporter,
-                                            private val contentResolverWrapper: ContentResolverWrapper,) {
+                                            private val contentResolverWrapper: ContentResolverWrapper) {
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
 

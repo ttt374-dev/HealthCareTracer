@@ -7,12 +7,14 @@ import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriodConfig
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.inject.Singleton
 
@@ -20,7 +22,9 @@ import javax.inject.Singleton
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
     val dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
-    val targetVitals: Vitals = Vitals(bp = BloodPressure(120, 80), bodyWeight = 60.0)
+    val targetVitals: Vitals = Vitals(bp = BloodPressure(120, 80), bodyWeight = 60.0),
+    @Serializable(with = ZoneIdSerializer::class)
+    val zoneId: ZoneId = ZoneId.systemDefault(),
 
     //val localeTag: String = "en_US"
 )
@@ -40,6 +44,19 @@ object LocalTimeSerializer : KSerializer<LocalTime> {
     }
 }
 
+@Serializable
+object ZoneIdSerializer : KSerializer<ZoneId> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("ZoneId", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ZoneId) {
+        encoder.encodeString(value.id)
+    }
+
+    override fun deserialize(decoder: Decoder): ZoneId {
+        return ZoneId.of(decoder.decodeString())
+    }
+}
 //////////////////////////////////////////////////////////////
 /**
  *  [ConfigRepository]

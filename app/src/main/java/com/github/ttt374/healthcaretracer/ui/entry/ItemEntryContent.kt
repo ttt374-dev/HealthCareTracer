@@ -52,6 +52,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
                      locationList: List<String> = emptyList(),
 ){
     val focusMap = rememberFocusRequestMap()
+    val zoneId = ZoneId.systemDefault()
 
     // 画面を開いたときに bpHigh にフォーカスを移動（新規エントリ時のみ）
     LaunchedEffect(editMode) {
@@ -75,7 +76,8 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
                     Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
                         DateAndTimePickers(itemUiState,
                             onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
-                            onTimeSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) }
+                            onTimeSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
+                            zoneId
                         )
                     }
                 }
@@ -208,7 +210,8 @@ fun InputFieldRow(label: String, inputField: @Composable () -> Unit){
 private fun DateAndTimePickers(
     itemUiState: ItemUiState,
     onDateSelected: (Instant) -> Unit,
-    onTimeSelected: (Instant) -> Unit
+    onTimeSelected: (Instant) -> Unit,
+    zoneId: ZoneId = ZoneId.systemDefault()
 ) {
     val datePickerDialogState = rememberDialogState(false)
     val timePickerDialogState = rememberDialogState(false)
@@ -221,8 +224,8 @@ private fun DateAndTimePickers(
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault()) }
-        val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm a").withZone(ZoneId.systemDefault()) }
+        val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(zoneId) }
+        val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm a").withZone(zoneId) }
 
         OutlinedButton(onClick = { datePickerDialogState.open() }) {
             Text(dateFormatter.format(itemUiState.measuredAt))

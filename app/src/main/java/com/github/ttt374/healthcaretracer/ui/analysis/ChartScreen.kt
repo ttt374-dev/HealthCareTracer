@@ -27,12 +27,12 @@ import java.time.format.DateTimeFormatter
 
 ////////////
 
-private fun LineChart.setupValueFormatter(datePattern: String){
+private fun LineChart.setupValueFormatter(datePattern: String, zoneId: ZoneId = ZoneId.systemDefault()){
     val formatter = DateTimeFormatter.ofPattern(datePattern)
     xAxis.valueFormatter = object : ValueFormatter() {
         override fun getFormattedValue(value: Float): String {
             return Instant.ofEpochMilli(value.toLong())
-                .atZone(ZoneId.systemDefault()).toLocalDate().format(formatter)
+                .atZone(zoneId).toLocalDate().format(formatter)
         }
     }
 }

@@ -113,6 +113,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
     }
+    val zoneIdDialogState = rememberDialogState()
+    if (zoneIdDialogState.isOpen){
+        TextFieldDialog(config.zoneId.toString(), onConfirm = {}, closeDialog = { zoneIdDialogState.close()})
+    }
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
     ////////////////////////////////////////////////
@@ -150,6 +154,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                     //Text(dayPeriod.takeStartValue(config.timeOfDayConfig).format(localTimeFormat),
                         modifier = Modifier.clickable { dayPeriodDialogState[dayPeriod]?.open() })
                 }
+            }
+            SettingsRow("time zone"){
+                Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
             }
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }

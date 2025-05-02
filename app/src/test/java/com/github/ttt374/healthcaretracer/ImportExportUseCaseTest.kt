@@ -5,6 +5,7 @@ import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.shared.Logger
 import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapper
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
@@ -84,7 +85,8 @@ class ImportCsvUseCaseTest {
     fun setup() {
         contentResolverWrapper = mock()
         itemRepository = mock()
-        importDataUseCase = ImportDataUseCase(itemRepository, contentResolverWrapper)
+        val logger = mock<Logger>()
+        importDataUseCase = ImportDataUseCase(itemRepository, contentResolverWrapper, logger)
     }
 
     @Test
@@ -96,7 +98,6 @@ class ImportCsvUseCaseTest {
             "Measured at","Bp upper","Bp lower","Pulse","Body weight","Body temperature","Location","Memo"
             "2022-01-01T00:00:00Z","120","80","70","","","Tokyo","Test memo"
             "2022-01-02T00:00:00Z","130","85","60.2","","","Osaka","Another memo"
-            "2022-01-03T00:00:00Z","130","","60","","","",""
         """.trimIndent()
         val inputStream = ByteArrayInputStream(importedCsvData.toByteArray())
         whenever(contentResolverWrapper.openInputStream(uri)).thenReturn(inputStream)
@@ -116,7 +117,29 @@ class ImportCsvUseCaseTest {
         assertEquals(120, capturedItems[0].vitals.bp?.upper)
         assertEquals(null, capturedItems[2].vitals.bp?.upper)
         assertEquals(null, capturedItems[2].vitals.bp?.lower)
-        assertEquals(60, capturedItems[2].vitals.pulse)
         assertEquals(null, capturedItems[1].vitals.pulse)
+    }
+    @Test
+    fun importRequiredMissingTest() = runBlocking {
+        //val items = listOf(Item(measuredAt = "2022-01-01T00:00:00Z".toInstantOrNull()!!, vitals = Vitals(BloodPressure(120, 80), pulse=70)))
+        val uri = mock<Uri>()
+
+        val importedCsvData = """
+            "Measured at","Bp upper","Bp lower","Pulse","Body weight","Body temperature","Location","Memo"
+            "2022-01-01T00:00:00Z","120","80","70","","","Tokyo","Test memo"
+            "2022-01-02T00:00:00Z","130","","60","","","Osaka","Another memo"
+            "2022-01-03T00:00:00Z","","80","60","","","Osaka","Another memo"            
+        """.trimIndent()
+        val inputStream = ByteArrayInputStream(importedCsvData.toByteArray())
+        whenever(contentResolverWrapper.openInputStream(uri)).thenReturn(inputStream)
+        importDataUseCase(uri)
+
+        val captor = argumentCaptor<List<Item>>()
+
+        verify(itemRepository).replaceAllItems(captor.capture())
+        val capturedItems = captor.firstValue
+        //assertEquals(1, capturedItems.size)
+        assertEquals(Item(), capturedItems[2])
+
     }
 }

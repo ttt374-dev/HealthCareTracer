@@ -14,21 +14,25 @@ fun String.toInstantOrNull(): Instant? {
     }
 }
 enum class CsvField(
+    val isRequired: Boolean = false,
     val format: (Item) -> String,
     val parse: (String) -> (CsvItemPartial) -> CsvItemPartial,
     val specificFieldName: String? = null,
 ) {
     MEASURED_AT(
+        isRequired = true,
         specificFieldName = "Measured at",
         format = { it.measuredAt.toString() },
         parse = { str -> { it.copy(measuredAt = str.toInstantOrNull()) } }
     ),
     BP_UPPER(
+        isRequired = true,
         specificFieldName = "Bp upper",
         format = { it.vitals.bp?.upper?.toString().orEmpty() },
         parse = { str -> { it.copy(bpUpper = str.toIntOrNull()) } }
     ),
     BP_LOWER(
+        isRequired = true,
         specificFieldName = "Bp lower",
         format = { it.vitals.bp?.lower?.toString().orEmpty() },
         parse = { str -> { it.copy(bpLower = str.toIntOrNull()) } }

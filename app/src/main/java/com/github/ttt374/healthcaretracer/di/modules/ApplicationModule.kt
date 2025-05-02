@@ -8,10 +8,13 @@ import com.github.ttt374.healthcaretracer.data.item.ItemDatabase
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepositoryImpl
+import com.github.ttt374.healthcaretracer.shared.AndroidLogger
+import com.github.ttt374.healthcaretracer.shared.Logger
 import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapper
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import com.github.ttt374.healthcaretracer.usecase.ContentResolverWrapperImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,7 +34,7 @@ object BackupModule {
     fun provideExportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper) = ExportDataUseCase(itemRepository, contentResolverWrapper)
 
     @Provides
-    fun provideImportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper) = ImportDataUseCase(itemRepository, contentResolverWrapper)
+    fun provideImportDataUseCase(itemRepository: ItemRepository, contentResolverWrapper: ContentResolverWrapper, logger: Logger) = ImportDataUseCase(itemRepository, contentResolverWrapper, logger)
 }
 @Module
 @InstallIn(SingletonComponent::class)
@@ -95,3 +98,11 @@ object MetricCategoryModule {
     }
 }
 
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class LoggerModule {
+    @Binds
+    abstract fun bindLogger(
+        androidLogger: AndroidLogger
+    ): Logger
+}

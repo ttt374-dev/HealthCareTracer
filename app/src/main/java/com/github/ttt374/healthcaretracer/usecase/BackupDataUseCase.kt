@@ -2,8 +2,10 @@ package com.github.ttt374.healthcaretracer.usecase
 
 import android.net.Uri
 import android.util.Log
+import android.util.Log.e
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import com.github.ttt374.healthcaretracer.shared.Logger
 import com.opencsv.CSVReader
 import com.opencsv.CSVWriter
 import jakarta.inject.Inject
@@ -47,7 +49,7 @@ class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepo
     }
 }
 ////////////////
-class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepository, private val contentResolverWrapper: ContentResolverWrapper){
+class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepository, private val contentResolverWrapper: ContentResolverWrapper, private val logger: Logger){
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         withContext(Dispatchers.IO) {
             contentResolverWrapper.openInputStream(uri)?.use { inputStream ->
@@ -72,9 +74,15 @@ class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepo
             var rowIndex = 1
             while (line != null) {
                 var partial = CsvItemPartial()
+                var hasMissingRequiredField = false
                 for ((field, idx) in fieldMap) {
-                    val value = line.getOrNull(idx).orEmpty()
-                    partial = field.parse(value)(partial)
+                    val value = line.getOrNull(idx) // nullable String?
+                    if (field.isRequired && (value == null || value.isEmpty())) {
+                        logger.e("csv reader", "Missing required field '${field.name}' in line $rowIndex")
+                        hasMissingRequiredField = true
+                        break // この行はスキップ対象にする
+                    }
+                    partial = field.parse(value.orEmpty())(partial)
                 }
 //                // skip if required fields are missing
 //                val missingFields = CsvField.entries.filter { it.required && it !in fieldMap.keys }.map { it.name }

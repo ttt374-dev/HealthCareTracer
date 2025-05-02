@@ -75,24 +75,18 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
     val targetVitalsDialogState = rememberTargetDialogStates()
 
-    //val targetBpState = rememberDialogState()
     if (targetVitalsDialogState[TargetVitals.BloodPressure]?.isOpen == true){
         TargetBpDialog(config.targetVitals.bp, onConfirm = { bp ->
             val newVitals = config.targetVitals.copy(bp = bp)
             viewModel.saveConfig(config.copy(targetVitals = newVitals))
-            //viewModel.saveConfig(config.copy(targetBp = bp))
         }, closeDialog = { targetVitalsDialogState[TargetVitals.BloodPressure]?.close() })
     }
-
-    //val targetBodyWeightState = rememberDialogState()
     if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true)
         TextFieldDialog(title = { Text(stringResource(R.string.targetBodyWeight))}, config.targetVitals.bodyWeight.toString(), onConfirm = {
             val newVitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
             viewModel.saveConfig(config.copy(targetVitals = newVitals))
-            //viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
         },
             closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
-            //validate = { it.toDoubleOrNull()?.let { it > 0} ?: false },
             keyboardOptions = decimalKeyboardOptions)
 
 

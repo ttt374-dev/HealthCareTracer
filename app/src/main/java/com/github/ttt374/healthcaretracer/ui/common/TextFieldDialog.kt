@@ -13,7 +13,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 
 @Composable
-fun TextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, onConfirm: (String) -> Unit, onCancel: () -> Unit = {}, closeDialog: () -> Unit = {},
+fun TextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, onConfirm: (String) -> Unit, closeDialog: () -> Unit = {},
                     keyboardOptions: KeyboardOptions = KeyboardOptions.Default){
     var text by remember { mutableStateOf(initialValue) }
 
@@ -22,5 +22,5 @@ fun TextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, on
         focusRequester.requestFocus()
     }
     ConfirmDialog(title = title, text = { OutlinedTextField(text, { text = it}, keyboardOptions = keyboardOptions, modifier = Modifier.focusRequester(focusRequester)) },
-        onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
+        onConfirm = { onConfirm(text)}, closeDialog = closeDialog)
 }

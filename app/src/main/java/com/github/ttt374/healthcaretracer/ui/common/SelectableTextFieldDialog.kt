@@ -11,7 +11,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 
 @Composable
-fun SelectableTextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, selectableList: List<String>, onConfirm: (String) -> Unit, onCancel: () -> Unit = {}, closeDialog: () -> Unit = {},
+fun SelectableTextFieldDialog(title: @Composable () -> Unit = {}, initialValue: String, selectableList: List<String>, onConfirm: (String) -> Unit, closeDialog: () -> Unit = {},
                     ){  // keyboardOptions: KeyboardOptions = KeyboardOptions.Default
     var text by remember { mutableStateOf(initialValue) }
 
@@ -24,5 +24,5 @@ fun SelectableTextFieldDialog(title: @Composable () -> Unit = {}, initialValue: 
         SelectableTextField(text, selectableList, onValueChange = { text = it},  modifier = Modifier.focusRequester(focusRequester))
 
     },
-        onConfirm = { onConfirm(text)}, onCancel = onCancel, closeDialog = closeDialog)
+        onConfirm = { onConfirm(text)}, closeDialog = closeDialog)
 }

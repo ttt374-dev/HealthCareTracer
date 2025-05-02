@@ -1,17 +1,13 @@
 package com.github.ttt374.healthcaretracer.ui.common
 
-
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
 
-/**
- *  [ConfirmDialog]
- */
 @Composable
-fun ConfirmDialog(
+fun InputDialog(
     title: @Composable () ->  Unit = {},
     text: @Composable () -> Unit = {},
     onConfirm: () -> Unit = {},

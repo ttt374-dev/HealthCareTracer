@@ -17,7 +17,7 @@ class CalendarViewModel @Inject constructor(itemRepository: ItemRepository, conf
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 //    val items = itemRepository.getAllItemsFlow()
 //        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val dailyItems = itemRepository.getAllItemsFlow().map { items ->items.toDailyItemList() }
+    val dailyItems = itemRepository.getAllDailyItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 }

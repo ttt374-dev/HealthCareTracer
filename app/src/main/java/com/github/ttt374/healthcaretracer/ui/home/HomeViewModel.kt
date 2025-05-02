@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.map
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val itemRepository: ItemRepository,
+    itemRepository: ItemRepository,
     configRepository: ConfigRepository,
     private val exportDataUseCase: ExportDataUseCase,
     private val importDataUseCase: ImportDataUseCase,): ViewModel()
@@ -28,7 +28,7 @@ class HomeViewModel @Inject constructor(
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 //    val items = itemRepository.getAllItemsFlow()
 //        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val dailyItems = itemRepository.getAllItemsFlow().map { items ->items.toDailyItemList() }
+    val dailyItems = itemRepository.getAllDailyItemsFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     fun exportData(uri: Uri){
         viewModelScope.launch {

@@ -1,9 +1,11 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import androidx.room.Transaction
+import com.github.ttt374.healthcaretracer.data.item.DailyItem
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.ItemDao
 import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.item.toDailyItemList
 import com.github.ttt374.healthcaretracer.data.metric.MeasuredValue
 import com.github.ttt374.healthcaretracer.data.metric.MetricType
 import com.github.ttt374.healthcaretracer.data.metric.MetricValue
@@ -26,6 +28,7 @@ interface ItemRepository {
     fun getItemFlow(itemId: Long): Flow<Item?>
     fun getAllLocationsFlow(): Flow<List<String>>
     fun getAllItemsFlow(): Flow<List<Item>>
+    fun getAllDailyItemsFlow(): Flow<List<DailyItem>>
     suspend fun getAllItems(): List<Item>
     fun getRecentItemsFlow(days: Long?): Flow<List<Item>>
 
@@ -56,6 +59,7 @@ class ItemRepositoryImpl @Inject constructor(private val itemDao: ItemDao) : Ite
     override fun getAllLocationsFlow() = itemDao.getAllLocationsFlow()
 
     override fun getAllItemsFlow() = itemDao.getAllItemsFlow()
+    override fun getAllDailyItemsFlow() = getAllItemsFlow().map { it.toDailyItemList() }
 
     override suspend fun getAllItems() = itemDao.getAllItems()
 

@@ -12,6 +12,7 @@ import com.github.ttt374.healthcaretracer.data.metric.MetricValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,7 +29,7 @@ interface ItemRepository {
     fun getItemFlow(itemId: Long): Flow<Item?>
     fun getAllLocationsFlow(): Flow<List<String>>
     fun getAllItemsFlow(): Flow<List<Item>>
-    fun getAllDailyItemsFlow(): Flow<List<DailyItem>>
+    fun getAllDailyItemsFlow(zoneId: ZoneId): Flow<List<DailyItem>>
     suspend fun getAllItems(): List<Item>
     fun getRecentItemsFlow(days: Long?): Flow<List<Item>>
 
@@ -59,7 +60,7 @@ class ItemRepositoryImpl @Inject constructor(private val itemDao: ItemDao) : Ite
     override fun getAllLocationsFlow() = itemDao.getAllLocationsFlow()
 
     override fun getAllItemsFlow() = itemDao.getAllItemsFlow()
-    override fun getAllDailyItemsFlow() = getAllItemsFlow().map { it.toDailyItemList() }
+    override fun getAllDailyItemsFlow(zoneId: ZoneId) = getAllItemsFlow().map { it.toDailyItemList(zoneId) }
 
     override suspend fun getAllItems() = itemDao.getAllItems()
 

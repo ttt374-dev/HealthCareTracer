@@ -93,7 +93,7 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
                 when (displayMode) {
                     DisplayMode.CHART -> {
-                        HealthChart(chartData.chartSeriesList, timeRange)
+                        HealthChart(chartData.chartSeriesList, timeRange, config.zoneId)
                     }
                     DisplayMode.STATISTICS -> {
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())){

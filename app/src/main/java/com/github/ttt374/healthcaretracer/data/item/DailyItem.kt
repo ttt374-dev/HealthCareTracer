@@ -11,7 +11,7 @@ data class DailyItem (
     val vitals: Vitals = Vitals(),
     val items: List<Item> = emptyList(),
 )
-fun DailyItem.meGap(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): Double? {
+fun DailyItem.meGap(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId): Double? {
     val morningAvg = items.filterDayPeriod(DayPeriod.Morning, dayPeriodConfig, zoneId).mapNotNull { it.vitals.bp?.upper }.takeIf { it.isNotEmpty() }?.average()
     val eveningAvg = items.filterDayPeriod(DayPeriod.Evening, dayPeriodConfig, zoneId).mapNotNull { it.vitals.bp?.upper }.takeIf { it.isNotEmpty() }?.average()
 
@@ -22,7 +22,7 @@ internal fun List<Item>.filterDayPeriod(dayPeriod: DayPeriod, timeOfDayConfig: D
     filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == dayPeriod}
 
 
-fun List<Item>.toDailyItemList(zoneId: ZoneId = ZoneId.systemDefault()): List<DailyItem> {
+fun List<Item>.toDailyItemList(zoneId: ZoneId): List<DailyItem> {
     return groupBy { it.measuredAt.atZone(zoneId).toLocalDate() }
         .map { (date, dailyItems) ->
             DailyItem(

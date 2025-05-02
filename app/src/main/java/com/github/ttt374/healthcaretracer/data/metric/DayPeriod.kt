@@ -44,7 +44,7 @@ data class DayPeriodConfig(
 //    }
 }
 
-fun Instant.toDayPeriod(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.systemDefault()): DayPeriod {
+fun Instant.toDayPeriod(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId): DayPeriod {
     val time = this.atZone(zoneId).toLocalTime()
     return when {
         time >= dayPeriodConfig[DayPeriod.Morning] && time < dayPeriodConfig[DayPeriod.Afternoon] -> DayPeriod.Morning

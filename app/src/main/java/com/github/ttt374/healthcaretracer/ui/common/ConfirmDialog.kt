@@ -38,5 +38,4 @@ fun ConfirmDialog(
         text = text,
         properties = DialogProperties(dismissOnClickOutside = true) // 画面外タップでキャンセル
     )
-
 }

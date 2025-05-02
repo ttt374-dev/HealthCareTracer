@@ -24,10 +24,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
@@ -86,27 +88,28 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
         _chartData.value = chartCache[key]!!
     }
 
-    private suspend fun loadStatData(type: MetricType, range: TimeRange) {
+    private suspend fun loadStatData(type: MetricType, range: TimeRange, zoneId: ZoneId) {
         val key = type to range
         if (key !in statCache) {
-            val data = statisticsRepository.getStatDataFlow(type, range.days).first()
+            val data = statisticsRepository.getStatDataFlow(type, range.days, zoneId).first()
             statCache[key] = data
         }
         _statData.value = statCache[key]!!
     }
     init {
         viewModelScope.launch {
-            combine(_selectedMetricType, timeRange) { type, range ->
-                type to range
-            }.collect { (type, range) ->
+            combine(_selectedMetricType, timeRange, config) { type, range, conf ->
+                Triple(type, range, conf)
+            }.collect { (type, range, conf) ->
                 loadChartData(type, range)
-                loadStatData(type, range)
+                loadStatData(type, range, conf.zoneId)
             }
         }
     }
 
     /// M-E gap
-    val meGapStatValue: StateFlow<StatValue<MetricValue>> = statisticsRepository.getMeGapStatValueFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val meGapStatValue: StateFlow<StatValue<MetricValue>> = config.flatMapLatest { conf ->statisticsRepository.getMeGapStatValueFlow(zoneId = conf.zoneId)}
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StatValue())
 
     /////////////////////

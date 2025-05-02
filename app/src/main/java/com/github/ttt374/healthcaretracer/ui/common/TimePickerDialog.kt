@@ -18,7 +18,7 @@ fun TimePickerDialog(
     selectedInstant: Instant,
     onTimeSelected: (Instant) -> Unit,
     onDismiss: () -> Unit,
-    zoneId: ZoneId = ZoneId.systemDefault(),
+    zoneId: ZoneId,
     is24Hour: Boolean = false,
 ) {
     val localTime = remember(selectedInstant) { selectedInstant.atZone(zoneId).toLocalTime() }
@@ -51,7 +51,7 @@ fun TimePickerDialog(
     )
 }
 
-fun Instant.withLocalTime(localTime: LocalTime, zoneId: ZoneId = ZoneId.systemDefault()): Instant {
+fun Instant.withLocalTime(localTime: LocalTime, zoneId: ZoneId): Instant {
     val currentDate = this.atZone(zoneId).toLocalDate() // 既存の日付を保持
     return localTime.atDate(currentDate).atZone(zoneId).toInstant()
 }

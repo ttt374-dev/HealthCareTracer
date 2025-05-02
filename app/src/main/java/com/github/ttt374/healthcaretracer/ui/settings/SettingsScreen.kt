@@ -29,6 +29,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +50,7 @@ import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.common.DialogState
 import com.github.ttt374.healthcaretracer.ui.common.DialogStateImpl
 import com.github.ttt374.healthcaretracer.ui.common.HorizontalSelector
+import com.github.ttt374.healthcaretracer.ui.common.SelectableTextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TextFieldDialog
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
@@ -84,12 +86,13 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 
     //val targetBodyWeightState = rememberDialogState()
     if (targetVitalsDialogState[TargetVitals.BodyWeight]?.isOpen == true)
-        TextFieldDialog(config.targetVitals.bodyWeight.toString(), onConfirm = {
+        TextFieldDialog(title = { Text(stringResource(R.string.targetBodyWeight))}, config.targetVitals.bodyWeight.toString(), onConfirm = {
             val newVitals = config.targetVitals.copy(bodyWeight = it.toDoubleOrNull())
             viewModel.saveConfig(config.copy(targetVitals = newVitals))
             //viewModel.saveConfig(config.copy(targetBodyWeight = it.toDouble()))
         },
             closeDialog = { targetVitalsDialogState[TargetVitals.BodyWeight]?.close() },
+            //validate = { it.toDoubleOrNull()?.let { it > 0} ?: false },
             keyboardOptions = decimalKeyboardOptions)
 
 
@@ -114,14 +117,19 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
     val zoneIdDialogState = rememberDialogState()
     if (zoneIdDialogState.isOpen){
-        TextFieldDialog(config.zoneId.toString(), onConfirm = {
+        val context = LocalContext.current
+        val timeZoneStrList = remember { context.resources.getStringArray(R.array.timezone_list).toList() }
+
+        SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timeZoneStrList, onConfirm = {
             try {
                 val zoneId = ZoneId.of(it)
                 viewModel.saveConfig(config.copy(zoneId = zoneId))
+                zoneIdDialogState.close()
             } catch (e: Exception){
                 Log.e("zoneId", e.message.toString())
             }
-        }, closeDialog = { zoneIdDialogState.close()})
+        }, onCancel =  { zoneIdDialogState.close() },
+            closeDialog = { })
     }
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())
@@ -161,7 +169,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                         modifier = Modifier.clickable { dayPeriodDialogState[dayPeriod]?.open() })
                 }
             }
-            SettingsRow("time zone"){
+            SettingsRow(stringResource(R.string.timeZone)){
                 Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
             }
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
@@ -237,11 +245,11 @@ internal fun IntRange.toDisplayString(): String {
 
 @Composable
 fun LocalTimeDialog(localTime: LocalTime, onTimeSelected: (LocalTime) -> Unit, onDismiss: () -> Unit){
-    val zone = ZoneId.systemDefault()
+    val zoneId = ZoneId.systemDefault()
 
-    TimePickerDialog(localTime.atDate(LocalDate.now()).atZone(zone).toInstant(),
-        onTimeSelected = { onTimeSelected(it.atZone(zone).toLocalTime())},
-        onDismiss = onDismiss)
+    TimePickerDialog(localTime.atDate(LocalDate.now()).atZone(zoneId).toInstant(),
+        onTimeSelected = { onTimeSelected(it.atZone(zoneId).toLocalTime())},
+        onDismiss = onDismiss, zoneId = zoneId)
 }
 //@Composable
 //fun LocalTimeRangeDialog(range: LocalTimeRange, isStart: Boolean, onTimeSelected: (LocalTimeRange) -> Unit, onDismiss: () -> Unit){

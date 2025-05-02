@@ -219,10 +219,10 @@ private fun DateAndTimePickers(
     val timePickerDialogState = rememberDialogState(false)
 
     if (datePickerDialogState.isOpen) {
-        DatePickerDialog(itemUiState.measuredAt, onDateSelected, datePickerDialogState::close)
+        DatePickerDialog(itemUiState.measuredAt, onDateSelected, datePickerDialogState::close, zoneId)
     }
     if (timePickerDialogState.isOpen) {
-        TimePickerDialog(itemUiState.measuredAt, onTimeSelected, timePickerDialogState::close)
+        TimePickerDialog(itemUiState.measuredAt, onTimeSelected, timePickerDialogState::close, zoneId)
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

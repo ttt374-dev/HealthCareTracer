@@ -127,7 +127,7 @@ fun HomeScreen(
         Column(modifier = Modifier.padding(innerPadding)) {
             LazyColumn { // (reverseLayout = true) {
                 items(dailyItems.reversed()) { dailyItem ->
-                    DailyItemRow(dailyItem, guideline, config.dayPeriodConfig,
+                    DailyItemRow(dailyItem, guideline, config.dayPeriodConfig, config.zoneId,
                         appNavigator::navigateToEdit,)
                 }
             }

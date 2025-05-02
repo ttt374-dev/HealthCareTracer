@@ -1,3 +1,4 @@
+
 package com.github.ttt374.healthcaretracer.ui.home
 
 import androidx.compose.foundation.background
@@ -42,6 +43,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
                  dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
+                 zoneId: ZoneId,
                  navigateToEdit: (Long) -> Unit = {}){
     Row (modifier= Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.secondaryContainer),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -51,20 +53,21 @@ fun DailyItemRow(dailyItem: DailyItem, guideline: BloodPressureGuideline = Blood
         Text(dailyItem.vitals.pulse.toPulseString(), textAlign = TextAlign.End)
     }
     dailyItem.items.forEach { item ->
-        ItemRow(item, guideline, dayPeriodConfig, navigateToEdit, )
+        ItemRow(item, guideline, dayPeriodConfig, zoneId, navigateToEdit, )
     }
 }
 @Composable
 fun ItemRow(item: Item, guideline: BloodPressureGuideline = BloodPressureGuideline.Default,
             dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
+            zoneId: ZoneId,
             navigateToEdit: (Long) -> Unit = {}){
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("h:mm a").withZone(zoneId)
     val bp = item.vitals.bp
-
+    
     Column (modifier= Modifier.padding(horizontal = 8.dp, vertical = 4.dp).fillMaxWidth().clickable { navigateToEdit(item.id) }) {
         Row {
             Text(dateTimeFormatter.format(item.measuredAt), fontSize = 14.sp)
-            when (item.measuredAt.toDayPeriod(dayPeriodConfig = dayPeriodConfig)){
+            when (item.measuredAt.toDayPeriod(dayPeriodConfig = dayPeriodConfig, zoneId)){
                 DayPeriod.Morning -> Icon(Icons.Filled.WbSunny, "morning", modifier = Modifier.size(12.dp))
                 DayPeriod.Evening -> Icon(Icons.Filled.DarkMode, "evening", modifier = Modifier.size(12.dp))
                 else -> {}

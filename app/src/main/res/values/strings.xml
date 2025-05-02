@@ -54,5 +54,5 @@
     <string name="count">Count</string>
     <string name="analysis">Analysis</string>
     <string name="target">Target</string>
-
+    <string name="timeZone">Time Zone</string>
 </resources>

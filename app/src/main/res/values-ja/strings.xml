@@ -54,5 +54,5 @@
     <string name="count">件数</string>
     <string name="analysis">分析</string>
     <string name="target">目標</string>
-
+    <string name="timeZone">タイムゾーン</string>
 </resources>

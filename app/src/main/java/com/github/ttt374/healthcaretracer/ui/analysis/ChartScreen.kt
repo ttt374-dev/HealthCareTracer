@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter
 
 ////////////
 
-private fun LineChart.setupValueFormatter(datePattern: String, zoneId: ZoneId = ZoneId.systemDefault()){
+private fun LineChart.setupValueFormatter(datePattern: String, zoneId: ZoneId){
     val formatter = DateTimeFormatter.ofPattern(datePattern)
     xAxis.valueFormatter = object : ValueFormatter() {
         override fun getFormattedValue(value: Float): String {
@@ -36,7 +36,7 @@ private fun LineChart.setupValueFormatter(datePattern: String, zoneId: ZoneId = 
         }
     }
 }
-fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yyyy/M/d", maxLabelCount: Int = 10) {
+fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yyyy/M/d", maxLabelCount: Int = 10, zoneId: ZoneId) {
     description.isEnabled = false
 
     val dataStart = data?.xMin?.toLong() ?: return
@@ -75,7 +75,7 @@ fun LineChart.setupChartAdaptive(timeRange: TimeRange, datePattern: String = "yy
         orientation = Legend.LegendOrientation.HORIZONTAL
     }
 
-    setupValueFormatter(datePattern)
+    setupValueFormatter(datePattern, zoneId)
     invalidate()
 }
 
@@ -99,7 +99,7 @@ fun LineDataSet.applyStyle(color: Int? = null, lineWidth: Float = 2f, circleRadi
     }
 }
 @Composable
-fun HealthChart(chartSeriesList: List<ChartSeries>, timeRange: TimeRange) {
+fun HealthChart(chartSeriesList: List<ChartSeries>, timeRange: TimeRange, zoneId: ZoneId) {
     val list = chartSeriesList.toLineDataSets()
     val isDarkMode = isSystemInDarkTheme()
     AndroidView(
@@ -111,7 +111,7 @@ fun HealthChart(chartSeriesList: List<ChartSeries>, timeRange: TimeRange) {
             chart.apply {
                 this.legend.textColor = Color.Black.adjustForMode(isDarkMode).toArgb()
             }
-            chart.setupChartAdaptive(timeRange)
+            chart.setupChartAdaptive(timeRange, zoneId = zoneId)
         }
     )
 }

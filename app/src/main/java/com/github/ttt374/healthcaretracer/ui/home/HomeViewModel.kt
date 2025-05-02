@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
 @HiltViewModel
@@ -26,8 +28,11 @@ class HomeViewModel @Inject constructor(
     private val importDataUseCase: ImportDataUseCase,): ViewModel()
 {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
-    val dailyItems = itemRepository.getAllDailyItemsFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val dailyItems = config.flatMapLatest { config ->
+        itemRepository.getAllDailyItemsFlow(config.zoneId)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     fun exportData(uri: Uri){
         viewModelScope.launch {
             exportDataUseCase(uri)

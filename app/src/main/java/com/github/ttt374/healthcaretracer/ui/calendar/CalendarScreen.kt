@@ -109,7 +109,7 @@ fun CalendarScreen(calendarViewModel: CalendarViewModel = hiltViewModel(),
                     Spacer(modifier = Modifier.height(16.dp))
                     val selectedItem =  dailyItems.find { item -> item.date == selectedDate }
                     selectedItem?.let { dailyItem ->
-                        DailyItemRow(dailyItem,  navigateToEdit = appNavigator::navigateToEdit)
+                        DailyItemRow(dailyItem,  navigateToEdit = appNavigator::navigateToEdit, zoneId = config.zoneId)
                     }
                 }
             }

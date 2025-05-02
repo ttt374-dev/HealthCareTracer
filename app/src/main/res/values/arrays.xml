@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="timezone_list">
+        <item>UTC</item>
+        <item>America/Chicago</item>
+        <item>America/New_York</item>
+        <item>America/Los_Angeles</item>
+        <item>Asia/Dubai</item>
+        <item>Asia/Hong_Kong</item>
+        <item>Asia/Shanghai</item>
+        <item>Asia/Tokyo</item>
+        <item>Australia/Sydney</item>
+        <item>Europe/Berlin</item>
+        <item>Europe/London</item>
+        <item>Europe/Moscow</item>
+        <item>Europe/Paris</item>
+    </string-array>
+</resources>

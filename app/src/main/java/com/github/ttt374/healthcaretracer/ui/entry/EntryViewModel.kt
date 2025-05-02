@@ -10,7 +10,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -29,14 +31,18 @@ class EntryViewModel @Inject constructor (savedStateHandle: SavedStateHandle, co
     val itemUiState: StateFlow<ItemUiState> get() = _itemUiState // StateFlow として公開
 
     init {
-        _itemUiState.value = ItemUiState(measuredAt = Instant.now().withDate(date))
+        viewModelScope.launch {
+            config.first().let { conf ->
+                _itemUiState.value = ItemUiState(measuredAt = Instant.now().withDate(date, conf.zoneId))
+            }
+        }
     }
     fun updateItemUiState(uiState: ItemUiState) {
         _itemUiState.value = uiState
     }
 }
 
-fun Instant.withDate(newDate: LocalDate, zone: ZoneId = ZoneId.systemDefault()): Instant {
+fun Instant.withDate(newDate: LocalDate, zone: ZoneId): Instant {
     val currentDateTime = LocalDateTime.ofInstant(this, zone)
     val newDateTime = LocalDateTime.of(newDate, currentDateTime.toLocalTime())
     return newDateTime.atZone(zone).toInstant()

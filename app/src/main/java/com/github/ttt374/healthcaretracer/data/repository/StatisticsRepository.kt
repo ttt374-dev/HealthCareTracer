@@ -15,14 +15,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatisticsRepository @Inject constructor(private val itemRepository: ItemRepository, configRepository: ConfigRepository) {
     private val dayPeriodConfigFlow = configRepository.dataFlow.map { it.dayPeriodConfig }
 
-    fun getStatDataFlow(type: MetricType, days: Long? = null): Flow<StatData<MetricValue>> {
+    fun getStatDataFlow(type: MetricType, days: Long? = null, zoneId: ZoneId): Flow<StatData<MetricValue>> {
         return getStatValueFlow(type, days).flatMapLatest { allStat ->
-            getDayPeriodStatValueFlow(type, days).map { byPeriodStat ->
+            getDayPeriodStatValueFlow(type, days, zoneId).map { byPeriodStat ->
                 StatData(metricType = type, all = allStat, byPeriod = byPeriodStat)
             }
         }
@@ -32,11 +33,11 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
             items.map { it.value }.toStatValue()
         }
     }
-    private fun getDayPeriodStatValueFlow(metricType: MetricType, days: Long?): Flow<Map<DayPeriod, StatValue<MetricValue>>> {
+    private fun getDayPeriodStatValueFlow(metricType: MetricType, days: Long?, zoneId: ZoneId): Flow<Map<DayPeriod, StatValue<MetricValue>>> {
         return dayPeriodConfigFlow.flatMapLatest { dayPeriodConfig ->
             itemRepository.getMeasuredValuesFlow(metricType, days).map { list ->
                 val grouped = list.groupBy { (measuredAt, _) ->
-                    measuredAt.toDayPeriod(dayPeriodConfig)
+                    measuredAt.toDayPeriod(dayPeriodConfig, zoneId)
                 }
                 DayPeriod.entries.associateWith { period ->
                     grouped[period].orEmpty().map { it.value }.toStatValue()
@@ -44,10 +45,10 @@ class StatisticsRepository @Inject constructor(private val itemRepository: ItemR
             }
         }
     }
-    fun getMeGapStatValueFlow(days: Long? = null): Flow<StatValue<MetricValue>>  {
+    fun getMeGapStatValueFlow(days: Long? = null, zoneId: ZoneId): Flow<StatValue<MetricValue>>  {
         return  dayPeriodConfigFlow.flatMapLatest { dayPeriodConfig ->
             itemRepository.getRecentItemsFlow(days).map { list ->
-                list.toDailyItemList().mapNotNull { it.meGap(dayPeriodConfig)?.toMetricNumber()}.toStatValue()
+                list.toDailyItemList(zoneId).mapNotNull { it.meGap(dayPeriodConfig, zoneId)?.toMetricNumber()}.toStatValue()
             }
         }
     }

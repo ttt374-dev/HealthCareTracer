@@ -52,9 +52,9 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
                      onDelete: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      locationList: List<String> = emptyList(),
+                     zoneId: ZoneId,
 ){
     val focusMap = rememberFocusRequestMap()
-    val zoneId = ZoneId.systemDefault()
 
     // 画面を開いたときに bpHigh にフォーカスを移動（新規エントリ時のみ）
     LaunchedEffect(editMode) {
@@ -74,7 +74,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
     Column(Modifier.fillMaxSize().imePadding()) {
         LazyColumn (modifier=Modifier.weight(1f)){
             item {
-                InputFieldRow(stringResource(R.string.measuredAt)){  // TODO: stringResources()
+                InputFieldRow(stringResource(R.string.measuredAt)){
                     Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
                         DateAndTimePickers(itemUiState,
                             onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
@@ -226,8 +226,8 @@ private fun DateAndTimePickers(
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(zoneId) }
-        val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm a").withZone(zoneId) }
+        val dateFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(zoneId) }
+        val timeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("HH:mm a Z").withZone(zoneId) }
 
         OutlinedButton(onClick = { datePickerDialogState.open() }) {
             Text(dateFormatter.format(itemUiState.measuredAt))

@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -113,7 +114,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     }
     val zoneIdDialogState = rememberDialogState()
     if (zoneIdDialogState.isOpen){
-        TextFieldDialog(config.zoneId.toString(), onConfirm = {}, closeDialog = { zoneIdDialogState.close()})
+        TextFieldDialog(config.zoneId.toString(), onConfirm = {
+            try {
+                val zoneId = ZoneId.of(it)
+                viewModel.saveConfig(config.copy(zoneId = zoneId))
+            } catch (e: Exception){
+                Log.e("zoneId", e.message.toString())
+            }
+        }, closeDialog = { zoneIdDialogState.close()})
     }
     //val localeSelectorState = rememberDialogState()
     val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a")  // .withZone(ZoneId.systemDefault())

@@ -20,3 +20,4 @@ class SettingsViewModel @Inject constructor(private val configRepository: Config
         }
     }
 }
+

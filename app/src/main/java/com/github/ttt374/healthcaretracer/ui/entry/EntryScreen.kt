@@ -20,6 +20,7 @@ fun EntryScreen(viewModel: EntryViewModel = hiltViewModel(), itemViewModel: Item
     val uiState by viewModel.itemUiState.collectAsState()
     val locationList by itemViewModel.locationList.collectAsState()
     val saveState by itemViewModel.saveState.collectAsState()
+    val config by viewModel.config.collectAsState()
 
     LaunchedEffect(saveState) {
         if (saveState) {
@@ -36,7 +37,9 @@ fun EntryScreen(viewModel: EntryViewModel = hiltViewModel(), itemViewModel: Item
             ItemEntryContent(itemUiState = uiState,
                 updateItemUiState = viewModel::updateItemUiState,
                 locationList = locationList,
-                onPost = { itemViewModel.upsertItem(uiState.toItem())})
+                onPost = { itemViewModel.upsertItem(uiState.toItem())},
+                zoneId = config.zoneId,
+                )
         }
     }
 }

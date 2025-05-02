@@ -22,6 +22,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
     val itemUiState by editViewModel.itemUiState.collectAsState()
     val locationList by itemViewModel.locationList.collectAsState()
     val saveState by itemViewModel.saveState.collectAsState()
+    val config by editViewModel.config.collectAsState()
 
     LaunchedEffect(saveState) {
         if (saveState) {
@@ -36,6 +37,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
                 locationList = locationList,
                 onPost = { itemViewModel.upsertItem(itemUiState.toItem())},
                 onDelete = { itemViewModel.deleteItem(itemUiState.toItem())},
+                zoneId = config.zoneId
             )
         }
     }

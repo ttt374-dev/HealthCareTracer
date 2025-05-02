@@ -22,8 +22,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
@@ -72,7 +74,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
     Column(Modifier.fillMaxSize().imePadding()) {
         LazyColumn (modifier=Modifier.weight(1f)){
             item {
-                InputFieldRow("Measured At"){  // TODO: stringResources()
+                InputFieldRow(stringResource(R.string.measuredAt)){  // TODO: stringResources()
                     Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
                         DateAndTimePickers(itemUiState,
                             onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
@@ -85,12 +87,12 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
             item {
                 VitalInputFields(itemUiState, updateItemUiState, focusMap)
 
-                InputFieldRow("Location") {
-                    SelectableTextField(itemUiState.location, locationList,
-                        onValueChange = { updateItemUiState(itemUiState.copy(location = it)) },
-                    )
-                }
-                InputFieldRow("Memo") {
+//                InputFieldRow(stringResource(R.string)) {
+//                    SelectableTextField(itemUiState.location, locationList,
+//                        onValueChange = { updateItemUiState(itemUiState.copy(location = it)) },
+//                    )
+//                }
+                InputFieldRow(stringResource(R.string.memo)) {
                     TextField(itemUiState.memo, onValueChange = { updateItemUiState(itemUiState.copy(memo = it))})
                 }
 //                InputFieldRow("") {
@@ -113,7 +115,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
     val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
     val decimalKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Decimal)
 
-    InputFieldRow("Bp Upper"){
+    InputFieldRow(stringResource(R.string.bpUpper)){
         TextField(itemUiState.bpUpper,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bpUpper = it))
@@ -125,7 +127,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
             modifier = Modifier.focusRequester(focusMap[FocusField.BpUpper])
         )
     }
-    InputFieldRow("Bp Lower") {
+    InputFieldRow(stringResource(R.string.bpLower)) {
         TextField(itemUiState.bpLower,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bpLower = it))
@@ -138,7 +140,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
             modifier = Modifier.focusRequester(focusMap[FocusField.BpLower])
         )
     }
-    InputFieldRow("Pulse") {
+    InputFieldRow(stringResource(R.string.pulse)) {
         TextField(itemUiState.pulse,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(pulse = it))
@@ -149,7 +151,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
             modifier = Modifier.focusRequester(focusMap[FocusField.Pulse])
         )
     }
-    InputFieldRow("Body Temperature") {
+    InputFieldRow(stringResource(R.string.bodyTemperature)) {
         TextField(itemUiState.bodyTemperature,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bodyTemperature = it))
@@ -161,7 +163,7 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
             suffix = { Text("℃") }
         )
     }
-    InputFieldRow("Body Weight") {
+    InputFieldRow(stringResource(R.string.bodyWeight)) {
         TextField(itemUiState.bodyWeight,
             onValueChange = {
                 updateItemUiState(itemUiState.copy(bodyWeight = it))
@@ -177,7 +179,7 @@ private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -
     if (editMode is EditMode.Edit){
         val deleteDialogState = rememberItemDialogState()
         if (deleteDialogState.isOpen){
-            ConfirmDialog(title = { Text("Are you sure to delete ?") },
+            ConfirmDialog(title = { Text(stringResource(R.string.msgConfirmToDelete)) },
                 text = { Text("") },
                 onConfirm = onDelete,
                 closeDialog = { deleteDialogState.close()})

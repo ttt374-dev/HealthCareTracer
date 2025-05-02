@@ -9,7 +9,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 
@@ -26,7 +28,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
             appNavigator.navigateBack()
         }
     }
-    Scaffold(contentWindowInsets = WindowInsets(0), topBar = { CustomTopAppBar("Edit", navigateBack = appNavigator::navigateBack) }){ innerPadding ->
+    Scaffold(contentWindowInsets = WindowInsets(0), topBar = { CustomTopAppBar(stringResource(R.string.edit), navigateBack = appNavigator::navigateBack) }){ innerPadding ->
         Box (modifier = Modifier.padding(innerPadding)) {
             ItemEntryContent(editMode = EditMode.Edit(itemUiState.toItem() ),
                 itemUiState = itemUiState,

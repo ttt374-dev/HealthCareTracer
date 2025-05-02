@@ -21,8 +21,6 @@ data class ItemUiState (
         id = id?: 0,
         vitals = Vitals(
             bp = bpUpper.toIntOrNull()?.let { upper -> bpLower.toIntOrNull()?.let { lower -> BloodPressure(upper, lower)}},
-            //bpUpper = bpUpper.toIntOrNull(),
-            //bpLower = bpLower.toIntOrNull(),
             pulse = pulse.toIntOrNull(),
             bodyWeight = bodyWeight.toDoubleOrNull(),
             bodyTemperature = bodyTemperature.toDoubleOrNull()),
@@ -39,8 +37,6 @@ fun Item.toItemUiState(): ItemUiState {
     return ItemUiState(  this.id,
         this.vitals.bp?.upper.toStringOrEmpty(),
         this.vitals.bp?.lower.toStringOrEmpty(),
-//        this.bpUpper.toStringOrEmpty(),
-//        this.bpLower.toStringOrEmpty(),
         this.vitals.pulse.toStringOrEmpty(),
         this.vitals.bodyWeight.toStringOrEmpty(),
         this.vitals.bodyTemperature.toStringOrEmpty(),

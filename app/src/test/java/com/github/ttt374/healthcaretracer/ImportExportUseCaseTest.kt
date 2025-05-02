@@ -95,11 +95,12 @@ class ImportCsvUseCaseTest {
         val importedCsvData = """
             "Measured at","Bp upper","Bp lower","Pulse","Body weight","Body temperature","Location","Memo"
             "2022-01-01T00:00:00Z","120","80","70","","","Tokyo","Test memo"
-            "2022-01-02T00:00:00Z","130","85","75","","","Osaka","Another memo"
+            "2022-01-02T00:00:00Z","130","85","60.2","","","Osaka","Another memo"
+            "2022-01-03T00:00:00Z","130","","60","","","",""
         """.trimIndent()
         val inputStream = ByteArrayInputStream(importedCsvData.toByteArray())
         whenever(contentResolverWrapper.openInputStream(uri)).thenReturn(inputStream)
-        whenever(itemRepository.replaceAllItems(any())).thenReturn(Unit)
+        //whenever(itemRepository.replaceAllItems(any())).thenReturn(Unit)
 
 //        val result = importDataUseCase(uri)
 //        assertTrue(result.isSuccess)
@@ -111,8 +112,11 @@ class ImportCsvUseCaseTest {
 
         verify(itemRepository).replaceAllItems(captor.capture())
         val capturedItems = captor.firstValue
-        assertEquals(2, capturedItems.size)
+        assertEquals(3, capturedItems.size)
         assertEquals(120, capturedItems[0].vitals.bp?.upper)
-
+        assertEquals(null, capturedItems[2].vitals.bp?.upper)
+        assertEquals(null, capturedItems[2].vitals.bp?.lower)
+        assertEquals(60, capturedItems[2].vitals.pulse)
+        assertEquals(null, capturedItems[1].vitals.pulse)
     }
 }

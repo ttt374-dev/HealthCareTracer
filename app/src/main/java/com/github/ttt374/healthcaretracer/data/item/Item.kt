@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureConverter
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
+import com.github.ttt374.healthcaretracer.data.metric.averageOrNull
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
@@ -35,3 +37,12 @@ data class Item (
     val measuredAt: Instant = Instant.now(),
 )
 
+fun List<Item>.toAveragedVitals(): Vitals {
+    return Vitals(
+        bp = (mapNotNull { it.vitals.bp?.upper?.toDouble() }.averageOrNull() to mapNotNull { it.vitals.bp?.lower?.toDouble() }.averageOrNull())
+            .toBloodPressure(),
+        pulse = mapNotNull { it.vitals.pulse?.toDouble() }.averageOrNull()?.toInt(),
+        bodyWeight = mapNotNull { it.vitals.bodyWeight }.averageOrNull(),
+        bodyTemperature = mapNotNull { it.vitals.bodyTemperature }.averageOrNull(),
+    )
+}

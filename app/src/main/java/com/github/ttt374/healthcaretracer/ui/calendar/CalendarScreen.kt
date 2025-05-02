@@ -44,7 +44,6 @@ import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
 import com.github.ttt374.healthcaretracer.ui.home.DailyItemRow
-import com.github.ttt374.healthcaretracer.ui.home.ItemsViewModel
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -52,14 +51,14 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
-                   calendarViewModel: CalendarViewModel = hiltViewModel(),
+fun CalendarScreen(calendarViewModel: CalendarViewModel = hiltViewModel(),
                    appNavigator: AppNavigator){
-    val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
+    val dailyItems by calendarViewModel.dailyItems.collectAsState()
     var selectedDate by remember { mutableStateOf<LocalDate>(LocalDate.now()) }
     val config by calendarViewModel.config.collectAsState()
 
@@ -100,7 +99,8 @@ fun CalendarScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
                         },
                          monthHeader = { month ->
                              val daysOfWeek = month.weekDays.first().map { it.date.dayOfWeek }
-                             Text(month.yearMonth.toString(), Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally))
+                             val formatter = DateTimeFormatter.ofPattern("yyyy-M")
+                             Text(month.yearMonth.format(formatter), Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally))
                              DaysOfWeekTitle(daysOfWeek = daysOfWeek)
                          }
                     )

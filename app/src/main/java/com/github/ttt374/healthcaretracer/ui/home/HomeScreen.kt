@@ -63,11 +63,11 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun HomeScreen(dailyItemsViewModel: ItemsViewModel = hiltViewModel(),
+fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     appNavigator: AppNavigator
 ){
-    val dailyItems by dailyItemsViewModel.dailyItems.collectAsState()
+    val dailyItems by homeViewModel.dailyItems.collectAsState()
     val importFilePickerDialogState = rememberDialogState()
     val exportFilePickerDialogState = rememberDialogState()
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }

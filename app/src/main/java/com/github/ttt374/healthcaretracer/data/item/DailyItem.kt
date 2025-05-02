@@ -20,3 +20,15 @@ fun DailyItem.meGap(dayPeriodConfig: DayPeriodConfig, zoneId: ZoneId = ZoneId.sy
 
 internal fun List<Item>.filterDayPeriod(dayPeriod: DayPeriod, timeOfDayConfig: DayPeriodConfig, zoneId: ZoneId) =
     filter { it.measuredAt.toDayPeriod(timeOfDayConfig, zoneId) == dayPeriod}
+
+
+fun List<Item>.toDailyItemList(): List<DailyItem> {
+    return groupBy { it.measuredAt.atZone(ZoneId.systemDefault()).toLocalDate() }
+        .map { (date, dailyItems) ->
+            DailyItem(
+                date = date,
+                vitals = dailyItems.toAveragedVitals(),
+                items = dailyItems
+            )
+        }.sortedBy { it.date }
+}

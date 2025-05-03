@@ -48,21 +48,63 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-enum class TargetVitalsType(val resId: Int, val selector: (TargetVitals) -> Any?, val validator: (String) -> Boolean,
-                            val updateTargetVitals: (TargetVitals, String) -> TargetVitals, val keyboardType: KeyboardType) {
-    BpUpper(R.string.targetBpUpper, { vitals -> vitals.bp.upper }, ConfigValidator::validatePositiveInt,
-        { targetVitals, input ->  targetVitals.copy(bp = BloodPressure(input.toIntOrNull() ?: 0, targetVitals.bp.lower))},
-        KeyboardType.Number),
-    BpLower(R.string.targetBpLower, { vitals -> vitals.bp.lower }, ConfigValidator::validatePositiveInt,
-        { targetVitals, input -> targetVitals.copy(bp = BloodPressure(targetVitals.bp.upper, input.toIntOrNull() ?: 0))},
-        KeyboardType.Number),
-    BodyWeight(R.string.targetBodyWeight, { vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble,
-        { targetVitals, input -> targetVitals.copy(bodyWeight = input.toDoubleOrNull() ?: 0.0)},
-        KeyboardType.Decimal);
+sealed class TargetVitalsType {
+    abstract val resId: Int
+    abstract fun selector(vitals: TargetVitals): Any?
+    abstract fun validate(input: String): Boolean
+    abstract fun update(vitals: TargetVitals, input: String): TargetVitals
+    abstract val keyboardType: KeyboardType
     fun getStringValue(targetVitals: TargetVitals): String {
         return selector(targetVitals)?.toString() ?: ""
     }
+
+    data object BpUpper : TargetVitalsType() {
+        override val resId = R.string.targetBpUpper
+        override fun selector(vitals: TargetVitals) = vitals.bp.upper
+        override fun validate(input: String) = ConfigValidator.validatePositiveInt(input)
+        override fun update(vitals: TargetVitals, input: String) =
+            vitals.copy(bp = BloodPressure(input.toIntOrNull() ?: 0, vitals.bp.lower))
+        override val keyboardType = KeyboardType.Decimal
+    }
+
+    data object BpLower : TargetVitalsType() {
+        override val resId = R.string.targetBpLower
+        override fun selector(vitals: TargetVitals) = vitals.bp.lower
+        override fun validate(input: String) = ConfigValidator.validatePositiveInt(input)
+        override fun update(vitals: TargetVitals, input: String) =
+            vitals.copy(bp = BloodPressure(vitals.bp.upper, input.toIntOrNull() ?: 0))
+        override val keyboardType = KeyboardType.Decimal
+    }
+
+    data object BodyWeight : TargetVitalsType() {
+        override val resId = R.string.targetBodyWeight
+        override fun selector(vitals: TargetVitals) = vitals.bodyWeight
+        override fun validate(input: String) = ConfigValidator.validatePositiveDouble(input)
+        override fun update(vitals: TargetVitals, input: String) =
+            vitals.copy(bodyWeight = input.toDoubleOrNull() ?: 0.0)
+        override val keyboardType = KeyboardType.Number
+    }
+    companion object {
+        val entries = listOf(BpUpper, BpLower, BodyWeight)
+    }
 }
+
+//
+//enum class TargetVitalsType(val resId: Int, val selector: (TargetVitals) -> Any?, val validator: (String) -> Boolean,
+//                            val updateTargetVitals: (TargetVitals, String) -> TargetVitals, val keyboardType: KeyboardType) {
+//    BpUpper(R.string.targetBpUpper, { vitals -> vitals.bp.upper }, ConfigValidator::validatePositiveInt,
+//        { targetVitals, input ->  targetVitals.copy(bp = BloodPressure(input.toIntOrNull() ?: 0, targetVitals.bp.lower))},
+//        KeyboardType.Number),
+//    BpLower(R.string.targetBpLower, { vitals -> vitals.bp.lower }, ConfigValidator::validatePositiveInt,
+//        { targetVitals, input -> targetVitals.copy(bp = BloodPressure(targetVitals.bp.upper, input.toIntOrNull() ?: 0))},
+//        KeyboardType.Number),
+//    BodyWeight(R.string.targetBodyWeight, { vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble,
+//        { targetVitals, input -> targetVitals.copy(bodyWeight = input.toDoubleOrNull() ?: 0.0)},
+//        KeyboardType.Decimal);
+//    fun getStringValue(targetVitals: TargetVitals): String {
+//        return selector(targetVitals)?.toString() ?: ""
+//    }
+//}
 
 object ConfigValidator {
     fun validatePositiveInt(input: String): Boolean =
@@ -89,7 +131,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     ) { innerPadding ->
         Column (Modifier.padding(innerPadding).padding(16.dp)){
             BloodPressureGuidelineSection(config, viewModel::saveConfig)
-            TargetVitalsSection(config, viewModel::saveConfig)
+            TargetVitalsSection(config, onUpdateTargetVital = { type, input ->
+                viewModel.saveConfig(config.updateTargetVital(type, input))
+            })
             DayPeriodSection(config, viewModel::saveConfig)
             TimeZoneSection(config, viewModel::saveConfig, timezoneList)
             SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
@@ -115,24 +159,29 @@ fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit
         BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
     }
 }
+//@Composable
+//fun <T : Enum<T>> rememberDialogStates(entries: Array<T>): Map<T, DialogState> {
+//    return remember { entries.associateWith { DialogStateImpl() } }
+//}
 @Composable
-fun <T : Enum<T>> rememberDialogStates(entries: Array<T>): Map<T, DialogState> {
+fun <T : TargetVitalsType> rememberDialogStates(entries: List<T>): Map<T, DialogState> {
     return remember { entries.associateWith { DialogStateImpl() } }
 }
 fun <T> Map<T, DialogState>.isOpen(type: T): Boolean = this[type]?.isOpen == true
 
 @Composable
-fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
-    val targetVitalsDialogState = rememberDialogStates(TargetVitalsType.entries.toTypedArray()) // rememberTargetVitalsDialogStates()
+fun TargetVitalsSection(config: Config, onUpdateTargetVital: (TargetVitalsType, String) -> Unit){
+    val targetVitalsDialogState = rememberDialogStates(TargetVitalsType.entries) // rememberTargetVitalsDialogStates()
     TargetVitalsType.entries.forEach { targetVitalsType ->
         if (targetVitalsDialogState.isOpen(targetVitalsType)) {
             TextFieldDialog(
                 title = { Text(stringResource(targetVitalsType.resId)) },
                 initialValue = targetVitalsType.getStringValue(config.targetVitals),
                 onConfirm = { input ->
-                    onSaveConfig(config.updateTargetVital(targetVitalsType, input))
+                    onUpdateTargetVital(targetVitalsType, input)
+                    //onSaveConfig(config.updateTargetVital(targetVitalsType, input))
                 },
-                validate = targetVitalsType.validator,
+                validate = { targetVitalsType.validate(it) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVitalsType.keyboardType),
                 closeDialog = { targetVitalsDialogState[targetVitalsType]?.close() }
             )
@@ -147,8 +196,16 @@ fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
 }
 
 @Composable
+fun rememberDayPeriodDialogStates(entries: List<DayPeriod> ): Map<DayPeriod, DialogState> {
+    return remember { entries.associateWith { DialogStateImpl() } }
+}
+//@Composable
+//fun <T : Enum<T>> rememberDayPeriodDialogStates(entries: Array<T>): Map<T, DialogState> {
+//    return remember { entries.associateWith { DialogStateImpl() } }
+//}
+@Composable
 fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
-    val dayPeriodDialogState = rememberDialogStates(DayPeriod.entries.toTypedArray())
+    val dayPeriodDialogState = rememberDayPeriodDialogStates(DayPeriod.entries)
     DayPeriod.entries.forEach { dayPeriod ->
         if (dayPeriodDialogState.isOpen(dayPeriod)){
             LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
@@ -158,7 +215,7 @@ fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
     }
-    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault()).withZone(config.zoneId)
+    val localTimeFormat = remember { DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault()).withZone(config.zoneId) }
     DayPeriod.entries.forEach { dayPeriod ->
         SettingsRow(stringResource(dayPeriod.resId)){
             Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),

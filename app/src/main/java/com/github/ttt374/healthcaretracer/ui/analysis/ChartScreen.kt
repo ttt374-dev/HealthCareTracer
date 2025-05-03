@@ -138,7 +138,7 @@ private fun List<ChartSeries>.toLineDataSets(): List<LineDataSet> {
         buildList {
             add(LineDataSet(series.actualEntries, label).applyStyle(color.toArgb()))
             if (!series.targetEntries.isNullOrEmpty()) {
-                val targetLabel = listOf(stringResource(R.string.target), ":", stringResource(series.resId)).joinToString()
+                val targetLabel = "${stringResource(R.string.target)}: ${stringResource(series.resId)}"
                 add(LineDataSet(series.targetEntries, targetLabel).applyStyle(color.toArgb(), isTarget = true))
             }
         }

@@ -65,11 +65,11 @@ enum class MetricType(
     BODY_TEMPERATURE(
         resId = R.string.bodyTemperature,
         selector = { it.bodyTemperature?.toMetricValue() },
-        targetSelector = { it.bodyWeight.toMetricValue() }
     ),
     WEIGHT(
         resId = R.string.bodyWeight,
         selector = { it.bodyWeight?.toMetricValue() },
+        targetSelector = { it.bodyWeight.toMetricValue() }
     );
 
     companion object {

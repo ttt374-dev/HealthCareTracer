@@ -70,6 +70,14 @@ fun AnalysisScreen(viewModel: AnalysisViewModel = hiltViewModel(), appNavigator:
                 }
             }
     }
+//    LaunchedEffect(Unit) {
+//        viewModel.selectedMetricType.collect { type ->
+//            val targetPage = MetricType.entries.indexOf(type)
+//            if (pagerState.currentPage != targetPage) {
+//                pagerState.scrollToPage(targetPage)
+//            }
+//        }
+//    }
 
     LaunchedEffect(selectedMetricType) {
         val targetPage = MetricType.entries.indexOf(selectedMetricType)

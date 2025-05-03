@@ -52,13 +52,16 @@ enum class TargetVitalsType(val resId: Int, val selector: (TargetVitals) -> Any?
                             val updateTargetVitals: (TargetVitals, String) -> TargetVitals, val keyboardType: KeyboardType) {
     BpUpper(R.string.targetBpUpper, { vitals -> vitals.bp.upper }, ConfigValidator::validatePositiveInt,
         { targetVitals, input ->  targetVitals.copy(bp = BloodPressure(input.toIntOrNull() ?: 0, targetVitals.bp.lower))},
-        KeyboardType.Decimal),
+        KeyboardType.Number),
     BpLower(R.string.targetBpLower, { vitals -> vitals.bp.lower }, ConfigValidator::validatePositiveInt,
         { targetVitals, input -> targetVitals.copy(bp = BloodPressure(targetVitals.bp.upper, input.toIntOrNull() ?: 0))},
-        KeyboardType.Decimal),
+        KeyboardType.Number),
     BodyWeight(R.string.targetBodyWeight, { vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble,
         { targetVitals, input -> targetVitals.copy(bodyWeight = input.toDoubleOrNull() ?: 0.0)},
-        KeyboardType.Number)
+        KeyboardType.Decimal);
+    fun getStringValue(targetVitals: TargetVitals): String {
+        return selector(targetVitals)?.toString() ?: ""
+    }
 }
 
 object ConfigValidator {
@@ -96,15 +99,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
 @Composable
 fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit){
     val bpGuidelineState = rememberDialogState()
-    if (bpGuidelineState.isOpen){
-        HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
-            onOptionSelected = { selected ->
-                onSaveConfig(config.updateBloodPressureGuidelineByName(selected))
-//                val guideline = BloodPressureGuideline.entries.find { it.name == selected } ?: BloodPressureGuideline.Default
-//                onSaveConfig(config.copy(bloodPressureGuideline = guideline))
-            } )
-        BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
-    }
+
     SettingsRow(stringResource(R.string.htn_guideline)) {
         Row (Modifier.clickable { bpGuidelineState.toggle() }) {
             Text(config.bloodPressureGuideline.name)
@@ -112,28 +107,30 @@ fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit
                 Icon(Icons.Filled.ExpandMore, "expand")
         }
     }
+    if (bpGuidelineState.isOpen){
+        HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
+            onOptionSelected = { selected ->
+                onSaveConfig(config.updateBloodPressureGuidelineByName(selected))
+            } )
+        BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
+    }
 }
 @Composable
 fun <T : Enum<T>> rememberDialogStates(entries: Array<T>): Map<T, DialogState> {
     return remember { entries.associateWith { DialogStateImpl() } }
 }
+fun <T> Map<T, DialogState>.isOpen(type: T): Boolean = this[type]?.isOpen == true
 
-//@Composable
-//fun rememberTargetVitalsDialogStates(): Map<TargetVitalsType, DialogState> {
-//    return remember { TargetVitalsType.entries.associateWith { DialogStateImpl() }}
-//}
 @Composable
 fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
     val targetVitalsDialogState = rememberDialogStates(TargetVitalsType.entries.toTypedArray()) // rememberTargetVitalsDialogStates()
     TargetVitalsType.entries.forEach { targetVitalsType ->
-        if (targetVitalsDialogState.getValue(targetVitalsType).isOpen) {
+        if (targetVitalsDialogState.isOpen(targetVitalsType)) {
             TextFieldDialog(
                 title = { Text(stringResource(targetVitalsType.resId)) },
-                initialValue = targetVitalsType.selector(config.targetVitals)?.toString() ?: "",
+                initialValue = targetVitalsType.getStringValue(config.targetVitals),
                 onConfirm = { input ->
                     onSaveConfig(config.updateTargetVital(targetVitalsType, input))
-//                    val updatedTargetVitals = targetVitalsType.updateTargetVitals(config.targetVitals, input)
-//                    onSaveConfig(config.copy(targetVitals = updatedTargetVitals))
                 },
                 validate = targetVitalsType.validator,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVitalsType.keyboardType),
@@ -143,23 +140,17 @@ fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
     }
     TargetVitalsType.entries.forEach { targetVital ->
         SettingsRow(stringResource(targetVital.resId)){
-            Text(targetVital.selector(config.targetVitals)?.toString() ?: "",
+            Text(targetVital.getStringValue(config.targetVitals),
                 Modifier.clickable { targetVitalsDialogState[targetVital]?.open() })
         }
     }
 }
 
-//@Composable
-//fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
-//    return remember {
-//        DayPeriod.entries.associateWith { DialogStateImpl() }
-//    }
-//}
 @Composable
 fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
     val dayPeriodDialogState = rememberDialogStates(DayPeriod.entries.toTypedArray())
     DayPeriod.entries.forEach { dayPeriod ->
-        if (dayPeriodDialogState.getValue(dayPeriod).isOpen){
+        if (dayPeriodDialogState.isOpen(dayPeriod)){
             LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
                 onTimeSelected = {
                     onSaveConfig(config.updateDayPeriod(dayPeriod, it))
@@ -167,7 +158,7 @@ fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
     }
-    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault())  // .withZone(ZoneId.systemDefault())
+    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault()).withZone(config.zoneId)
     DayPeriod.entries.forEach { dayPeriod ->
         SettingsRow(stringResource(dayPeriod.resId)){
             Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),
@@ -195,7 +186,7 @@ fun TimeZoneSection(config: Config, onSaveConfig: (Config) -> Unit, timezoneList
 /////////////////////////////
 @Composable
 fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit ){
-    Row(modifier= Modifier.padding(4.dp).clickable(onClick != null) { onClick?.invoke() }) {
+    Row(modifier= Modifier.clickable(onClick != null) { onClick?.invoke() }.padding(4.dp)) {
         Text(label, Modifier.weight(1f))
         content()
      }

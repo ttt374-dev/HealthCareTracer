@@ -81,7 +81,8 @@ internal fun List<Entry>.toTargetEntriesOrEmpty(targetValue: Number?, startDate:
 internal fun List<Entry>.toTargetEntries(targetValue: Number, startDate: Instant? = null): List<Entry> {
     if (isEmpty()) return emptyList()
     val startX = startDate?.toEpochMilli()?.toFloat() ?: first().x
-    val endX = last().x
+    //val endX = last().x
+    val endX = Instant.now().toEpochMilli().toFloat()
 
     return listOf(
         Entry(startX, targetValue.toFloat()),

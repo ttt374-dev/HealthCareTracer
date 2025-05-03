@@ -227,7 +227,7 @@ private fun DateAndTimePickers(
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         val dateFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(zoneId) }
-        val timeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("HH:mm a Z").withZone(zoneId) }
+        val timeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("HH:mm a").withZone(zoneId) }
 
         OutlinedButton(onClick = { datePickerDialogState.open() }) {
             Text(dateFormatter.format(itemUiState.measuredAt))

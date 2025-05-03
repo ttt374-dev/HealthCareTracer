@@ -63,10 +63,11 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
                                             @DefaultMetricCategory defaultMetricType: MetricType) : ViewModel() {
     private val timeRangeFlow = preferencesRepository.dataFlow.map { it.timeRange }
     val timeRange: StateFlow<TimeRange> = timeRangeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimeRange.Default)
-    private val _selectedMetricType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
-    val selectedMetricType: StateFlow<MetricType> = _selectedMetricType.asStateFlow()
+//    private val _selectedMetricType: MutableStateFlow<MetricType> = MutableStateFlow(defaultMetricType)
+//    val selectedMetricType: StateFlow<MetricType> = _selectedMetricType.asStateFlow()
 
     val displayMode: StateFlow<DisplayMode> = preferencesRepository.dataFlow.map { it.displayMode }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DisplayMode.Default)
+    val selectedMetricType: StateFlow<MetricType> = preferencesRepository.dataFlow.map { it.selectedMetricType }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MetricType.Default)
 
     val config: StateFlow<Config> = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
 
@@ -98,7 +99,7 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
     }
     init {
         viewModelScope.launch {
-            combine(_selectedMetricType, timeRange, config) { type, range, conf ->
+            combine(selectedMetricType, timeRange, config) { type, range, conf ->
                 Triple(type, range, conf)
             }.collect { (type, range, conf) ->
                 loadChartData(type, range)
@@ -114,7 +115,10 @@ class AnalysisViewModel @Inject constructor(private val chartRepository: ChartRe
 
     /////////////////////
     fun setMetricType(metricType: MetricType) {
-        _selectedMetricType.value = metricType
+        viewModelScope.launch {
+            preferencesRepository.updateData { it.copy(selectedMetricType = metricType) }
+        }
+        //_selectedMetricType.value = metricType
     }
     fun setDisplayMode(displayMode: DisplayMode) {
         viewModelScope.launch {

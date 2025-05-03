@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.github.ttt374.healthcaretracer.ui.analysis.AnalysisScreen
+import com.github.ttt374.healthcaretracer.ui.analysis.MetricScreen
 import com.github.ttt374.healthcaretracer.ui.calendar.CalendarScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EditScreen
 import com.github.ttt374.healthcaretracer.ui.entry.EntryScreen
@@ -25,14 +26,17 @@ sealed class Screen(val route: String, val routeWithArgs: String = "") {
     data object Calendar: Screen("calendar")
     //data object Statistics: Screen("statistics")
     data object Settings: Screen("settings")
+    data object Metric: Screen("metric")
 }
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     val appNavigator = AppNavigator(navController)
+    //val startRoute = Screen.Metric.route
     val startRoute = Screen.Home.route
     //NavHost(navController = navController, startDestination = Screen.Home.route) {
     NavHost(navController = navController, startDestination = startRoute) {
+        composable(Screen.Metric.route) { MetricScreen(appNavigator = appNavigator) }
         composable(Screen.Home.route) { HomeScreen(appNavigator = appNavigator) }
         composable(Screen.Entry.route) { EntryScreen(appNavigator = appNavigator)}
         composable(Screen.EntryWithDate.routeWithArgs, arguments = listOf(navArgument("date") { type = NavType.StringType })){
@@ -61,4 +65,5 @@ class AppNavigator(private val navController: NavHostController){
     //fun navigateToStatistics() = navigateTo(Screen.Statistics.route)
     fun navigateToSettings() = navigateTo(Screen.Settings.route)
     fun navigateToAnalysis() = navigateTo(Screen.Analysis.route)
+    //fun navigateToAnalysis() = navigateTo(Screen.Metric.route)
 }

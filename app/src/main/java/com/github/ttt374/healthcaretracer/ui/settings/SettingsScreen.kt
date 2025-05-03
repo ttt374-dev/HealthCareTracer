@@ -58,15 +58,7 @@ enum class TargetVitalsType(val resId: Int, val selector: (TargetVitals) -> Any?
         KeyboardType.Decimal),
     BodyWeight(R.string.targetBodyWeight, { vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble,
         { targetVitals, input -> targetVitals.copy(bodyWeight = input.toDoubleOrNull() ?: 0.0)},
-        KeyboardType.Number),;
-
-//    fun updateTargetVitals(config: Config, input: String): Vitals{
-//        return when (this) {  // TODO:  refactor
-//            BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
-//            BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-//            BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
-//        }
-//    }
+        KeyboardType.Number)
 }
 
 object ConfigValidator {
@@ -107,8 +99,9 @@ fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit
     if (bpGuidelineState.isOpen){
         HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
             onOptionSelected = { selected ->
-                val guideline = BloodPressureGuideline.entries.find { it.name == selected } ?: BloodPressureGuideline.Default
-                onSaveConfig(config.copy(bloodPressureGuideline = guideline))
+                onSaveConfig(config.updateBloodPressureGuidelineByName(selected))
+//                val guideline = BloodPressureGuideline.entries.find { it.name == selected } ?: BloodPressureGuideline.Default
+//                onSaveConfig(config.copy(bloodPressureGuideline = guideline))
             } )
         BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
     }
@@ -134,8 +127,9 @@ fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
                 title = { Text(stringResource(targetVitalsType.resId)) },
                 initialValue = targetVitalsType.selector(config.targetVitals)?.toString() ?: "",
                 onConfirm = { input ->
-                    val updatedTargetVitals = targetVitalsType.updateTargetVitals(config.targetVitals, input)
-                    onSaveConfig(config.copy(targetVitals = updatedTargetVitals))
+                    onSaveConfig(config.updateTargetVital(targetVitalsType, input))
+//                    val updatedTargetVitals = targetVitalsType.updateTargetVitals(config.targetVitals, input)
+//                    onSaveConfig(config.copy(targetVitals = updatedTargetVitals))
                 },
                 validate = targetVitalsType.validator,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVitalsType.keyboardType),
@@ -163,8 +157,8 @@ fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
         if (dayPeriodDialogState.getValue(dayPeriod).isOpen){
             LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
                 onTimeSelected = {
-                    val timeOfDayConfig = config.dayPeriodConfig.update(dayPeriod, it)
-                    onSaveConfig(config.copy(dayPeriodConfig = timeOfDayConfig))
+                    onSaveConfig(config.updateDayPeriod(dayPeriod, it))
+                    //onSaveConfig(config.copy(dayPeriodConfig = config.dayPeriodConfig.update(dayPeriod, it)))
                 },
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
@@ -184,8 +178,7 @@ fun TimeZoneSection(config: Config, onSaveConfig: (Config) -> Unit, timezoneList
     if (zoneIdDialogState.isOpen){
         SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timezoneList,
             onConfirm = {
-                val zoneId = runCatching { ZoneId.of(it) }.getOrNull()
-                if (zoneId != null) onSaveConfig(config.copy(zoneId = zoneId))
+                onSaveConfig(config.updateTimeZone(it))
             },
             closeDialog = { zoneIdDialogState.close()},
             validate = ConfigValidator::validateZoneId

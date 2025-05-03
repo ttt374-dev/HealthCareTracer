@@ -27,8 +27,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
+import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
 import com.github.ttt374.healthcaretracer.ui.common.CustomBottomAppBar
 import com.github.ttt374.healthcaretracer.ui.common.CustomTopAppBar
@@ -80,8 +82,42 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
     val timezoneList by viewModel.timezoneList.collectAsState()
     //val configValidator: ConfigValidator = ConfigValidator()
 
-    // dialogs
+
+
+    ////////////////////////////////////////////////
+    Scaffold(
+        topBar = { CustomTopAppBar(stringResource(R.string.settings)) },
+        bottomBar = { CustomBottomAppBar(appNavigator) }
+    ) { innerPadding ->
+        Column (Modifier.padding(innerPadding).padding(16.dp)){
+            BloodPressureGuidelineSection(config, viewModel::saveConfig)
+            TargetVitalsSection(config, viewModel::saveConfig)
+            DayPeriodSection(config, viewModel::saveConfig)
+            TimeZoneSection(config, viewModel::saveConfig, timezoneList)
+        }
+    }
+}
+@Composable
+fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit){
     val bpGuidelineState = rememberDialogState()
+    if (bpGuidelineState.isOpen){
+        HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
+            onOptionSelected = { selected ->
+                val guideline = BloodPressureGuideline.entries.find { it.name == selected } ?: BloodPressureGuideline.Default
+                onSaveConfig(config.copy(bloodPressureGuideline = guideline))
+            } )
+        BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
+    }
+    SettingsRow(stringResource(R.string.htn_guideline)) {
+        Row (Modifier.clickable { bpGuidelineState.toggle() }) {
+            Text(config.bloodPressureGuideline.name)
+            if (bpGuidelineState.isOpen) Icon(Icons.Filled.ExpandLess, "close") else
+                Icon(Icons.Filled.ExpandMore, "expand")
+        }
+    }
+}
+@Composable
+fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
     val targetVitalsDialogState = rememberTargetVitalsDialogStates()
     TargetVitals.entries.forEach { targetVital ->
         if (targetVitalsDialogState.getValue(targetVital).isOpen) {
@@ -90,7 +126,12 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
                 title = { Text(stringResource(targetVital.resId)) },
                 initialValue = targetVital.selector(config.targetVitals)?.toString() ?: "",
                 onConfirm = { input ->
-                    viewModel.updateTargetVitals(targetVital, input)
+                    val updatedVitals = when (targetVital) {  // TODO:  refactor
+                        TargetVitals.BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+                        TargetVitals.BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+                        TargetVitals.BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+                    }
+                    onSaveConfig(config.copy(targetVitals = updatedVitals))
                 },
                 validate = targetVital.validator,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVital.keyboardType),
@@ -98,75 +139,54 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             )
         }
     }
+    TargetVitals.entries.forEach { targetVital ->
+        SettingsRow(stringResource(targetVital.resId)){
+            Text(targetVital.selector(config.targetVitals)?.toString() ?: "",
+                Modifier.clickable { targetVitalsDialogState[targetVital]?.open() })
+        }
+    }
+}
+@Composable
+fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
     val dayPeriodDialogState = rememberDayPeriodDialogStates()
-
     DayPeriod.entries.forEach { dayPeriod ->
         if (dayPeriodDialogState.getValue(dayPeriod).isOpen){
             LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
                 onTimeSelected = {
                     val timeOfDayConfig = config.dayPeriodConfig.update(dayPeriod, it)
-                    viewModel.saveConfig(config.copy(dayPeriodConfig = timeOfDayConfig))
+                    onSaveConfig(config.copy(dayPeriodConfig = timeOfDayConfig))
                 },
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
     }
+    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault())  // .withZone(ZoneId.systemDefault())
+    DayPeriod.entries.forEach { dayPeriod ->
+        SettingsRow(stringResource(dayPeriod.resId)){
+            Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),
+                //Text(dayPeriod.takeStartValue(config.timeOfDayConfig).format(localTimeFormat),
+                modifier = Modifier.clickable { dayPeriodDialogState[dayPeriod]?.open() })
+        }
+    }
+}
+@Composable
+fun TimeZoneSection(config: Config, onSaveConfig: (Config) -> Unit, timezoneList: List<String>){
     val zoneIdDialogState = rememberDialogState()
     if (zoneIdDialogState.isOpen){
         SelectableTextFieldDialog(title = { Text(stringResource(R.string.timeZone))}, config.zoneId.toString(), selectableList = timezoneList,
             onConfirm = {
                 val zoneId = runCatching { ZoneId.of(it) }.getOrNull()
-                if (zoneId != null) viewModel.saveConfig(config.copy(zoneId = zoneId))
-
-//                viewModel.saveConfig(config.copy(zoneId = ZoneId.of(it)))
+                if (zoneId != null) onSaveConfig(config.copy(zoneId = zoneId))
             },
             closeDialog = { zoneIdDialogState.close()},
             validate = ConfigValidator::validateZoneId
         )
-
-    }
-    val localTimeFormat = DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault())  // .withZone(ZoneId.systemDefault())
-    ////////////////////////////////////////////////
-    Scaffold(
-        topBar = { CustomTopAppBar(stringResource(R.string.settings)) },
-        bottomBar = { CustomBottomAppBar(appNavigator) }
-    ) { innerPadding ->
-        Column (Modifier.padding(innerPadding).padding(16.dp)){
-            SettingsRow(stringResource(R.string.htn_guideline)) {
-                Row (Modifier.clickable { bpGuidelineState.toggle() }) {
-                    Text(config.bloodPressureGuideline.name)
-                    if (bpGuidelineState.isOpen) Icon(Icons.Filled.ExpandLess, "close") else
-                        Icon(Icons.Filled.ExpandMore, "expand")
-                }
-            }
-            if (bpGuidelineState.isOpen){
-                HorizontalSelector(BloodPressureGuideline.entries.map { it.name }, config.bloodPressureGuideline.name,
-                    onOptionSelected = { selected ->
-                        val guideline = BloodPressureGuideline.entries.find { it.name == selected } ?: BloodPressureGuideline.Default
-                        viewModel.saveConfig(config.copy(bloodPressureGuideline = guideline))
-                    } )
-                BpGuidelineTable(config.bloodPressureGuideline, modifier=Modifier.padding(start = 4.dp))
-            }
-
-            TargetVitals.entries.forEach { targetVital ->
-                SettingsRow(stringResource(targetVital.resId)){
-                Text(targetVital.selector(config.targetVitals)?.toString() ?: "",
-                    Modifier.clickable { targetVitalsDialogState[targetVital]?.open() })
-                }
-            }
-            DayPeriod.entries.forEach { dayPeriod ->
-                SettingsRow(stringResource(dayPeriod.resId)){
-                    Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),
-                    //Text(dayPeriod.takeStartValue(config.timeOfDayConfig).format(localTimeFormat),
-                        modifier = Modifier.clickable { dayPeriodDialogState[dayPeriod]?.open() })
-                }
-            }
-            SettingsRow(stringResource(R.string.timeZone)){
-                Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
-            }
-            SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
+        SettingsRow(stringResource(R.string.timeZone)){
+            Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
         }
+        SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
     }
 }
+/////////////////////////////
 @Composable
 fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit ){
     Row(modifier= Modifier.padding(4.dp).clickable(onClick != null) { onClick?.invoke() }) {
@@ -174,44 +194,7 @@ fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composab
         content()
      }
 }
-//@Composable
-//fun TargetBpDialog (bp: BloodPressure?, onConfirm: (BloodPressure) -> Unit, closeDialog: () -> Unit){
-////fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, closeDialog: () -> Unit){
-//    var bpUpperString by remember { mutableStateOf(bp?.upper.toString())}
-//    var bpLowerString by remember { mutableStateOf(bp?.lower.toString())}
-//    val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-//
-//    // focus requesters
-//    val bpUpperFocusRequester = remember { FocusRequester() }
-//    val bpLowerFocusRequester = remember { FocusRequester() }
-//    val confirmButtonFocusRequester = remember { FocusRequester() }
-//    //val focusManager = FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, confirmButtonFocusRequester))
-//
-//    ConfirmDialog(title = @Composable { Text(stringResource(R.string.targetBp))},
-//        text = @Composable {
-//            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-//                OutlinedTextField(bpUpperString, {
-//                    bpUpperString = it
-//                    if ((it.toIntOrNull() ?: 0) > MIN_BP) bpLowerFocusRequester.requestFocus()},
-//                        //focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }},
-//                    Modifier.weight(1f).focusRequester(bpUpperFocusRequester), keyboardOptions = numberKeyboardOptions)
-//                Text(" / ")
-//                OutlinedTextField(bpLowerString, { bpLowerString = it; if ((it.toIntOrNull() ?: 0) > MIN_BP) confirmButtonFocusRequester.requestFocus()},
-//                    Modifier.weight(1f).focusRequester(bpLowerFocusRequester), keyboardOptions = numberKeyboardOptions)
-//            }
-//        },
-//        confirmButton = {
-//            OutlinedButton(onClick = {
-//                onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0));
-//            }, modifier = Modifier.focusRequester(confirmButtonFocusRequester).focusTarget()
-//            ) {
-//                Text("OK")
-//            }
-//        },
-//        onConfirm = { onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)) },
-//        closeDialog = closeDialog
-//        )
-//}
+
 @Composable
 fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Modifier){
     Column (modifier=modifier.border(1.dp, Color.Black).padding(4.dp)) {
@@ -270,4 +253,43 @@ fun LocalTimeDialog(localTime: LocalTime, onTimeSelected: (LocalTime) -> Unit, o
 //            })
 //        }
 //    }
+//}
+
+//@Composable
+//fun TargetBpDialog (bp: BloodPressure?, onConfirm: (BloodPressure) -> Unit, closeDialog: () -> Unit){
+////fun TargetBpDialog (bpUpper: Int, bpLower: Int, onConfirm: (Int, Int) -> Unit, closeDialog: () -> Unit){
+//    var bpUpperString by remember { mutableStateOf(bp?.upper.toString())}
+//    var bpLowerString by remember { mutableStateOf(bp?.lower.toString())}
+//    val numberKeyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//
+//    // focus requesters
+//    val bpUpperFocusRequester = remember { FocusRequester() }
+//    val bpLowerFocusRequester = remember { FocusRequester() }
+//    val confirmButtonFocusRequester = remember { FocusRequester() }
+//    //val focusManager = FocusManager(listOf(bpUpperFocusRequester, bpLowerFocusRequester, confirmButtonFocusRequester))
+//
+//    ConfirmDialog(title = @Composable { Text(stringResource(R.string.targetBp))},
+//        text = @Composable {
+//            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+//                OutlinedTextField(bpUpperString, {
+//                    bpUpperString = it
+//                    if ((it.toIntOrNull() ?: 0) > MIN_BP) bpLowerFocusRequester.requestFocus()},
+//                        //focusManager.shiftFocusIf { (it.toIntOrNull() ?: 0) > MIN_BP }},
+//                    Modifier.weight(1f).focusRequester(bpUpperFocusRequester), keyboardOptions = numberKeyboardOptions)
+//                Text(" / ")
+//                OutlinedTextField(bpLowerString, { bpLowerString = it; if ((it.toIntOrNull() ?: 0) > MIN_BP) confirmButtonFocusRequester.requestFocus()},
+//                    Modifier.weight(1f).focusRequester(bpLowerFocusRequester), keyboardOptions = numberKeyboardOptions)
+//            }
+//        },
+//        confirmButton = {
+//            OutlinedButton(onClick = {
+//                onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0));
+//            }, modifier = Modifier.focusRequester(confirmButtonFocusRequester).focusTarget()
+//            ) {
+//                Text("OK")
+//            }
+//        },
+//        onConfirm = { onConfirm(BloodPressure(bpUpperString.toIntOrNull() ?: 0,bpLowerString.toIntOrNull() ?: 0)) },
+//        closeDialog = closeDialog
+//        )
 //}

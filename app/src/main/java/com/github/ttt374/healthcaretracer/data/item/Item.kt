@@ -16,14 +16,6 @@ import java.time.Instant
 const val MIN_BP = 50
 //const val MAX_BP = 260
 
-@Serializable
-data class Vitals(
-    val bp: BloodPressure? = null,
-    val pulse: Int? = null,
-    val bodyWeight: Double? = null,
-    val bodyTemperature: Double? = null,
-)
-
 @Entity(tableName = "items" )
 @TypeConverters(BloodPressureConverter::class)
 data class Item (
@@ -46,3 +38,15 @@ fun List<Item>.toAveragedVitals(): Vitals {
         bodyTemperature = mapNotNull { it.vitals.bodyTemperature }.averageOrNull(),
     )
 }
+@Serializable
+data class Vitals(
+    val bp: BloodPressure? = null,
+    val pulse: Int? = null,
+    val bodyWeight: Double? = null,
+    val bodyTemperature: Double? = null,
+)
+@Serializable
+data class TargetVitals(
+    val bp: BloodPressure = BloodPressure(120, 80),
+    val bodyWeight: Double = 60.0
+)

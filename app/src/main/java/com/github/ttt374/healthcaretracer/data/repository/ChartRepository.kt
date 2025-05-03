@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.data.repository
 import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
+import com.github.ttt374.healthcaretracer.data.item.TargetVitals
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.ChartData
 import com.github.ttt374.healthcaretracer.data.metric.ChartSeries
@@ -26,7 +27,7 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
         return targetValuesFlow.flatMapLatest { targetValues ->
             when (metricType) {
                 MetricType.BLOOD_PRESSURE -> getBloodPressureChartDataFlow(timeRange, targetValues)
-                else -> getDefaultChartDataFlow(metricType, timeRange, targetValues)
+                else -> getStandardChartDataFlow(metricType, timeRange, targetValues)
             }
         }
     }
@@ -37,7 +38,7 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
     }
     private data class BpEntries (val upper: List<Entry>, val lower: List<Entry>)
 
-    private fun getBloodPressureChartDataFlow(timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
+    private fun getBloodPressureChartDataFlow(timeRange: TimeRange, targetValues: TargetVitals): Flow<ChartData> {
         val metricType = MetricType.BLOOD_PRESSURE
         return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val bpList = list.mapNotNull {
@@ -49,8 +50,8 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
             )
             val startDate = timeRange.startDate()
             val targetEntries = BpEntries(
-                actualEntries.upper.toTargetEntriesOrEmpty(targetValues.bp?.upper, startDate),
-                actualEntries.lower.toTargetEntriesOrEmpty(targetValues.bp?.lower, startDate),
+                actualEntries.upper.toTargetEntriesOrEmpty(targetValues.bp.upper, startDate),
+                actualEntries.lower.toTargetEntriesOrEmpty(targetValues.bp.lower, startDate),
             )
 
             ChartData(metricType,
@@ -61,10 +62,10 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
             )
         }
     }
-    private fun getDefaultChartDataFlow(metricType: MetricType, timeRange: TimeRange, targetValues: Vitals): Flow<ChartData> {
+    private fun getStandardChartDataFlow(metricType: MetricType, timeRange: TimeRange, targetValues: TargetVitals): Flow<ChartData> {
         return itemRepository.getMeasuredValuesFlow(metricType, timeRange.days).map { list ->
             val actualEntries = list.toEntries()
-            val targetValue = metricType.selector(targetValues) as? MetricValue.Double
+            val targetValue = metricType.targetSelector(targetValues) as? MetricValue.Double
             val targetEntries = targetValue?.let { actualEntries.toTargetEntries(it.value, timeRange.startDate()) }
 
             ChartData(

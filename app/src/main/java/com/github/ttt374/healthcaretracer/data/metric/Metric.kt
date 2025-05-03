@@ -6,6 +6,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toAnnotatedString
+import com.github.ttt374.healthcaretracer.data.item.TargetVitals
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.shared.toAnnotatedString
 import java.time.Instant
@@ -50,10 +51,12 @@ fun BloodPressure.toMetricValue() = MetricValue.BloodPressure(this)
 enum class MetricType(
     val resId: Int,
     val selector: (Vitals) -> MetricValue?,
+    val targetSelector: (TargetVitals) -> MetricValue? =  { null },
 ) {
     BLOOD_PRESSURE(
         resId = R.string.blood_pressure,
         selector = { it.bp?.toMetricValue() },
+        targetSelector = { it.bp.toMetricValue()}
     ),
     PULSE(
         resId = R.string.pulse,
@@ -62,6 +65,7 @@ enum class MetricType(
     BODY_TEMPERATURE(
         resId = R.string.bodyTemperature,
         selector = { it.bodyTemperature?.toMetricValue() },
+        targetSelector = { it.bodyWeight.toMetricValue() }
     ),
     WEIGHT(
         resId = R.string.bodyWeight,

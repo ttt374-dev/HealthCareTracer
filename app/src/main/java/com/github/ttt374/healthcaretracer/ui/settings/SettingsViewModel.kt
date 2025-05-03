@@ -36,17 +36,17 @@ class SettingsViewModel @Inject constructor(private val configRepository: Config
             configRepository.updateData{ config }
         }
     }
-    fun updateTargetVitals(targetVital: TargetVitalsType, input: String){
-        viewModelScope.launch {
-            val currentConfig = config.first()
-
-            val updatedVitals = when (targetVital) {
-                TargetVitalsType.BpUpper -> currentConfig.targetVitals.copy(bp = (input.toIntOrNull() to currentConfig.targetVitals.bp?.lower).toBloodPressure())
-                TargetVitalsType.BpLower -> currentConfig.targetVitals.copy(bp = (currentConfig.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-                TargetVitalsType.BodyWeight -> currentConfig.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
-            }
-            saveConfig(currentConfig.copy(targetVitals = updatedVitals))
-        }
-    }
+//    fun updateTargetVitals(targetVital: TargetVitalsType, input: String){
+//        viewModelScope.launch {
+//            val currentConfig = config.first()
+//
+//            val updatedVitals = when (targetVital) {
+//                TargetVitalsType.BpUpper -> currentConfig.targetVitals.copy(bp = (input.toIntOrNull() to currentConfig.targetVitals.bp?.lower).toBloodPressure())
+//                TargetVitalsType.BpLower -> currentConfig.targetVitals.copy(bp = (currentConfig.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+//                TargetVitalsType.BodyWeight -> currentConfig.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+//            }
+//            saveConfig(currentConfig.copy(targetVitals = updatedVitals))
+//        }
+//    }
 }
 

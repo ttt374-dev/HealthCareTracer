@@ -3,6 +3,7 @@ package com.github.ttt374.healthcaretracer.data.repository
 import android.content.Context
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
+import com.github.ttt374.healthcaretracer.data.item.TargetVitals
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriodConfig
 import kotlinx.serialization.KSerializer
@@ -22,12 +23,14 @@ import javax.inject.Singleton
 data class Config (
     val bloodPressureGuideline: BloodPressureGuideline = BloodPressureGuideline.Default,
     val dayPeriodConfig: DayPeriodConfig = DayPeriodConfig(),
-    val targetVitals: Vitals = Vitals(bp = BloodPressure(120, 80), bodyWeight = 60.0),
+    //val targetVitals: Vitals = Vitals(bp = BloodPressure(120, 80), bodyWeight = 60.0),
+    val targetVitals: TargetVitals = TargetVitals(),
     @Serializable(with = ZoneIdSerializer::class)
     val zoneId: ZoneId = ZoneId.systemDefault(),
 
     //val localeTag: String = "en_US"
 )
+
 @Serializable
 object LocalTimeSerializer : KSerializer<LocalTime> {
     private val formatter = DateTimeFormatter.ISO_LOCAL_TIME // 例: "08:30:00"

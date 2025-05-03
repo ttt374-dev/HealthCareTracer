@@ -26,9 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.ttt374.healthcaretracer.BuildConfig
 import com.github.ttt374.healthcaretracer.R
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
-import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
-import com.github.ttt374.healthcaretracer.data.item.Vitals
+import com.github.ttt374.healthcaretracer.data.item.TargetVitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.navigation.AppNavigator
@@ -48,18 +48,25 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-enum class TargetVitalsType(val resId: Int, val selector: (Vitals) -> Any?, val validator: (String) -> Boolean, val keyboardType: KeyboardType) {
-    BpUpper(R.string.targetBpUpper, { vitals: Vitals -> vitals.bp?.upper }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
-    BpLower(R.string.targetBpLower, { vitals: Vitals -> vitals.bp?.lower }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
-    BodyWeight(R.string.targetBodyWeight, { vitals: Vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble, KeyboardType.Number),;
+enum class TargetVitalsType(val resId: Int, val selector: (TargetVitals) -> Any?, val validator: (String) -> Boolean,
+                            val updateTargetVitals: (TargetVitals, String) -> TargetVitals, val keyboardType: KeyboardType) {
+    BpUpper(R.string.targetBpUpper, { vitals -> vitals.bp.upper }, ConfigValidator::validatePositiveInt,
+        { targetVitals, input ->  targetVitals.copy(bp = BloodPressure(input.toIntOrNull() ?: 0, targetVitals.bp.lower))},
+        KeyboardType.Decimal),
+    BpLower(R.string.targetBpLower, { vitals -> vitals.bp.lower }, ConfigValidator::validatePositiveInt,
+        { targetVitals, input -> targetVitals.copy(bp = BloodPressure(targetVitals.bp.upper, input.toIntOrNull() ?: 0))},
+        KeyboardType.Decimal),
+    BodyWeight(R.string.targetBodyWeight, { vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble,
+        { targetVitals, input -> targetVitals.copy(bodyWeight = input.toDoubleOrNull() ?: 0.0)},
+        KeyboardType.Number),;
 
-    fun updateTargetVitals(config: Config, input: String): Vitals{
-        return when (this) {  // TODO:  refactor
-            BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
-            BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-            BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
-        }
-    }
+//    fun updateTargetVitals(config: Config, input: String): Vitals{
+//        return when (this) {  // TODO:  refactor
+//            BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+//            BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+//            BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+//        }
+//    }
 }
 
 object ConfigValidator {
@@ -90,6 +97,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             TargetVitalsSection(config, viewModel::saveConfig)
             DayPeriodSection(config, viewModel::saveConfig)
             TimeZoneSection(config, viewModel::saveConfig, timezoneList)
+            SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
     }
 }
@@ -126,13 +134,8 @@ fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
                 title = { Text(stringResource(targetVitalsType.resId)) },
                 initialValue = targetVitalsType.selector(config.targetVitals)?.toString() ?: "",
                 onConfirm = { input ->
-                    val updatedVitals = targetVitalsType.updateTargetVitals(config, input)
-//                    val updatedVitals = when (targetVital) {  // TODO:  refactor
-//                        TargetVitalsType.BpUpper ->   config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
-//                        TargetVitalsType.BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-//                        TargetVitalsType.BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
-//                    }
-                    onSaveConfig(config.copy(targetVitals = updatedVitals))
+                    val updatedTargetVitals = targetVitalsType.updateTargetVitals(config.targetVitals, input)
+                    onSaveConfig(config.copy(targetVitals = updatedTargetVitals))
                 },
                 validate = targetVitalsType.validator,
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVitalsType.keyboardType),
@@ -190,7 +193,6 @@ fun TimeZoneSection(config: Config, onSaveConfig: (Config) -> Unit, timezoneList
         SettingsRow(stringResource(R.string.timeZone)){
             Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
         }
-        SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
     }
 }
 /////////////////////////////

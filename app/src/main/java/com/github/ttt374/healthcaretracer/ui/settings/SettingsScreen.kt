@@ -48,10 +48,18 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-enum class TargetVitals(val resId: Int, val selector: (Vitals) -> Any?, val validator: (String) -> Boolean, val keyboardType: KeyboardType) {
+enum class TargetVitalsType(val resId: Int, val selector: (Vitals) -> Any?, val validator: (String) -> Boolean, val keyboardType: KeyboardType) {
     BpUpper(R.string.targetBpUpper, { vitals: Vitals -> vitals.bp?.upper }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
     BpLower(R.string.targetBpLower, { vitals: Vitals -> vitals.bp?.lower }, ConfigValidator::validatePositiveInt, KeyboardType.Decimal),
-    BodyWeight(R.string.targetBodyWeight, { vitals: Vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble, KeyboardType.Number),
+    BodyWeight(R.string.targetBodyWeight, { vitals: Vitals -> vitals.bodyWeight }, ConfigValidator::validatePositiveDouble, KeyboardType.Number),;
+
+    fun updateTargetVitals(config: Config, input: String): Vitals{
+        return when (this) {  // TODO:  refactor
+            BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+            BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+            BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+        }
+    }
 }
 
 object ConfigValidator {
@@ -65,24 +73,12 @@ object ConfigValidator {
         input.isNotBlank() && try { ZoneId.of(input); true } catch (e: DateTimeException){ false}
 }
 
-@Composable
-fun rememberTargetVitalsDialogStates(): Map<TargetVitals, DialogState> {
-    return remember { TargetVitals.entries.associateWith { DialogStateImpl() }}
-}
-@Composable
-fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
-    return remember {
-        DayPeriod.entries.associateWith { DialogStateImpl() }
-    }
-}
 /////////////////////
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator: AppNavigator) {
     val config by viewModel.config.collectAsState()
     val timezoneList by viewModel.timezoneList.collectAsState()
     //val configValidator: ConfigValidator = ConfigValidator()
-
-
 
     ////////////////////////////////////////////////
     Scaffold(
@@ -116,34 +112,45 @@ fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit
         }
     }
 }
+
+@Composable
+fun rememberTargetVitalsDialogStates(): Map<TargetVitalsType, DialogState> {
+    return remember { TargetVitalsType.entries.associateWith { DialogStateImpl() }}
+}
 @Composable
 fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
     val targetVitalsDialogState = rememberTargetVitalsDialogStates()
-    TargetVitals.entries.forEach { targetVital ->
-        if (targetVitalsDialogState.getValue(targetVital).isOpen) {
-
+    TargetVitalsType.entries.forEach { targetVitalsType ->
+        if (targetVitalsDialogState.getValue(targetVitalsType).isOpen) {
             TextFieldDialog(
-                title = { Text(stringResource(targetVital.resId)) },
-                initialValue = targetVital.selector(config.targetVitals)?.toString() ?: "",
+                title = { Text(stringResource(targetVitalsType.resId)) },
+                initialValue = targetVitalsType.selector(config.targetVitals)?.toString() ?: "",
                 onConfirm = { input ->
-                    val updatedVitals = when (targetVital) {  // TODO:  refactor
-                        TargetVitals.BpUpper -> config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
-                        TargetVitals.BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-                        TargetVitals.BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
-                    }
+                    val updatedVitals = targetVitalsType.updateTargetVitals(config, input)
+//                    val updatedVitals = when (targetVital) {  // TODO:  refactor
+//                        TargetVitalsType.BpUpper ->   config.targetVitals.copy(bp = (input.toIntOrNull() to config.targetVitals.bp?.lower).toBloodPressure())
+//                        TargetVitalsType.BpLower -> config.targetVitals.copy(bp = (config.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+//                        TargetVitalsType.BodyWeight -> config.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+//                    }
                     onSaveConfig(config.copy(targetVitals = updatedVitals))
                 },
-                validate = targetVital.validator,
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVital.keyboardType),
-                closeDialog = { targetVitalsDialogState[targetVital]?.close() }
+                validate = targetVitalsType.validator,
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = targetVitalsType.keyboardType),
+                closeDialog = { targetVitalsDialogState[targetVitalsType]?.close() }
             )
         }
     }
-    TargetVitals.entries.forEach { targetVital ->
+    TargetVitalsType.entries.forEach { targetVital ->
         SettingsRow(stringResource(targetVital.resId)){
             Text(targetVital.selector(config.targetVitals)?.toString() ?: "",
                 Modifier.clickable { targetVitalsDialogState[targetVital]?.open() })
         }
+    }
+}
+@Composable
+fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
+    return remember {
+        DayPeriod.entries.associateWith { DialogStateImpl() }
     }
 }
 @Composable

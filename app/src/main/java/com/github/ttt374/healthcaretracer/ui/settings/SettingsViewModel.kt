@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.R
 import com.github.ttt374.healthcaretracer.data.bloodpressure.toBloodPressure
-import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data. repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,13 +36,14 @@ class SettingsViewModel @Inject constructor(private val configRepository: Config
             configRepository.updateData{ config }
         }
     }
-    fun updateTargetVitals(targetVital: TargetVitals, input: String){
+    fun updateTargetVitals(targetVital: TargetVitalsType, input: String){
         viewModelScope.launch {
             val currentConfig = config.first()
+
             val updatedVitals = when (targetVital) {
-                TargetVitals.BpUpper -> currentConfig.targetVitals.copy(bp = (input.toIntOrNull() to currentConfig.targetVitals.bp?.lower).toBloodPressure())
-                TargetVitals.BpLower -> currentConfig.targetVitals.copy(bp = (currentConfig.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
-                TargetVitals.BodyWeight -> currentConfig.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
+                TargetVitalsType.BpUpper -> currentConfig.targetVitals.copy(bp = (input.toIntOrNull() to currentConfig.targetVitals.bp?.lower).toBloodPressure())
+                TargetVitalsType.BpLower -> currentConfig.targetVitals.copy(bp = (currentConfig.targetVitals.bp?.upper to input.toIntOrNull()).toBloodPressure())
+                TargetVitalsType.BodyWeight -> currentConfig.targetVitals.copy(bodyWeight = input.toDoubleOrNull())
             }
             saveConfig(currentConfig.copy(targetVitals = updatedVitals))
         }

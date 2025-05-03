@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.item.TargetVitals
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
@@ -38,7 +39,10 @@ data class Config (
     }
     fun updateTimeZone(input: String): Config {
         val zoneId = runCatching { ZoneId.of(input) }.getOrNull()
-        return if (zoneId != null) copy(zoneId = zoneId) else this
+        return if (zoneId != null) copy(zoneId = zoneId) else {
+            //Log.e("zoneId", "illegal zoneId: $input")
+            this
+        }
     }
 }
 

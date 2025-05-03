@@ -113,14 +113,18 @@ fun BloodPressureGuidelineSection(config: Config, onSaveConfig: (Config) -> Unit
         }
     }
 }
-
 @Composable
-fun rememberTargetVitalsDialogStates(): Map<TargetVitalsType, DialogState> {
-    return remember { TargetVitalsType.entries.associateWith { DialogStateImpl() }}
+fun <T : Enum<T>> rememberDialogStates(entries: Array<T>): Map<T, DialogState> {
+    return remember { entries.associateWith { DialogStateImpl() } }
 }
+
+//@Composable
+//fun rememberTargetVitalsDialogStates(): Map<TargetVitalsType, DialogState> {
+//    return remember { TargetVitalsType.entries.associateWith { DialogStateImpl() }}
+//}
 @Composable
 fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
-    val targetVitalsDialogState = rememberTargetVitalsDialogStates()
+    val targetVitalsDialogState = rememberDialogStates(TargetVitalsType.entries.toTypedArray()) // rememberTargetVitalsDialogStates()
     TargetVitalsType.entries.forEach { targetVitalsType ->
         if (targetVitalsDialogState.getValue(targetVitalsType).isOpen) {
             TextFieldDialog(
@@ -144,21 +148,21 @@ fun TargetVitalsSection(config: Config, onSaveConfig: (Config) -> Unit){
         }
     }
 }
-@Composable
-fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
-    return remember {
-        DayPeriod.entries.associateWith { DialogStateImpl() }
-    }
-}
+
+//@Composable
+//fun rememberDayPeriodDialogStates(): Map<DayPeriod, DialogState> {
+//    return remember {
+//        DayPeriod.entries.associateWith { DialogStateImpl() }
+//    }
+//}
 @Composable
 fun DayPeriodSection(config: Config, onSaveConfig: (Config) -> Unit){
-    val dayPeriodDialogState = rememberDayPeriodDialogStates()
+    val dayPeriodDialogState = rememberDialogStates(DayPeriod.entries.toTypedArray())
     DayPeriod.entries.forEach { dayPeriod ->
         if (dayPeriodDialogState.getValue(dayPeriod).isOpen){
             LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
                 onTimeSelected = {
                     onSaveConfig(config.updateDayPeriod(dayPeriod, it))
-                    //onSaveConfig(config.copy(dayPeriodConfig = config.dayPeriodConfig.update(dayPeriod, it)))
                 },
                 onDismiss = { dayPeriodDialogState[dayPeriod]?.close()})
         }
@@ -183,9 +187,9 @@ fun TimeZoneSection(config: Config, onSaveConfig: (Config) -> Unit, timezoneList
             closeDialog = { zoneIdDialogState.close()},
             validate = ConfigValidator::validateZoneId
         )
-        SettingsRow(stringResource(R.string.timeZone)){
-            Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
-        }
+    }
+    SettingsRow(stringResource(R.string.timeZone)){
+        Text(config.zoneId.toString(), Modifier.clickable { zoneIdDialogState.open()})
     }
 }
 /////////////////////////////

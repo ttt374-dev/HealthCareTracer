@@ -1,12 +1,9 @@
 package com.github.ttt374.healthcaretracer.data.repository
 
 import android.content.Context
-import android.util.Log
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressureGuideline
 import com.github.ttt374.healthcaretracer.data.item.TargetVitals
-import com.github.ttt374.healthcaretracer.data.metric.DayPeriod
 import com.github.ttt374.healthcaretracer.data.metric.DayPeriodConfig
-import com.github.ttt374.healthcaretracer.ui.settings.TargetVitalsType
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -27,23 +24,13 @@ data class Config (
     @Serializable(with = ZoneIdSerializer::class)
     val zoneId: ZoneId = ZoneId.systemDefault(),
 ){
-    fun updateBloodPressureGuidelineByName(name: String): Config {
-        return copy(bloodPressureGuideline = BloodPressureGuideline.entries.find { it.name == name } ?: BloodPressureGuideline.Default)
-    }
-    fun updateTargetVital(type: TargetVitalsType, input: String): Config {
-        val updatedVitals = type.updateTargetVitals(this.targetVitals, input)
-        return copy(targetVitals = updatedVitals)
-    }
-    fun updateDayPeriod(dayPeriod: DayPeriod, time: LocalTime): Config {
-        return copy(dayPeriodConfig = dayPeriodConfig.update(dayPeriod, time))
-    }
-    fun updateTimeZone(input: String): Config {
-        val zoneId = runCatching { ZoneId.of(input) }.getOrNull()
-        return if (zoneId != null) copy(zoneId = zoneId) else {
-            //Log.e("zoneId", "illegal zoneId: $input")
-            this
-        }
-    }
+//    fun updateTimeZone(input: String): Config {
+//        val zoneId = runCatching { ZoneId.of(input) }.getOrNull()
+//        return if (zoneId != null) copy(zoneId = zoneId) else {
+//            //Log.e("zoneId", "illegal zoneId: $input")
+//            this
+//        }
+//    }
 }
 
 @Serializable

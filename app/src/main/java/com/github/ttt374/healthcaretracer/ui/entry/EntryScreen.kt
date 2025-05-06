@@ -38,6 +38,7 @@ fun EntryScreen(viewModel: EntryViewModel = hiltViewModel(), itemViewModel: Item
                 updateItemUiState = viewModel::updateItemUiState,
                 locationList = locationList,
                 onPost = { itemViewModel.upsertItem(uiState.toItem())},
+                onCancel = { appNavigator.navigateBack() },
                 zoneId = config.zoneId,
                 )
         }

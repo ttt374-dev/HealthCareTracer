@@ -1,5 +1,6 @@
 package com.github.ttt374.healthcaretracer.ui.entry
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
@@ -49,6 +51,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
                      editMode: EditMode = EditMode.Entry,
                      itemUiState: ItemUiState = ItemUiState(),
                      onPost: () -> Unit = {},
+                     onCancel: () -> Unit = {},
                      onDelete: () -> Unit = {},
                      updateItemUiState: (ItemUiState) -> Unit = {},
                      locationList: List<String> = emptyList(),
@@ -106,7 +109,7 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
             }
         }
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp).navigationBarsPadding(), horizontalArrangement = Arrangement.End) {
-            ActionButtons(editMode, onPost, onDelete, itemUiState.isValid)
+            ActionButtons(editMode, onPost, onCancel, onDelete, itemUiState.isValid)
         }
     }
 }
@@ -175,22 +178,35 @@ fun VitalInputFields(itemUiState: ItemUiState, updateItemUiState: (ItemUiState) 
     }
 }
 @Composable
-private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onDelete: () -> Unit, enablePost: Boolean = true) {
-    if (editMode is EditMode.Edit){
-        val deleteDialogState = rememberItemDialogState()
-        if (deleteDialogState.isOpen){
-            ConfirmDialog(title = { Text(stringResource(R.string.msgConfirmToDelete)) },
-                text = { Text("") },
-                onConfirm = onDelete,
-                closeDialog = { deleteDialogState.close()})
-        }
-        Button(onClick = { deleteDialogState.open(editMode.item) }){
-            Text("Delete")
-        }
-        Spacer(modifier = Modifier.width(16.dp)) // ← 間にスペース
+private fun ActionButtons(editMode: EditMode, onPost: () -> Unit, onCancel: () -> Unit, onDelete: () -> Unit, enablePost: Boolean = true) {
+    val deleteDialogState = rememberItemDialogState()
+    if (deleteDialogState.isOpen){
+        ConfirmDialog(title = { Text(stringResource(R.string.msgConfirmToDelete)) },
+            text = { Text("") },
+            onConfirm = onDelete,
+            closeDialog = { deleteDialogState.close()})
     }
-    Button(enabled = enablePost, onClick = onPost) {
-        Text("OK")
+
+    Row (modifier = Modifier.fillMaxWidth(),
+        //horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically){
+        if (editMode is EditMode.Edit){
+            Button(onClick = { deleteDialogState.open(editMode.item) }){
+                Text("Delete")
+            }
+
+        }
+        Spacer(modifier = Modifier.weight(1f)) // ← 間にスペース
+        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onCancel) {
+                Text("Cancel")
+            }
+            Button(enabled = enablePost, onClick = onPost) {
+                Text("OK")
+            }
+
+        }
+
     }
 }
 
@@ -225,15 +241,17 @@ private fun DateAndTimePickers(
         TimePickerDialog(itemUiState.measuredAt, onTimeSelected, timePickerDialogState::close, zoneId)
     }
 
-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        val dateFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(zoneId) }
+    Row( horizontalArrangement = Arrangement.spacedBy(16.dp), modifier=Modifier.fillMaxWidth().padding(8.dp)) {
+        val dateFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("yyyy-M-d").withZone(zoneId) }
         val timeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("HH:mm a").withZone(zoneId) }
 
-        OutlinedButton(onClick = { datePickerDialogState.open() }) {
-            Text(dateFormatter.format(itemUiState.measuredAt))
-        }
-        OutlinedButton(onClick = { timePickerDialogState.open() }) {
-            Text(timeFormatter.format(itemUiState.measuredAt))
-        }
+        Text(dateFormatter.format(itemUiState.measuredAt), modifier=Modifier.clickable { datePickerDialogState.open()})
+        Text(timeFormatter.format(itemUiState.measuredAt), modifier=Modifier.clickable { timePickerDialogState.open()})
+//        OutlinedButton(onClick = { datePickerDialogState.open() }) {
+//            Text(dateFormatter.format(itemUiState.measuredAt))
+//        }
+//        OutlinedButton(onClick = { timePickerDialogState.open() }) {
+//            Text(timeFormatter.format(itemUiState.measuredAt))
+//        }
     }
 }

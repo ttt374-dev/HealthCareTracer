@@ -36,6 +36,7 @@ fun EditScreen(editViewModel: EditViewModel = hiltViewModel(), itemViewModel: It
                 updateItemUiState = editViewModel::updateItemUiState,
                 locationList = locationList,
                 onPost = { itemViewModel.upsertItem(itemUiState.toItem())},
+                onCancel = { appNavigator.navigateBack() },
                 onDelete = { itemViewModel.deleteItem(itemUiState.toItem())},
                 zoneId = config.zoneId
             )

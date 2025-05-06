@@ -68,7 +68,7 @@ fun String.toInstantOrNull(): Instant? {
 
 object ItemCsvSchema {
     var fields = listOf(
-        CsvField(
+        CsvField<Item, CsvItemPartial>(
             fieldName = "Measured at",
             isRequired = true,
             format = { it.measuredAt.toString() },
@@ -139,13 +139,19 @@ data class CsvItemPartial(
         memo = memo
     )
 }
-
-data class CsvField(
+data class CsvField<T, P>(
     val fieldName: String,
     val isRequired: Boolean = false,
-    val format: (Item) -> String,
-    val parse: (String) -> (CsvItemPartial) -> CsvItemPartial
+    val format: (T) -> String,
+    val parse: (String) -> (P) -> P
 )
+
+//data class CsvField(
+//    val fieldName: String,
+//    val isRequired: Boolean = false,
+//    val format: (Item) -> String,
+//    val parse: (String) -> (CsvItemPartial) -> CsvItemPartial
+//)
 
 //fun CsvItemPartial.toItem(): Item = Item(
 //    measuredAt = measuredAt ?: Instant.EPOCH,

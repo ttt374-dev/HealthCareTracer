@@ -16,6 +16,7 @@ import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapperImpl
 import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
 import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
+import com.github.ttt374.healthcaretracer.data.backup.CsvItemPartial
 import com.github.ttt374.healthcaretracer.data.backup.ItemCsvSchema
 import dagger.Binds
 import dagger.Module
@@ -44,7 +45,7 @@ object BackupModule {
     fun provideCsvExporter(): CsvExporter = CsvExporter(ItemCsvSchema)
 
     @Provides
-    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter(logger, ItemCsvSchema)
+    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter(logger, { CsvItemPartial() },  ItemCsvSchema.fields )
 
     @Provides
     fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper =

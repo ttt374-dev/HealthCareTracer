@@ -126,7 +126,7 @@ data class CsvItemPartial(
     val bodyTemperature: Double? = null,
     val location: String = "",
     val memo: String = ""
-) : CsvPartial<Item> {
+): CsvPartial<Item>  {
     override fun toItem(): Item = Item(
         measuredAt = measuredAt ?: Instant.EPOCH,
         vitals = Vitals(

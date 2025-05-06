@@ -5,12 +5,12 @@ import com.github.ttt374.healthcaretracer.shared.Logger
 import com.opencsv.CSVReader
 import java.io.Reader
 
-class CsvImporter(private val logger: Logger,
-                  val newPartial: () -> CsvPartial<Item>,
-                  private val fields: List<CsvField<Item, CsvPartial<Item>>>,
+class CsvImporter<T, P: CsvPartial<T>>(private val logger: Logger,
+                  val newPartial: () -> P,
+                  private val fields: List<CsvField<T, P>>,
                   ) {
-    fun import(reader: Reader): List<Item> {
-        val items = mutableListOf<Item>()
+    fun import(reader: Reader): List<T> {
+        val items = mutableListOf<T>()
         CSVReader(reader).use { csvReader ->
             val headers = csvReader.readNext()?.map { it.trim() } ?: return emptyList()
             val fieldMap = headers.withIndex().mapNotNull { (i, name) ->

@@ -4,14 +4,14 @@ import com.github.ttt374.healthcaretracer.data.item.Item
 import com.opencsv.CSVWriter
 import java.io.Writer
 
-class CsvExporter (private val schema: ItemCsvSchema) {
-    fun export(writer: Writer, items: List<Item>) {
+class CsvExporter<T, P: CsvPartial<T>> (private val fields: List<CsvField<T, P>>) {
+    fun export(writer: Writer, items: List<T>) {
         CSVWriter(writer).use { csvWriter ->
-            val headers = schema.fields.map { it.fieldName }
+            val headers = fields.map { it.fieldName }
             csvWriter.writeNext(headers.toTypedArray())
 
             for (item in items) {
-                val row = schema.fields.map { it.format(item) }
+                val row = fields.map { it.format(item) }
                 csvWriter.writeNext(row.toTypedArray())
             }
         }

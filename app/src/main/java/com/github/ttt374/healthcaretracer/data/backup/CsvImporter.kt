@@ -4,11 +4,11 @@ import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.shared.Logger
 import com.opencsv.CSVReader
 import java.io.Reader
-
-class CsvImporter<T, P: CsvPartial<T>>(private val logger: Logger,
-                  val newPartial: () -> P,
-                  private val fields: List<CsvField<T, P>>,
-                  ) {
+class CsvImporter<T, P : CsvPartial<T>>(
+    private val logger: Logger,
+    val newPartial: () -> P,
+    private val fields: List<CsvField<T, P>>
+) {
     fun import(reader: Reader): List<T> {
         val items = mutableListOf<T>()
         CSVReader(reader).use { csvReader ->
@@ -20,7 +20,6 @@ class CsvImporter<T, P: CsvPartial<T>>(private val logger: Logger,
             var line = csvReader.readNext()
             var rowIndex = 1
             while (line != null) {
-                //var partial = CsvItemPartial()
                 var partial = newPartial()
                 var hasMissingRequiredField = false
                 for ((field, idx) in fieldMap) {
@@ -30,11 +29,10 @@ class CsvImporter<T, P: CsvPartial<T>>(private val logger: Logger,
                         hasMissingRequiredField = true
                         break
                     }
-                    //field.parse(value.orEmpty())
                     partial = field.parse(value.orEmpty())(partial)
                 }
                 if (!hasMissingRequiredField) {
-                    items.add(partial.toItem())
+                    items.add(partial.toItem())  // toItem()を呼び出す
                 }
                 line = csvReader.readNext()
                 rowIndex++

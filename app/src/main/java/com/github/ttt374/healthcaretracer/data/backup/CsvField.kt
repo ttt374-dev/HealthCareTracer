@@ -68,53 +68,55 @@ fun String.toInstantOrNull(): Instant? {
 
 object ItemCsvSchema {
     var fields = listOf(
-        CsvField<Item, CsvItemPartial>(
+        CsvField<Item, CsvPartial<Item>>(
+        //CsvField<Item, CsvItemPartial>(
             fieldName = "Measured at",
             isRequired = true,
             format = { it.measuredAt.toString() },
-            parse = { str -> { it.copy(measuredAt = str.toInstantOrNull()) } }
+            parse = { str -> { (it as CsvItemPartial).copy(measuredAt = str.toInstantOrNull()) } }
         ),
         CsvField(
             fieldName = "Bp upper",
             isRequired = true,
             format = { it.vitals.bp?.upper?.toString().orEmpty() },
-            parse = { str -> { it.copy(bpUpper = str.toIntOrNull()) } }
+            parse = { str -> { (it as CsvItemPartial).copy(bpUpper = str.toIntOrNull()) } }
         ),
         CsvField(
             fieldName = "Bp lower",
             isRequired = true,
             format = { it.vitals.bp?.lower?.toString().orEmpty() },
-            parse = { str -> { it.copy(bpLower = str.toIntOrNull()) } }
+            parse = { str -> { (it as CsvItemPartial).copy(bpLower = str.toIntOrNull()) } }
         ),
         CsvField(
             fieldName = "Pulse",
             format = { it.vitals.pulse?.toString().orEmpty() },
-            parse = { str -> { it.copy(pulse = str.toIntOrNull()) } }
+            parse = { str -> { (it as CsvItemPartial).copy(pulse = str.toIntOrNull()) } }
         ),
         CsvField(
             fieldName = "Body weight",
             format = { it.vitals.bodyWeight?.toString().orEmpty() },
-            parse = { str -> { it.copy(bodyWeight = str.toDoubleOrNull()) } }
+            parse = { str -> { (it as CsvItemPartial).copy(bodyWeight = str.toDoubleOrNull()) } }
         ),
         CsvField(
             fieldName = "Body temperature",
             format = { it.vitals.bodyTemperature?.toString().orEmpty() },
-            parse = { str -> { it.copy(bodyTemperature = str.toDoubleOrNull()) } }
+            parse = { str -> { (it as CsvItemPartial).copy(bodyTemperature = str.toDoubleOrNull()) } }
         ),
         CsvField(
             fieldName = "Location",
             format = { it.location },
-            parse = { str -> { it.copy(location = str) } }
+            parse = { str -> { (it as CsvItemPartial).copy(location = str) } }
         ),
         CsvField(
             fieldName = "Memo",
             format = { it.memo },
-            parse = { str -> { it.copy(memo = str) } }
+            parse = { str -> { (it as CsvItemPartial).copy(memo = str) } }
         )
     )
 }
 interface CsvPartial<T> {
     fun toItem(): T
+    fun update(field: CsvField<T, out CsvPartial<T>>, value: String): CsvPartial<T>
 }
 
 data class CsvItemPartial(
@@ -138,6 +140,18 @@ data class CsvItemPartial(
         location = location,
         memo = memo
     )
+
+    override fun update(field: CsvField<Item, out CsvPartial<Item>>, value: String): CsvPartial<Item> {
+        return when (field.fieldName) {
+            "Measured at" -> copy(measuredAt = value.toInstantOrNull())
+            "Bp upper" -> copy(bpUpper = value.toIntOrNull())
+            "Bp lower" -> copy(bpLower = value.toIntOrNull())
+            "Pulse" -> copy(pulse = value.toIntOrNull())
+            "Body weight" -> copy(bodyWeight = value.toDoubleOrNull())
+            "Body Temperature" -> copy(bodyTemperature = value.toDoubleOrNull())
+            else -> this // デフォルトはそのまま  // TODO
+        }
+    }
 }
 data class CsvField<T, P>(
     val fieldName: String,

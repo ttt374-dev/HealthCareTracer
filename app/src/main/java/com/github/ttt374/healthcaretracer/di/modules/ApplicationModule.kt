@@ -17,7 +17,9 @@ import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapperImpl
 import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
 import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
 import com.github.ttt374.healthcaretracer.data.backup.CsvItemPartial
+import com.github.ttt374.healthcaretracer.data.backup.CsvPartial
 import com.github.ttt374.healthcaretracer.data.backup.ItemCsvSchema
+import com.github.ttt374.healthcaretracer.data.item.Item
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -42,21 +44,24 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideCsvExporter(): CsvExporter = CsvExporter(ItemCsvSchema)
+    fun provideCsvExporter(): CsvExporter<Item, CsvPartial<Item>> = CsvExporter(ItemCsvSchema.fields)
 
     @Provides
-    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter(logger, { CsvItemPartial() },  ItemCsvSchema.fields )
+    fun provideCsvImporter(logger: Logger): CsvImporter<Item, CsvPartial<Item>> = CsvImporter(logger, { CsvItemPartial() }, ItemCsvSchema.fields )
+
+//    @Provides
+//    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter<Item, CsvPartial<Item>>(logger, { CsvItemPartial() },  ItemCsvSchema.fields )
 
     @Provides
     fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper =
         ContentResolverWrapperImpl(context.contentResolver)
 
     @Provides
-    fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter, contentResolverWrapper: ContentResolverWrapper) =
+    fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
         ExportDataUseCase(itemRepository, csvExporter, contentResolverWrapper)
 
     @Provides
-    fun provideImportDataUseCase(itemRepository: ItemRepository, csvImporter: CsvImporter, contentResolverWrapper: ContentResolverWrapper) =
+    fun provideImportDataUseCase(itemRepository: ItemRepository, csvImporter: CsvImporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
         ImportDataUseCase(itemRepository, csvImporter, contentResolverWrapper)
 }
 @Module

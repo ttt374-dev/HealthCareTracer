@@ -16,6 +16,7 @@ import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapperImpl
 import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
 import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
+import com.github.ttt374.healthcaretracer.data.backup.ItemCsvSchema
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -40,10 +41,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideCsvExporter(): CsvExporter = CsvExporter()
+    fun provideCsvExporter(): CsvExporter = CsvExporter(ItemCsvSchema)
 
     @Provides
-    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter(logger)
+    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter(logger, ItemCsvSchema)
 
     @Provides
     fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper =

@@ -5,13 +5,13 @@ import com.github.ttt374.healthcaretracer.shared.Logger
 import com.opencsv.CSVReader
 import java.io.Reader
 
-class CsvImporter(private val logger: Logger) {
+class CsvImporter(private val logger: Logger, private val schema: ItemCsvSchema) {
     fun import(reader: Reader): List<Item> {
         val items = mutableListOf<Item>()
         CSVReader(reader).use { csvReader ->
             val headers = csvReader.readNext()?.map { it.trim() } ?: return emptyList()
             val fieldMap = headers.withIndex().mapNotNull { (i, name) ->
-                CsvField.entries.find { it.fieldName == name }?.let { it to i }
+                schema.fields.find { it.fieldName == name }?.let { it to i }
             }.toMap()
 
             var line = csvReader.readNext()
@@ -22,7 +22,7 @@ class CsvImporter(private val logger: Logger) {
                 for ((field, idx) in fieldMap) {
                     val value = line.getOrNull(idx)
                     if (field.isRequired && (value == null || value.isEmpty())) {
-                        logger.e("csv reader", "Missing required field '${field.name}' in line $rowIndex")
+                        logger.e("csv reader", "Missing required field '${field.fieldName}' in line $rowIndex")
                         hasMissingRequiredField = true
                         break
                     }

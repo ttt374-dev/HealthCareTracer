@@ -11,15 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +32,6 @@ import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.MIN_BP
 import com.github.ttt374.healthcaretracer.ui.common.ConfirmDialog
 import com.github.ttt374.healthcaretracer.ui.common.DatePickerDialog
-import com.github.ttt374.healthcaretracer.ui.common.SelectableTextField
 import com.github.ttt374.healthcaretracer.ui.common.TimePickerDialog
 import com.github.ttt374.healthcaretracer.ui.common.rememberDialogState
 import com.github.ttt374.healthcaretracer.ui.common.rememberItemDialogState
@@ -79,9 +78,8 @@ fun ItemEntryContent(//modifier: Modifier = Modifier,
             item {
                 InputFieldRow(stringResource(R.string.measuredAt)){
                     Row (horizontalArrangement = Arrangement.spacedBy(16.dp)){
-                        DateAndTimePickers(itemUiState,
-                            onDateSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
-                            onTimeSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
+                        DateTimePickSection(itemUiState,
+                            onDateTimeSelected = { updateItemUiState(itemUiState.copy(measuredAt = it)) },
                             zoneId
                         )
                     }
@@ -224,34 +222,79 @@ fun InputFieldRow(label: String, inputField: @Composable () -> Unit){
         }
     }
 }
+//@Composable
+//private fun DateTimePickSection(
+//    itemUiState: ItemUiState,
+//    onDateTimeSelected: (Instant) -> Unit,
+//    //onTimeSelected: (Instant) -> Unit,
+//    zoneId: ZoneId = ZoneId.systemDefault()
+//) {
+//    val datePickerDialogState = rememberDialogState(false)
+//    val timePickerDialogState = rememberDialogState(false)
+//
+//    if (datePickerDialogState.isOpen) {
+//        DatePickerDialog(itemUiState.measuredAt, onDateTimeSelected, datePickerDialogState::close, zoneId)
+//    }
+//    if (timePickerDialogState.isOpen) {
+//        TimePickerDialog(itemUiState.measuredAt, onDateTimeSelected, timePickerDialogState::close, zoneId)
+//    }
+//
+//    Row( horizontalArrangement = Arrangement.spacedBy(16.dp), modifier=Modifier.fillMaxWidth().padding(8.dp)) {
+//        val dateFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("yyyy-M-d").withZone(zoneId) }
+//        val timeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("HH:mm a").withZone(zoneId) }
+//
+//        Text(dateFormatter.format(itemUiState.measuredAt), modifier=Modifier.clickable { datePickerDialogState.open()})
+//        Text(timeFormatter.format(itemUiState.measuredAt), modifier=Modifier.clickable { timePickerDialogState.open()})
+//    }
+//}
 @Composable
-private fun DateAndTimePickers(
+private fun DateTimePickSection(
     itemUiState: ItemUiState,
-    onDateSelected: (Instant) -> Unit,
-    onTimeSelected: (Instant) -> Unit,
+    onDateTimeSelected: (Instant) -> Unit,
     zoneId: ZoneId = ZoneId.systemDefault()
 ) {
-    val datePickerDialogState = rememberDialogState(false)
-    val timePickerDialogState = rememberDialogState(false)
-
-    if (datePickerDialogState.isOpen) {
-        DatePickerDialog(itemUiState.measuredAt, onDateSelected, datePickerDialogState::close, zoneId)
-    }
-    if (timePickerDialogState.isOpen) {
-        TimePickerDialog(itemUiState.measuredAt, onTimeSelected, timePickerDialogState::close, zoneId)
-    }
-
     Row( horizontalArrangement = Arrangement.spacedBy(16.dp), modifier=Modifier.fillMaxWidth().padding(8.dp)) {
-        val dateFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("yyyy-M-d").withZone(zoneId) }
-        val timeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern("HH:mm a").withZone(zoneId) }
-
-        Text(dateFormatter.format(itemUiState.measuredAt), modifier=Modifier.clickable { datePickerDialogState.open()})
-        Text(timeFormatter.format(itemUiState.measuredAt), modifier=Modifier.clickable { timePickerDialogState.open()})
-//        OutlinedButton(onClick = { datePickerDialogState.open() }) {
-//            Text(dateFormatter.format(itemUiState.measuredAt))
-//        }
-//        OutlinedButton(onClick = { timePickerDialogState.open() }) {
-//            Text(timeFormatter.format(itemUiState.measuredAt))
-//        }
+        DateOrTimePickSection(itemUiState.measuredAt, "yyyy-M-d", zoneId){ date, onClose ->
+            DatePickerDialog(date, onDateTimeSelected, onClose, zoneId)
+        }
+        DateOrTimePickSection(itemUiState.measuredAt, "HH:mm a", zoneId) { date, onClose ->
+            TimePickerDialog(date, onDateTimeSelected, onClose, zoneId)
+        }
     }
 }
+@Composable
+private fun DateOrTimePickSection(dateTime: Instant, dateTimePattern: String, zoneId: ZoneId,
+    dialogContent: @Composable (Instant, onClose: () -> Unit) -> Unit) {
+    val dialogState = rememberDialogState(false)
+
+    if (dialogState.isOpen) {
+        dialogContent(dateTime, dialogState::close)
+    }
+
+    val dateTimeFormatter by remember(zoneId, dateTimePattern) {
+        derivedStateOf {
+            DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId)
+        }
+    }
+    Text(dateTimeFormatter.format(dateTime), modifier = Modifier.clickable { dialogState.open() })
+}
+
+//@Composable
+//private fun DatePickSection(dateTime: Instant, onDateTimeSelected: (Instant) -> Unit, dateTimePattern: String, zoneId: ZoneId){
+//    val dialogState = rememberDialogState(false)
+//    if (dialogState.isOpen){
+//        DatePickerDialog(dateTime, onDateTimeSelected, dialogState::close, zoneId)
+//    }
+//    val dateTimeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId) }
+//    Text(dateTimeFormatter.format(dateTime), modifier=Modifier.clickable { dialogState.open() })
+//}
+//@Composable
+//private fun TimePickSection(dateTime: Instant, onDateTimeSelected: (Instant) -> Unit, dateTimePattern: String, zoneId: ZoneId){
+//    val dialogState = rememberDialogState(false)
+//    if (dialogState.isOpen){
+//        TimePickerDialog(dateTime, onDateTimeSelected, dialogState::close, zoneId)
+//    }
+//    val dateTimeFormatter = remember(zoneId) { DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId) }
+//    Text(dateTimeFormatter.format(dateTime), modifier=Modifier.clickable { dialogState.open() })
+//}
+//

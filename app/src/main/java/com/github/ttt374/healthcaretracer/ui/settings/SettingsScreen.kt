@@ -2,8 +2,10 @@ package com.github.ttt374.healthcaretracer.ui.settings
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -14,8 +16,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -64,7 +68,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel(), appNavigator:
             DayPeriodSection(config, onUpdateDayPeriod = { dayPeriod, localTime ->
                 viewModel.updateDayPeriod(dayPeriod, localTime)})
             TimeZoneSection(config, viewModel::updateTimeZone, timezoneList)
-            SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
+            //SettingsRow("Version") { Text(BuildConfig.VERSION_NAME) }
         }
     }
 }
@@ -93,6 +97,7 @@ fun <T : TargetVitalsType> rememberDialogStates(entries: List<T>): Map<T, Dialog
     return remember { entries.associateWith { DialogStateImpl() } }
 }
 fun <T> Map<T, DialogState>.isOpen(type: T): Boolean = this[type]?.isOpen == true
+fun <T> Map<T, DialogState>.open(type: T) = this[type]?.open()
 fun <T> Map<T, DialogState>.close(type: T) = this[type]?.close()
 
 @Composable
@@ -114,7 +119,7 @@ fun TargetVitalsSection(config: Config, onUpdateTargetVital: (TargetVitalsType, 
     TargetVitalsType.entries.forEach { targetVital ->
         SettingsRow(stringResource(targetVital.resId)){
             Text(targetVital.getStringValue(config.targetVitals),
-                Modifier.clickable { targetVitalsDialogStates[targetVital]?.open() })
+                Modifier.clickable { targetVitalsDialogStates.open(targetVital) })
         }
     }
 }
@@ -131,18 +136,17 @@ fun <T : Enum<T>> rememberDayPeriodDialogStates(entries: Array<T>): Map<T, Dialo
 fun DayPeriodSection(config: Config, onUpdateDayPeriod: (DayPeriod, LocalTime) -> Unit){
     val dayPeriodDialogStates = rememberDayPeriodDialogStates(DayPeriod.entries.toTypedArray())
     DayPeriod.entries.forEach { dayPeriod ->
-
         if (dayPeriodDialogStates.isOpen(dayPeriod)){
-            LocalTimeDialog(config.dayPeriodConfig[dayPeriod],
+            LocalTimeDialog(config.dayPeriodConfig[dayPeriod], config.zoneId,
                 onTimeSelected = { onUpdateDayPeriod(dayPeriod, it) },
                 onDismiss = { dayPeriodDialogStates.close(dayPeriod)})
         }
     }
-    val localTimeFormat = remember { DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault()).withZone(config.zoneId) }
+    val localTimeFormat by remember { derivedStateOf { DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.getDefault()).withZone(config.zoneId) } }
     DayPeriod.entries.forEach { dayPeriod ->
         SettingsRow(stringResource(dayPeriod.resId)){
             Text(config.dayPeriodConfig[dayPeriod].format(localTimeFormat),
-                modifier = Modifier.clickable { dayPeriodDialogStates[dayPeriod]?.open() })
+                modifier = Modifier.clickable { dayPeriodDialogStates.open(dayPeriod) })
         }
     }
 }
@@ -162,12 +166,25 @@ fun TimeZoneSection(config: Config, onUpdateTimeZone: (String) -> Unit, timezone
 }
 /////////////////////////////
 @Composable
-fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit ){
-    Row(modifier= Modifier.clickable(onClick != null) { onClick?.invoke() }.padding(4.dp)) {
+fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit ) {
+    Row(
+        modifier = Modifier.clickable(enabled = onClick != null) { onClick?.invoke() }.padding(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(label, Modifier.weight(1f))
-        content()
-     }
+        content()  // RowScope内で呼び出される
+    }
 }
+
+//@Composable
+//fun SettingsRow(label: String, onClick: (() -> Unit)? = null, content: @Composable () -> Unit ){
+//    Row(Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+//        Text(label, Modifier.weight(1f))
+//        Box(Modifier.clickable(onClick != null) { onClick?.invoke() }) {
+//            content()
+//        }
+//    }
+//}
 
 @Composable
 fun BpGuidelineTable (guideline: BloodPressureGuideline, modifier: Modifier = Modifier){
@@ -192,8 +209,8 @@ internal fun IntRange.toDisplayString(): String {
 }
 
 @Composable
-fun LocalTimeDialog(localTime: LocalTime, onTimeSelected: (LocalTime) -> Unit, onDismiss: () -> Unit){
-    val zoneId = ZoneId.systemDefault()
+fun LocalTimeDialog(localTime: LocalTime, zoneId: ZoneId, onTimeSelected: (LocalTime) -> Unit, onDismiss: () -> Unit){
+    //val zoneId = ZoneId.systemDefault()
 
     TimePickerDialog(localTime.atDate(LocalDate.now()).atZone(zoneId).toInstant(),
         onTimeSelected = { onTimeSelected(it.atZone(zoneId).toLocalTime())},

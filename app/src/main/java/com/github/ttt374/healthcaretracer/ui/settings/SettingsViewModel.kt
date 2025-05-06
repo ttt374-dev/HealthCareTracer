@@ -11,7 +11,6 @@ import com.github.ttt374.healthcaretracer.data.repository.Config
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow

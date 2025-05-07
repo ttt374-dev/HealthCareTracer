@@ -19,7 +19,7 @@ import javax.inject.Inject
 import java.io.File
 
 @HiltViewModel
-class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCase, private val itemRepository: ItemRepository, @ApplicationContext val context: Context): ViewModel() {
+class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCase<Item>, private val itemRepository: ItemRepository, @ApplicationContext val context: Context): ViewModel() {
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _saveState = MutableStateFlow(false)

@@ -16,12 +16,13 @@ import java.io.OutputStreamWriter
 
 /////////////////////////////////
 
-class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepository,
-                                            private val csvExporter: CsvExporter<Item>,
+class ExportDataUseCase<T> @Inject constructor(//private val itemRepository: ItemRepository,
+                                            private val dataProvider: suspend () -> List<T>,
+                                            private val csvExporter: CsvExporter<T>,
                                             private val contentResolverWrapper: ContentResolverWrapper) {
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
-        val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
-
+        //val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
+        val items = dataProvider()
         withContext(Dispatchers.IO) {
             contentResolverWrapper.openOutputStream(uri)?.use { outputStream ->
                 OutputStreamWriter(outputStream).use { writer ->
@@ -33,15 +34,17 @@ class ExportDataUseCase @Inject constructor(private val itemRepository: ItemRepo
     }.onFailure { e -> Log.e("ExportDataUseCase", "CSV export failed", e) }
 }
 ////////////////
-class ImportDataUseCase @Inject constructor(private val itemRepository: ItemRepository,
-                                            private val csvImporter: CsvImporter<Item>,
+class ImportDataUseCase<T> @Inject constructor(//private val itemRepository: ItemRepository,
+                                            private val dataSaver: suspend (List<T>) -> Unit,
+                                            private val csvImporter: CsvImporter<T>,
                                             private val contentResolverWrapper: ContentResolverWrapper){
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         withContext(Dispatchers.IO) {
             contentResolverWrapper.openInputStream(uri)?.use { inputStream ->
                 InputStreamReader(inputStream).use { reader ->
                     val importedItems = csvImporter.import(reader)
-                    itemRepository.replaceAllItems(importedItems)
+                    dataSaver(importedItems)
+                    //itemRepository.replaceAllItems(importedItems)
                 }
             }
 

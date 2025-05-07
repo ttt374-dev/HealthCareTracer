@@ -16,8 +16,6 @@ import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
 import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapperImpl
 import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
 import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
-import com.github.ttt374.healthcaretracer.data.backup.CsvItemPartial
-import com.github.ttt374.healthcaretracer.data.backup.CsvPartial
 import com.github.ttt374.healthcaretracer.data.backup.ItemCsvSchema
 import com.github.ttt374.healthcaretracer.data.item.Item
 import dagger.Binds
@@ -60,12 +58,15 @@ object BackupModule {
 
     @Provides
     fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item>, contentResolverWrapper: ContentResolverWrapper) =
-    //fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
-        ExportDataUseCase(itemRepository, csvExporter, contentResolverWrapper)
+        //fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
+        ExportDataUseCase({ itemRepository.getAllItems()}, csvExporter, contentResolverWrapper)
+//    fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item>, contentResolverWrapper: ContentResolverWrapper) =
+//    //fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
+//        ExportDataUseCase(itemRepository, csvExporter, contentResolverWrapper)
 
     @Provides
     fun provideImportDataUseCase(itemRepository: ItemRepository, csvImporter: CsvImporter<Item>, contentResolverWrapper: ContentResolverWrapper) =
-        ImportDataUseCase(itemRepository, csvImporter, contentResolverWrapper)
+        ImportDataUseCase({itemRepository.replaceAllItems(it)}, csvImporter, contentResolverWrapper)
 }
 @Module
 @InstallIn(SingletonComponent::class)

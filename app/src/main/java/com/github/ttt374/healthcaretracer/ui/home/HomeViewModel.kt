@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.toDailyItemList
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
@@ -24,8 +25,8 @@ import kotlinx.coroutines.flow.map
 class HomeViewModel @Inject constructor(
     itemRepository: ItemRepository,
     configRepository: ConfigRepository,
-    private val exportDataUseCase: ExportDataUseCase,
-    private val importDataUseCase: ImportDataUseCase,): ViewModel()
+    private val exportDataUseCase: ExportDataUseCase<Item>,
+    private val importDataUseCase: ImportDataUseCase<Item>,): ViewModel()
 {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
     @OptIn(ExperimentalCoroutinesApi::class)

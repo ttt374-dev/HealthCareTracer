@@ -18,11 +18,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    itemRepository: ItemRepository,
-    configRepository: ConfigRepository,
-    private val exportDataUseCase: com.github.ttt374.csv_backup_lib.ExportDataUseCase<Item>,
-    private val importDataUseCase: com.github.ttt374.csv_backup_lib.ImportDataUseCase<Item>,): ViewModel()
+class HomeViewModel @Inject constructor(itemRepository: ItemRepository, configRepository: ConfigRepository,
+    private val exportDataUseCase: ExportDataUseCase<Item>,
+    private val importDataUseCase: ImportDataUseCase<Item>,): ViewModel()
 {
     val config = configRepository.dataFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Config())
     @OptIn(ExperimentalCoroutinesApi::class)

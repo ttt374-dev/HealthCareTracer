@@ -149,6 +149,22 @@ class ImportCsvUseCaseTest {
         val capturedItems = captor.firstValue
         assertEquals(1, capturedItems.size)
 //        assertEquals(Item(), capturedItems[2])
+    }
+    @Test
+    fun importInstantFormatErrorTest() = runBlocking {
+        val importedCsvData = """
+            "Measured at","Bp upper","Bp lower","Pulse","Body weight","Body temperature","Location","Memo"
+            "2022-01-01T00:00:00Zabcdef","120","80","70","","","","measured at format error"
+           
+        """.trimIndent()
+        val inputStream = ByteArrayInputStream(importedCsvData.toByteArray())
+        whenever(contentResolverWrapper.openInputStream(uri)).thenReturn(inputStream)
+        importDataUseCase(uri)
 
+        val captor = argumentCaptor<List<Item>>()
+
+        verify(itemRepository).replaceAllItems(captor.capture())
+        val capturedItems = captor.firstValue
+        assertEquals(0, capturedItems.size)
     }
 }

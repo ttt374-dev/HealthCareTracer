@@ -2,9 +2,11 @@ package com.github.ttt374.healthcaretracer.di.modules
 
 import android.content.Context
 import com.github.ttt374.csv_backup_lib.ContentResolverWrapper
+import com.github.ttt374.csv_backup_lib.ContentResolverWrapperImpl
 import com.github.ttt374.csv_backup_lib.CsvExporter
 import com.github.ttt374.csv_backup_lib.CsvImporter
 import com.github.ttt374.csv_backup_lib.ExportDataUseCase
+import com.github.ttt374.csv_backup_lib.ImportDataUseCase
 import com.github.ttt374.healthcaretracer.data.backup.ItemCsvSchema
 import com.github.ttt374.healthcaretracer.data.repository.ConfigRepository
 import com.github.ttt374.healthcaretracer.data.repository.PreferencesRepository
@@ -25,44 +27,22 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
-//
-//@Module
-//@InstallIn(SingletonComponent::class)
-//object ApplicationModule {
-//    @Provides
-//    @ApplicationContext
-//    fun provideApplicationContext(@ApplicationContext context: Context): Context {
-//        return context
-//    }
-//}
-
 @Module
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideCsvImporter(logger: Logger): CsvImporter<Item> =
-        com.github.ttt374.csv_backup_lib.CsvImporter(
-            //logger,
-            { Item() },
-            ItemCsvSchema.fields
-        )
+    fun provideCsvImporter(logger: Logger): CsvImporter<Item> = CsvImporter({ Item() }, ItemCsvSchema.fields)
     //fun provideCsvImporter(logger: Logger): CsvImporter<Item, CsvItemPartial> = CsvImporter(logger, { CsvItemPartial() }, ItemCsvSchema.fields )
 
     @Provides
-    fun provideCsvExporter(): CsvExporter<Item> =
-        CsvExporter(ItemCsvSchema.fields)
-
-
-//    @Provides
-//    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter<Item, CsvPartial<Item>>(logger, { CsvItemPartial() },  ItemCsvSchema.fields )
+    fun provideCsvExporter(): CsvExporter<Item> = CsvExporter(ItemCsvSchema.fields)
 
     @Provides
     fun provideContentResolverWrapper(@ApplicationContext context: Context): ContentResolverWrapper =
-        com.github.ttt374.csv_backup_lib.ContentResolverWrapperImpl(context.contentResolver)
+        ContentResolverWrapperImpl(context.contentResolver)
 
     @Provides
-    fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item>, contentResolverWrapper: com.github.ttt374.csv_backup_lib.ContentResolverWrapper) =
-        //fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
+    fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item>, contentResolverWrapper: ContentResolverWrapper) =
         ExportDataUseCase(
             { itemRepository.getAllItems() },
             csvExporter,
@@ -73,8 +53,8 @@ object BackupModule {
 //        ExportDataUseCase(itemRepository, csvExporter, contentResolverWrapper)
 
     @Provides
-    fun provideImportDataUseCase(itemRepository: ItemRepository, csvImporter: com.github.ttt374.csv_backup_lib.CsvImporter<Item>, contentResolverWrapper: com.github.ttt374.csv_backup_lib.ContentResolverWrapper) =
-        com.github.ttt374.csv_backup_lib.ImportDataUseCase(
+    fun provideImportDataUseCase(itemRepository: ItemRepository, csvImporter: CsvImporter<Item>, contentResolverWrapper: ContentResolverWrapper) =
+        ImportDataUseCase(
             { itemRepository.replaceAllItems(it) },
             csvImporter,
             contentResolverWrapper

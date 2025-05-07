@@ -11,13 +11,12 @@ import java.io.OutputStreamWriter
 
 /////////////////////////////////
 
-class ExportDataUseCase<T> @Inject constructor(//private val itemRepository: ItemRepository,
+class ExportDataUseCase<T> @Inject constructor(
     private val dataProvider: suspend () -> List<T>,
     private val csvExporter: CsvExporter<T>,
     private val contentResolverWrapper: ContentResolverWrapper
 ) {
-    suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
-        //val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
+    suspend operator fun invoke(uri: Uri): Result<Unit> = runCatching {
         val items = dataProvider()
         withContext(Dispatchers.IO) {
             contentResolverWrapper.openOutputStream(uri)?.use { outputStream ->
@@ -26,26 +25,22 @@ class ExportDataUseCase<T> @Inject constructor(//private val itemRepository: Ite
                 }
             }
         }
-        "download to CSV done"
-    }.onFailure { e -> Log.e("ExportDataUseCase", "CSV export failed", e) }
+    }
 }
 ////////////////
-class ImportDataUseCase<T> @Inject constructor(//private val itemRepository: ItemRepository,
+class ImportDataUseCase<T> @Inject constructor(
     private val dataSaver: suspend (List<T>) -> Unit,
     private val csvImporter: CsvImporter<T>,
-    private val contentResolverWrapper: ContentResolverWrapper
+    private val contentResolverWrapper: ContentResolverWrapper,
 ){
-    suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
+    suspend operator fun invoke(uri: Uri): Result<Unit> = runCatching {
         withContext(Dispatchers.IO) {
             contentResolverWrapper.openInputStream(uri)?.use { inputStream ->
                 InputStreamReader(inputStream).use { reader ->
                     val importedItems = csvImporter.import(reader)
                     dataSaver(importedItems)
-                    //itemRepository.replaceAllItems(importedItems)
                 }
             }
-
         }
-        "Import successful"
-    }.onFailure { e -> Log.e("ImportDataUseCase", "CSV import failed", e) }
+    }
 }

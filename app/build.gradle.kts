@@ -108,4 +108,5 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.8.0")
 
     implementation(project(":csv-backup-lib"))
+    //implementation("com.github.ttt374-dev:csv-backup-lib:v1.0.0")
 }

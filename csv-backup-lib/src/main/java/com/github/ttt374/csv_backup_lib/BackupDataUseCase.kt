@@ -1,12 +1,7 @@
-package com.github.ttt374.healthcaretracer.usecase
+package com.github.ttt374.csv_backup_lib
 
 import android.net.Uri
 import android.util.Log
-import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapper
-import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
-import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
-import com.github.ttt374.healthcaretracer.data.item.Item
-import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,9 +12,10 @@ import java.io.OutputStreamWriter
 /////////////////////////////////
 
 class ExportDataUseCase<T> @Inject constructor(//private val itemRepository: ItemRepository,
-                                            private val dataProvider: suspend () -> List<T>,
-                                            private val csvExporter: CsvExporter<T>,
-                                            private val contentResolverWrapper: ContentResolverWrapper) {
+    private val dataProvider: suspend () -> List<T>,
+    private val csvExporter: CsvExporter<T>,
+    private val contentResolverWrapper: ContentResolverWrapper
+) {
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         //val items = itemRepository.getAllItems()  // .firstOrNull() ?: emptyList()
         val items = dataProvider()
@@ -35,9 +31,10 @@ class ExportDataUseCase<T> @Inject constructor(//private val itemRepository: Ite
 }
 ////////////////
 class ImportDataUseCase<T> @Inject constructor(//private val itemRepository: ItemRepository,
-                                            private val dataSaver: suspend (List<T>) -> Unit,
-                                            private val csvImporter: CsvImporter<T>,
-                                            private val contentResolverWrapper: ContentResolverWrapper){
+    private val dataSaver: suspend (List<T>) -> Unit,
+    private val csvImporter: CsvImporter<T>,
+    private val contentResolverWrapper: ContentResolverWrapper
+){
     suspend operator fun invoke(uri: Uri): Result<String> = runCatching {
         withContext(Dispatchers.IO) {
             contentResolverWrapper.openInputStream(uri)?.use { inputStream ->

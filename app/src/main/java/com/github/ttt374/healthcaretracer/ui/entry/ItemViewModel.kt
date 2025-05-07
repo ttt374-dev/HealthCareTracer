@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
-import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
+import com.github.ttt374.csv_backup_lib.ExportDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 import java.io.File
 
 @HiltViewModel
-class ItemViewModel @Inject constructor (val exportDataUseCase: ExportDataUseCase<Item>, private val itemRepository: ItemRepository, @ApplicationContext val context: Context): ViewModel() {
+class ItemViewModel @Inject constructor (val exportDataUseCase: com.github.ttt374.csv_backup_lib.ExportDataUseCase<Item>, private val itemRepository: ItemRepository, @ApplicationContext val context: Context): ViewModel() {
     val locationList = itemRepository.getAllLocationsFlow().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _saveState = MutableStateFlow(false)

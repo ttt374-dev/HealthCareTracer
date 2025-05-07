@@ -1,8 +1,10 @@
 package com.github.ttt374.healthcaretracer.data.backup
 
+import com.github.ttt374.csv_backup_lib.CsvField
 import com.github.ttt374.healthcaretracer.data.item.Item
 import java.time.Instant
 import java.time.format.DateTimeParseException
+
 
 fun String.toInstant(): Instant {
     return Instant.parse(this)
@@ -15,12 +17,12 @@ fun String.toInstantOrNull(): Instant? {
         null  // 変換に失敗した場合はnullを返す
     }
 }
-data class CsvField<T>(
-    val fieldName: String,
-    val isRequired: Boolean = false,
-    val format: (T) -> String,
-    val parse: (String, T) -> T
-)
+//data class CsvField<T>(
+//    val fieldName: String,
+//    val isRequired: Boolean = false,
+//    val format: (T) -> String,
+//    val parse: (String, T) -> T
+//)
 
 object ItemCsvSchema {
     var fields = listOf(

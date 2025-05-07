@@ -17,7 +17,7 @@ const val MIN_BP = 50
 //const val MAX_BP = 260
 
 @Entity(tableName = "items" )
-@TypeConverters(BloodPressureConverter::class)
+@TypeConverters(BloodPressureConverter:: class)
 data class Item (
     @PrimaryKey(autoGenerate=true)
     val id: Long = 0,

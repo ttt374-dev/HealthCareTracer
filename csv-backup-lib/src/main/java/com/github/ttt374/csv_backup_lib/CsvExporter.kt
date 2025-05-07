@@ -1,6 +1,5 @@
-package com.github.ttt374.healthcaretracer.data.backup
+package com.github.ttt374.csv_backup_lib
 
-import com.github.ttt374.healthcaretracer.data.item.Item
 import com.opencsv.CSVWriter
 import java.io.Writer
 

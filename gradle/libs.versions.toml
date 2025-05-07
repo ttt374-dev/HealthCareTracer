@@ -19,6 +19,8 @@ room="2.7.1"
 hiltAndroid = "2.52"
 hiltNavigationCompose = "1.2.0"
 opencsv = "5.9"
+appcompat = "1.7.0"
+material = "1.10.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -26,6 +28,7 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid"}
+android-library = { id = "com.android.library", version.ref = "agp" }
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -68,3 +71,5 @@ androidx-material-icons-extended = { module = "androidx.compose.material:materia
 
 # calendar
 compose-calendar = { module = "com.kizitonwose.calendar:compose", version.ref = "compose" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }

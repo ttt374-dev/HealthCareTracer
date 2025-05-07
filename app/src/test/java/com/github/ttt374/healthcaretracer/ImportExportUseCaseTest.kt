@@ -1,17 +1,16 @@
 package com.github.ttt374.healthcaretracer
 
 import android.net.Uri
+import com.github.ttt374.csv_backup_lib.ContentResolverWrapper
+import com.github.ttt374.csv_backup_lib.CsvExporter
+import com.github.ttt374.csv_backup_lib.ExportDataUseCase
+import com.github.ttt374.csv_backup_lib.ImportDataUseCase
+import com.github.ttt374.healthcaretracer.data.backup.ItemCsvSchema
 import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import com.github.ttt374.healthcaretracer.data.item.Vitals
 import com.github.ttt374.healthcaretracer.data.repository.ItemRepository
 import com.github.ttt374.healthcaretracer.shared.Logger
-import com.github.ttt374.healthcaretracer.data.backup.ContentResolverWrapper
-import com.github.ttt374.healthcaretracer.data.backup.CsvExporter
-import com.github.ttt374.healthcaretracer.data.backup.CsvImporter
-import com.github.ttt374.healthcaretracer.usecase.ExportDataUseCase
-import com.github.ttt374.healthcaretracer.usecase.ImportDataUseCase
-import com.github.ttt374.healthcaretracer.data.backup.toInstantOrNull
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -22,8 +21,16 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.time.Instant
+import java.time.format.DateTimeParseException
 
-
+internal fun String.toInstantOrNull(): Instant? {
+    return try {
+        Instant.parse(this)  // ISO 8601形式の文字列をInstantに変換
+    } catch (e: DateTimeParseException) {
+        null  // 変換に失敗した場合はnullを返す
+    }
+}
 class ExportDataUseCaseTest {
 
     private lateinit var itemRepository: ItemRepository
@@ -46,7 +53,10 @@ class ExportDataUseCaseTest {
         //val itemRepository = mock<ItemRepository>()
         val outputStream = ByteArrayOutputStream()
 
-        val exportDataUseCase = ExportDataUseCase(itemRepository, CsvExporter(), contentResolverWrapper)
+        val exportDataUseCase = ExportDataUseCase( { itemRepository.getAllItems() },
+            //itemRepository,
+            CsvExporter(ItemCsvSchema.fields), contentResolverWrapper
+        )
         //val uri = mock<Uri>()
 
         // モックデータ
@@ -79,7 +89,7 @@ class ExportDataUseCaseTest {
 class ImportCsvUseCaseTest {
     private lateinit var contentResolverWrapper: ContentResolverWrapper
     private lateinit var itemRepository: ItemRepository
-    private lateinit var importDataUseCase: ImportDataUseCase
+    private lateinit var importDataUseCase: ImportDataUseCase<Item>
     private lateinit var uri: Uri
 
     @Before
@@ -87,7 +97,10 @@ class ImportCsvUseCaseTest {
         contentResolverWrapper = mock()
         itemRepository = mock()
         val logger = mock<Logger>()
-        importDataUseCase = ImportDataUseCase(itemRepository, CsvImporter(logger), contentResolverWrapper)
+        importDataUseCase = ImportDataUseCase(
+            { itemRepository.replaceAllItems(it)},
+            com.github.ttt374.csv_backup_lib.CsvImporter({ Item()}, ItemCsvSchema.fields), contentResolverWrapper
+        )
         uri = mock<Uri>()
     }
 

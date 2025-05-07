@@ -1,12 +1,10 @@
-package com.github.ttt374.healthcaretracer.data.backup
+package com.github.ttt374.csv_backup_lib
 
-import com.github.ttt374.healthcaretracer.data.item.Item
-import com.github.ttt374.healthcaretracer.shared.Logger
 import com.opencsv.CSVReader
 import java.io.Reader
 
 class CsvImporter<T>(
-    private val logger: Logger,
+    //private val logger: Logger,   // TODO
     private val newItem: () -> T,
     private val fields: List<CsvField<T>>
 ) {
@@ -26,14 +24,14 @@ class CsvImporter<T>(
                 for ((field, idx) in fieldMap) {
                     val value = line.getOrNull(idx)
                     if (field.isRequired && value.isNullOrEmpty()) {
-                        logger.e("csv reader", "Missing required field '${field.fieldName}' in line $rowIndex")
+                        //logger.e("csv reader", "Missing required field '${field.fieldName}' in line $rowIndex")
                         hasMissingRequiredField = true
                         break
                     }
                     try {
                         item = field.parse(value.orEmpty(), item)
                     } catch (e: Exception){
-                        logger.e("parse error", e.message.toString())
+                        //logger.e("parse error", e.message.toString())
                     }
                 }
                 if (!hasMissingRequiredField) {

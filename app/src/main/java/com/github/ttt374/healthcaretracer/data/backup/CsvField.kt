@@ -68,55 +68,64 @@ fun String.toInstantOrNull(): Instant? {
 
 object ItemCsvSchema {
     var fields = listOf(
-        CsvField<Item, CsvPartial<Item>>(
         //CsvField<Item, CsvItemPartial>(
+        CsvField<Item, CsvPartial<Item>>(
             fieldName = "Measured at",
             isRequired = true,
             format = { it.measuredAt.toString() },
-            parse = { str -> { (it as CsvItemPartial).copy(measuredAt = str.toInstantOrNull()) } }
+            parse = { str -> { it.update("Measured at", str)}}
+            //parse = { str -> { it.copy(measuredAt = str.toInstantOrNull())} }
         ),
         CsvField(
             fieldName = "Bp upper",
             isRequired = true,
             format = { it.vitals.bp?.upper?.toString().orEmpty() },
-            parse = { str -> { (it as CsvItemPartial).copy(bpUpper = str.toIntOrNull()) } }
+            parse = { str -> { it.update("Bp upper", str)}}
+            //parse = { str -> { it.copy(bpUpper = str.toIntOrNull()) } }
         ),
         CsvField(
             fieldName = "Bp lower",
             isRequired = true,
             format = { it.vitals.bp?.lower?.toString().orEmpty() },
-            parse = { str -> { (it as CsvItemPartial).copy(bpLower = str.toIntOrNull()) } }
+            parse = { str -> { it.update("Bp lower", str)}}
+            //parse = { str -> { it.copy(bpLower = str.toIntOrNull()) } }
         ),
         CsvField(
             fieldName = "Pulse",
             format = { it.vitals.pulse?.toString().orEmpty() },
-            parse = { str -> { (it as CsvItemPartial).copy(pulse = str.toIntOrNull()) } }
+            //parse = { str -> { it.copy(pulse = str.toIntOrNull()) } }
+            parse = { str -> { it.update("Pulse", str)}}
         ),
         CsvField(
             fieldName = "Body weight",
             format = { it.vitals.bodyWeight?.toString().orEmpty() },
-            parse = { str -> { (it as CsvItemPartial).copy(bodyWeight = str.toDoubleOrNull()) } }
+            //parse = { str -> { it.copy(bodyWeight = str.toDoubleOrNull()) } }
+            parse = { str -> { it.update("Body weight", str)}}
         ),
         CsvField(
             fieldName = "Body temperature",
             format = { it.vitals.bodyTemperature?.toString().orEmpty() },
-            parse = { str -> { (it as CsvItemPartial).copy(bodyTemperature = str.toDoubleOrNull()) } }
+            //parse = { str -> { it.copy(bodyTemperature = str.toDoubleOrNull()) } },
+            parse = { str -> { it.update("Body temperature", str)}}
         ),
         CsvField(
             fieldName = "Location",
             format = { it.location },
-            parse = { str -> { (it as CsvItemPartial).copy(location = str) } }
+            //parse = { str -> { it.copy(location = str) } }
+            parse = { str -> { it.update("Location", str)}}
         ),
         CsvField(
             fieldName = "Memo",
             format = { it.memo },
-            parse = { str -> { (it as CsvItemPartial).copy(memo = str) } }
+            //parse = { str -> { it.copy(memo = str) } }
+            parse = { str -> { it.update("Memo", str)}}
         )
     )
 }
 interface CsvPartial<T> {
     fun toItem(): T
-    fun update(field: CsvField<T, out CsvPartial<T>>, value: String): CsvPartial<T>
+    //fun update(field: CsvField<T, out CsvPartial<T>>, value: String): CsvPartial<T>
+    fun update(fieldName: String, value: String) : CsvPartial<T>
 }
 
 data class CsvItemPartial(
@@ -141,8 +150,9 @@ data class CsvItemPartial(
         memo = memo
     )
 
-    override fun update(field: CsvField<Item, out CsvPartial<Item>>, value: String): CsvPartial<Item> {
-        return when (field.fieldName) {
+    //override fun update(field: CsvField<Item, out CsvPartial<Item>>, value: String): CsvPartial<Item> {
+    override fun update(fieldName: String, value: String): CsvPartial<Item> {
+        return when (fieldName) {
             "Measured at" -> copy(measuredAt = value.toInstantOrNull())
             "Bp upper" -> copy(bpUpper = value.toIntOrNull())
             "Bp lower" -> copy(bpLower = value.toIntOrNull())

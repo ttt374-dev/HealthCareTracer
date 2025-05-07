@@ -44,10 +44,12 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideCsvExporter(): CsvExporter<Item, CsvPartial<Item>> = CsvExporter(ItemCsvSchema.fields)
+    fun provideCsvImporter(logger: Logger): CsvImporter<Item, CsvPartial<Item>> = CsvImporter(logger, { CsvItemPartial() }, ItemCsvSchema.fields )
+    //fun provideCsvImporter(logger: Logger): CsvImporter<Item, CsvItemPartial> = CsvImporter(logger, { CsvItemPartial() }, ItemCsvSchema.fields )
 
     @Provides
-    fun provideCsvImporter(logger: Logger): CsvImporter<Item, CsvPartial<Item>> = CsvImporter(logger, { CsvItemPartial() }, ItemCsvSchema.fields )
+    fun provideCsvExporter(): CsvExporter<Item, CsvPartial<Item>> = CsvExporter(ItemCsvSchema.fields)
+
 
 //    @Provides
 //    fun provideCsvImporter(logger: Logger): CsvImporter = CsvImporter<Item, CsvPartial<Item>>(logger, { CsvItemPartial() },  ItemCsvSchema.fields )
@@ -58,6 +60,7 @@ object BackupModule {
 
     @Provides
     fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
+    //fun provideExportDataUseCase(itemRepository: ItemRepository, csvExporter: CsvExporter<Item, CsvPartial<Item>>, contentResolverWrapper: ContentResolverWrapper) =
         ExportDataUseCase(itemRepository, csvExporter, contentResolverWrapper)
 
     @Provides

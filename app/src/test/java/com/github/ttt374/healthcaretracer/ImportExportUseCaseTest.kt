@@ -99,7 +99,7 @@ class ImportCsvUseCaseTest {
         val logger = mock<Logger>()
         importDataUseCase = ImportDataUseCase(
             { itemRepository.replaceAllItems(it)},
-            com.github.ttt374.csv_backup_lib.CsvImporter({ Item()}, ItemCsvSchema.fields), contentResolverWrapper
+            com.github.ttt374.csv_backup_lib.CsvImporter(ItemCsvSchema.fields, { Item()},  ), contentResolverWrapper
         )
         uri = mock<Uri>()
     }

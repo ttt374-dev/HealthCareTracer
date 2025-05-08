@@ -31,7 +31,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BackupModule {
     @Provides
-    fun provideCsvImporter(logger: Logger): CsvImporter<Item> = CsvImporter({ Item() }, ItemCsvSchema.fields)
+    fun provideCsvImporter(): CsvImporter<Item> = CsvImporter(ItemCsvSchema.fields, { Item() })
     //fun provideCsvImporter(logger: Logger): CsvImporter<Item, CsvItemPartial> = CsvImporter(logger, { CsvItemPartial() }, ItemCsvSchema.fields )
 
     @Provides

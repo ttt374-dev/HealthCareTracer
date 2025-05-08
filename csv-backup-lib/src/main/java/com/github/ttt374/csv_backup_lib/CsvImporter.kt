@@ -4,7 +4,7 @@ import com.opencsv.CSVReader
 import java.io.Reader
 
 
-class CsvImporter<T>(private val newItem: () -> T, private val fields: List<CsvField<T>>) {
+class CsvImporter<T>(private val fields: List<CsvField<T>>, private val createItem: () -> T) {
     fun import(reader: Reader): List<T> {
         val items = mutableListOf<T>()
         CSVReader(reader).use { csvReader ->
@@ -16,7 +16,7 @@ class CsvImporter<T>(private val newItem: () -> T, private val fields: List<CsvF
             var line = csvReader.readNext()
             var rowIndex = 1
             while (line != null) {
-                var item = newItem()
+                var item = createItem()
                 var hasMissingRequiredField = false
                 for ((field, idx) in fieldMap) {
                     val value = line.getOrNull(idx)

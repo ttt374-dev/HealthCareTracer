@@ -20,7 +20,7 @@ object ItemCsvSchema {
             fieldName = "Bp upper",
             isRequired = true,
             format = { it.vitals.bp?.upper?.toString().orEmpty() },
-            parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull() ?: error("invalid bp value: $str")))) }
+            parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull()))) }
             //parse = { str, item -> val vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull() ?: error("invalid bp value: $str")));  item.copy(vitals = vitals)}
             //parse = { str -> { it.update("Bp upper", str)}}
             //parse = { str -> { it.copy(bpUpper = str.toIntOrNull()) } }
@@ -29,7 +29,7 @@ object ItemCsvSchema {
             fieldName = "Bp lower",
             isRequired = true,
             format = { it.vitals.bp?.lower?.toString().orEmpty() },
-            parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(lower = str.toIntOrNull() ?: error("invalid bp value: $str")))) }
+            parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(lower = str.toIntOrNull()))) }
             //parse = { str, item -> val vitals = item.vitals.copy(bp = item.vitals.bp?.copy(lower = str.toIntOrNull() ?: error("invalid bp value: $str")));  item.copy(vitals = vitals)}
             //parse = { str -> { it.update("Bp lower", str)}}
             //parse = { str -> { it.copy(bpLower = str.toIntOrNull()) } }

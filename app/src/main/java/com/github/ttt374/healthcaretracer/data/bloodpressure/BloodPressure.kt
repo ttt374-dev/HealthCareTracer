@@ -10,7 +10,7 @@ import androidx.room.TypeConverter
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BloodPressure(val upper: Int, val lower: Int)
+data class BloodPressure(val upper: Int?, val lower: Int?)
 
 fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline? = null, showUnit: Boolean = true) : AnnotatedString {
     return this?.let {
@@ -24,9 +24,9 @@ fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline? = null, 
                     append("-")
                 }
             }
-            appendBp(upper, guideline?.getCategoryUpper(upper)?.color ?: Color.Unspecified)
+            upper?.let { appendBp(upper, guideline?.getCategoryUpper(it)?.color ?: Color.Unspecified) } ?: "-"
             append("/")
-            appendBp(lower, guideline?.getCategoryLower(lower)?.color ?: Color.Unspecified)
+            lower?.let { appendBp(lower, guideline?.getCategoryLower(it)?.color ?: Color.Unspecified) } ?: "-"
 
             if (showUnit){
                 pushStyle(SpanStyle(fontSize = 8.sp, baselineShift = BaselineShift.Subscript))
@@ -36,15 +36,16 @@ fun BloodPressure?.toAnnotatedString(guideline: BloodPressureGuideline? = null, 
         }
     }?: AnnotatedString("-/-")
 }
+fun Pair<Number?, Number?>.toBloodPressure() = BloodPressure(first?.toInt(), second?.toInt())
 
-fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure? {
-    val (upper, lower) = this
-    return if (upper != null && lower != null) {
-        BloodPressure(upper.toInt(), lower.toInt())
-    } else {
-        null
-    }
-}
+//fun Pair<Number?, Number?>.toBloodPressure(): BloodPressure? {
+//    val (upper, lower) = this
+//    return if (upper != null && lower != null) {
+//        BloodPressure(upper.toInt(), lower.toInt())
+//    } else {
+//        null
+//    }
+//}
 
 class BloodPressureConverter {
     @TypeConverter

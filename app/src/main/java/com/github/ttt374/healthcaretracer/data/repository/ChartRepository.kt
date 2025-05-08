@@ -31,7 +31,7 @@ class ChartRepository @Inject constructor(private val itemRepository: ItemReposi
             }
         }
     }
-    private fun createBpEntries(measuredValues: List<MeasuredValue<BloodPressure>>, selector: (BloodPressure) -> Int): List<Entry> {
+    private fun createBpEntries(measuredValues: List<MeasuredValue<BloodPressure>>, selector: (BloodPressure) -> Int?): List<Entry> {
         return measuredValues.map {
             MeasuredValue(it.measuredAt, selector(it.value)).toEntries()
         }

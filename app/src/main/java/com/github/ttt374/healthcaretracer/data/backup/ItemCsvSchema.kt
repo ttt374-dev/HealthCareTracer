@@ -1,6 +1,7 @@
 package com.github.ttt374.healthcaretracer.data.backup
 
 import com.github.ttt374.csv_backup_lib.CsvField
+import com.github.ttt374.healthcaretracer.data.bloodpressure.BloodPressure
 import com.github.ttt374.healthcaretracer.data.item.Item
 import java.time.Instant
 import java.time.format.DateTimeParseException
@@ -20,7 +21,11 @@ object ItemCsvSchema {
             fieldName = "Bp upper",
             isRequired = true,
             format = { it.vitals.bp?.upper?.toString().orEmpty() },
-            parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull()))) }
+            parse = { str, item ->
+                val bp = item.vitals.bp?.copy(upper = str.toIntOrNull()) ?: BloodPressure(str.toIntOrNull(), null)
+                item.copy(vitals = item.vitals.copy(bp = bp))
+                //item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull())))
+            }
             //parse = { str, item -> val vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull() ?: error("invalid bp value: $str")));  item.copy(vitals = vitals)}
             //parse = { str -> { it.update("Bp upper", str)}}
             //parse = { str -> { it.copy(bpUpper = str.toIntOrNull()) } }
@@ -29,7 +34,12 @@ object ItemCsvSchema {
             fieldName = "Bp lower",
             isRequired = true,
             format = { it.vitals.bp?.lower?.toString().orEmpty() },
-            parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(lower = str.toIntOrNull()))) }
+            parse = { str, item ->
+                val bp = item.vitals.bp?.copy(lower = str.toIntOrNull()) ?: BloodPressure(null, str.toIntOrNull())
+                item.copy(vitals = item.vitals.copy(bp = bp))
+                //item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(upper = str.toIntOrNull())))
+            }
+            //parse = { str, item -> item.copy(vitals = item.vitals.copy(bp = item.vitals.bp?.copy(lower = str.toIntOrNull()))) }
             //parse = { str, item -> val vitals = item.vitals.copy(bp = item.vitals.bp?.copy(lower = str.toIntOrNull() ?: error("invalid bp value: $str")));  item.copy(vitals = vitals)}
             //parse = { str -> { it.update("Bp lower", str)}}
             //parse = { str -> { it.copy(bpLower = str.toIntOrNull()) } }
